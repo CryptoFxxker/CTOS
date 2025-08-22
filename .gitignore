@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+.env
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Data & Logs
+data/
+logs/
+tmp/
