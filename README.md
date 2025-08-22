@@ -104,40 +104,83 @@ Design goals:
 
 ---
 
-## Quick Start
 
-1. **Generate the project**
+## Quick Start (Practical Workflow)
+
+1. **Get the Code**
+   Clone or download the CTOS repository scaffold:
+
+   ```bash
+   git clone https://github.com/your-org/ctos.git
+   cd ctos
+   ```
+
+   Or generate the skeleton locally:
 
    ```bash
    python3 scaffold_ctos.py --name ctos --exchanges okx backpack binance
+   cd ctos
    ```
 
-2. **Install deps (example)**
+2. **Set Up the Environment**
+   Create a clean Python environment and install dependencies:
 
    ```bash
-   cd ctos
    python -m venv .venv && source .venv/bin/activate
    pip install -U pip
-   # add your libs later (httpx/websockets/pandas/pyyaml/uvloop/...)
+   pip install -r requirements.txt
    ```
 
-3. **Configure**
+3. **Configure API Keys**
 
-   * Copy `configs/secrets.example.yaml` → `configs/secrets.yaml`, fill API keys **(never commit)**.
-   * Edit `configs/ctos.yaml` to pick default exchange, mode (`paper` / `live`), log level, etc.
+   * Copy the example secrets file:
 
-4. **Run a demo strategy (paper/sim)**
+     ```bash
+     cp configs/secrets.example.yaml configs/secrets.yaml
+     ```
+   * Fill in your **OKX / Backpack / Binance** API keys.
+
+     > ⚠️ Never commit this file to git.
+
+4. **Configure Global Settings**
+
+   * Edit `configs/ctos.yaml` to choose:
+
+     * `default_exchange` (`okx`, `backpack`, `binance`)
+     * `mode`: `paper` (simulation) or `live`
+     * logging, risk limits, and data storage.
+
+5. **Run a Built-in Strategy**
+   Start one of the demo strategies in **paper mode**:
 
    ```bash
    python -m apps.strategies.examples.mean_reversion
    ```
 
-5. **Backtest / Replay**
+   Or run your own strategy file in `apps/strategies/`.
 
-   * Put historical data into `tools/backtest/` or wire a loader.
-   * Run `scripts/backtest.sh` (or your own command).
+6. **Backtest or Replay**
+
+   * Place historical data files under `tools/backtest/`.
+   * Launch the backtest runner:
+
+     ```bash
+     ./scripts/backtest.sh
+     ```
+   * Results will be logged into `var/logs/` and stored in `var/data/`.
+
+7. **Move to Live Trading (Carefully)**
+
+   * Switch `mode: live` in `configs/ctos.yaml`.
+   * Make sure **risk checks and kill-switch** are enabled.
+   * Run your strategy again — it will now route orders to the real exchange.
 
 ---
+
+👉 This way the flow is: **get code → install env → set API keys → configure runtime → run paper strategy → backtest → live deploy**.
+
+Would you like me to also add a **table of example commands** for running the strategies in your current `Strategy.py` (like `btc`, `grid`, `hedge` etc.) so that it’s included in the README?
+
 
 ## Roadmap
 
@@ -160,329 +203,5 @@ Design goals:
 
 * **免责声明**：加密货币交易风险极高。CTOS仅为研究/工具框架，请自行评估并承担风险。
 * **License**：自选（MIT / Apache‑2.0 / GPL‑3.0），在 `LICENSE` 中明确。
-
----
-
-# Scaffold Script
-
-Save as `scaffold_ctos.py` (run from the parent directory where you want the project created):
-
-```python
-#!/usr/bin/env python3
-"""
-CTOS Project Scaffold
-Creates a Linux-inspired crypto trading OS layout with exchange-specific "arch" drivers.
-Usage:
-  python scaffold_ctos.py --name ctos --exchanges okx backpack binance
-"""
-
-import argparse
-import os
-from pathlib import Path
-import textwrap
-import yaml  # optional; if not installed, replace with simple string write
-
-README_CN_EN = """# CTOS: Crypto Trading Operating System (Linux-inspired)
-
-> Bilingual README is placed here as a stub.
-> Replace this file with your current README content from the chat.
-> (Or keep this and append.)
-
-See configs/ctos.yaml and configs/secrets.example.yaml to get started.
-"""
-
-GITIGNORE = """# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.egg-info/
-.venv/
-.env
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-
-# Data & Logs
-data/
-logs/
-tmp/
-"""
-
-CTOS_YAML = {
-    "mode": "paper",  # paper | live
-    "default_exchange": "okx",
-    "log_level": "INFO",
-    "data": {"store": "parquet", "path": "data/"},
-    "risk": {
-        "max_notional_usd": 10000,
-        "max_leverage": 3,
-        "price_band_bps": 200,  # 2%
-        "kill_switch": True,
-    },
-    "exchanges": {
-        "okx": {"account": "default_okx"},
-        "binance": {"account": "default_binance"},
-        "backpack": {"account": "default_backpack"},
-    },
-    "accounts": {
-        "default_okx": {"keyref": "okx_main"},
-        "default_binance": {"keyref": "binance_main"},
-        "default_backpack": {"keyref": "backpack_main"},
-    },
-}
-
-SECRETS_EXAMPLE = {
-    "keys": {
-        "okx_main": {
-            "api_key": "YOUR_OKX_KEY",
-            "api_secret": "YOUR_OKX_SECRET",
-            "passphrase": "YOUR_OKX_PASSPHRASE"
-        },
-        "binance_main": {
-            "api_key": "YOUR_BINANCE_KEY",
-            "api_secret": "YOUR_BINANCE_SECRET"
-        },
-        "backpack_main": {
-            "api_key": "YOUR_BACKPACK_KEY",
-            "api_secret": "YOUR_BACKPACK_SECRET"
-        }
-    }
-}
-
-SYSCALLS_PY = '''"""
-Canonical trading syscall spec for CTOS drivers.
-Each driver must implement these methods with consistent shapes.
-"""
-
-from typing import Any, Dict, Iterable, Optional
-
-class TradingSyscalls:
-    def symbols(self) -> Iterable[str]: ...
-    def exchange_limits(self) -> Dict[str, Any]: ...
-    def fees(self) -> Dict[str, Any]: ...
-
-    # Market data
-    def subscribe_ticks(self, symbols): ...
-    def subscribe_klines(self, symbol: str, timeframe: str): ...
-    def get_orderbook(self, symbol: str, level: int = 50): ...
-
-    # Trading
-    def place_order(self, symbol: str, side: str, ord_type: str,
-                    size: float, price: Optional[float] = None,
-                    client_id: Optional[str] = None, **kwargs) -> Dict[str, Any]: ...
-    def amend_order(self, order_id: str, **kwargs) -> Dict[str, Any]: ...
-    def cancel_order(self, order_id: str) -> Dict[str, Any]: ...
-    def cancel_all(self, symbol: Optional[str] = None) -> Dict[str, Any]: ...
-
-    # Account
-    def balances(self) -> Dict[str, float]: ...
-    def positions(self) -> Dict[str, Any]: ...
-    def transfer(self, **kwargs) -> Dict[str, Any]: ...
-'''
-
-DRIVER_INIT = '''"""
-Exchange driver package.
-Implement arch.yaml + rest.py + ws.py + signer.py according to CTOS syscalls.
-"""
-'''
-
-DRIVER_ARCH_YAML = {
-    "arch": "REPLACE_ME",              # e.g., okx / binance / backpack
-    "kind": "cex",
-    "features": {
-        "modes": ["spot", "swap"],
-        "order_types": ["limit", "market", "post_only"],
-        "time_in_force": ["GTC", "IOC", "FOK"],
-        "ws_streams": ["tick", "kline", "orderbook", "orders", "balances"],
-    },
-    "limits": {
-        "price_scale": 1e-8,
-        "size_scale": 1e-8
-    }
-}
-
-REST_PY = '''"""
-REST adapter for this exchange.
-Responsibilities:
-- Normalize requests & responses to CTOS syscall contracts
-- Handle authentication/signature
-- Respect rate limits & idempotency
-"""
-class RestClient:
-    def __init__(self, config, secrets):
-        self.config = config
-        self.secrets = secrets
-
-    # TODO: implement REST calls (symbols, place_order, cancel_order, balances, etc.)
-'''
-
-WS_PY = '''"""
-Websocket adapter for this exchange.
-Responsibilities:
-- Connect, subscribe, and normalize streams (ticks/klines/orderbook/orders/balances)
-- Auto-reconnect & backoff
-"""
-class WsClient:
-    def __init__(self, config, secrets):
-        self.config = config
-        self.secrets = secrets
-
-    # TODO: implement WS subscriptions and message normalization
-'''
-
-SIGNER_PY = '''"""
-Request signer/authorizer for this exchange.
-- HMAC/Ed25519 etc. depending on the exchange
-"""
-class Signer:
-    def __init__(self, secrets):
-        self.secrets = secrets
-
-    # TODO: implement sign(payload) -> headers/params
-'''
-
-MEAN_REV_PY = '''"""
-Minimal example strategy (pseudo-code):
-- Subscribes to klines
-- Places tiny paper orders when a simple condition triggers
-"""
-def main():
-    print("Example strategy would run here and call TradingSyscalls.")
-
-if __name__ == "__main__":
-    main()
-'''
-
-SCHEDULER_PY = '''"""
-Simple placeholder scheduler (supervisor/orchestrator).
-"""
-class Scheduler:
-    def start(self):
-        print("Scheduler starting...")
-
-    def stop(self):
-        print("Scheduler stopping...")
-'''
-
-EVENT_BUS_PY = '''"""
-Trivial event bus placeholder (pub/sub).
-Replace with a real bus or use asyncio signals.
-"""
-class EventBus:
-    def publish(self, topic, message):
-        pass
-
-    def subscribe(self, topic, handler):
-        pass
-'''
-
-RISK_PY = '''"""
-Pre-trade risk checks and kill-switch.
-"""
-class Risk:
-    def check(self, order):
-        # TODO: implement price bands, max notional, leverage caps
-        return True
-'''
-
-PORTFOLIO_PY = '''"""
-Positions & PnL accounting.
-"""
-class Portfolio:
-    pass
-'''
-
-EXEC_ENGINE_PY = '''"""
-Execution engine dispatches strategy intents to driver syscalls.
-"""
-class ExecutionEngine:
-    def __init__(self, driver):
-        self.driver = driver
-
-    # def place(order): call driver.place_order(...)
-'''
-
-def write_text(path: Path, content: str):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
-
-def write_yaml(path: Path, data: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        path.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8")
-    except Exception:
-        # fallback to plain string if pyyaml missing
-        import json
-        path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-
-def scaffold(base: Path, exchanges: list[str]):
-    # Root files
-    write_text(base / "README.md", README_CN_EN)
-    write_text(base / ".gitignore", GITIGNORE)
-    write_yaml(base / "configs" / "ctos.yaml", CTOS_YAML)
-    write_yaml(base / "configs" / "secrets.example.yaml", SECRETS_EXAMPLE)
-
-    # Core package
-    write_text(base / "ctos" / "__init__.py", "'''CTOS package'''")
-    write_text(base / "ctos" / "core" / "kernel" / "syscalls.py", SYSCALLS_PY)
-    write_text(base / "ctos" / "core" / "kernel" / "scheduler.py", SCHEDULER_PY)
-    write_text(base / "ctos" / "core" / "kernel" / "event_bus.py", EVENT_BUS_PY)
-    write_text(base / "ctos" / "core" / "runtime" / "execution_engine.py", EXEC_ENGINE_PY)
-    write_text(base / "ctos" / "core" / "runtime" / "risk.py", RISK_PY)
-    write_text(base / "ctos" / "core" / "runtime" / "portfolio.py", PORTFOLIO_PY)
-
-    # IO subdirs
-    (base / "ctos" / "core" / "io" / "datafeed").mkdir(parents=True, exist_ok=True)
-    (base / "ctos" / "core" / "io" / "storage").mkdir(parents=True, exist_ok=True)
-    (base / "ctos" / "core" / "io" / "logging").mkdir(parents=True, exist_ok=True)
-
-    # Drivers
-    for ex in exchanges:
-        ex = ex.lower()
-        write_text(base / "ctos" / "drivers" / ex / "__init__.py", DRIVER_INIT)
-        arch_yaml = DRIVER_ARCH_YAML.copy()
-        arch_yaml["arch"] = ex
-        write_yaml(base / "ctos" / "drivers" / ex / "arch.yaml", arch_yaml)
-        write_text(base / "ctos" / "drivers" / ex / "rest.py", REST_PY)
-        write_text(base / "ctos" / "drivers" / ex / "ws.py", WS_PY)
-        write_text(base / "ctos" / "drivers" / ex / "signer.py", SIGNER_PY)
-
-    # Apps / tools / scripts / tests
-    write_text(base / "apps" / "strategies" / "examples" / "mean_reversion.py", MEAN_REV_PY)
-    (base / "tools" / "backtest").mkdir(parents=True, exist_ok=True)
-    (base / "tools" / "simulator").mkdir(parents=True, exist_ok=True)
-    (base / "scripts").mkdir(parents=True, exist_ok=True)
-    (base / "tests").mkdir(parents=True, exist_ok=True)
-
-def print_next_steps(base: Path):
-    steps = f"""
-✅ CTOS scaffold created at: {base}
-
-Next steps:
-1) cd {base.name}
-2) python -m venv .venv && source .venv/bin/activate
-3) pip install pyyaml
-4) Edit configs/ctos.yaml and copy configs/secrets.example.yaml → configs/secrets.yaml
-5) Run example: python -m apps.strategies.examples.mean_reversion
-"""
-    print(textwrap.dedent(steps))
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--name", default="ctos", help="Project folder name")
-    parser.add_argument("--exchanges", nargs="+", default=["okx", "backpack", "binance"],
-                        help="List of exchanges (treated as arch drivers)")
-    args = parser.parse_args()
-
-    base = Path(args.name).resolve()
-    scaffold(base, args.exchanges)
-    print_next_steps(base)
-
-if __name__ == "__main__":
-    main()
-```
-
-> If you don’t want to install `pyyaml`, the script already falls back to JSON text for YAML writes.
 
 ---
