@@ -1,29 +1,58 @@
-"""
-Canonical trading syscall spec for CTOS drivers.
-Each driver must implement these methods with consistent shapes.
-"""
+# -*- coding: utf-8 -*-
+# ctos/core/kernel/syscalls.py
+# A minimal, old-Python-compatible syscall interface.
+# No Protocol/dataclasses; plain base class with NotImplementedError.
 
-from typing import Any, Dict, Iterable, Optional
+class TradingSyscalls(object):
+    # ---- Ref-data / meta ----
+    def symbols(self):
+        """Return an iterable of unified symbols, e.g. ['BTC-USDT', 'ETH-USDT']"""
+        raise NotImplementedError
 
-class TradingSyscalls:
-    def symbols(self) -> Iterable[str]: ...
-    def exchange_limits(self) -> Dict[str, Any]: ...
-    def fees(self) -> Dict[str, Any]: ...
+    def exchange_limits(self):
+        """Return dict of exchange limits/scales"""
+        raise NotImplementedError
 
-    # Market data
-    def subscribe_ticks(self, symbols): ...
-    def subscribe_klines(self, symbol: str, timeframe: str): ...
-    def get_orderbook(self, symbol: str, level: int = 50): ...
+    def fees(self):
+        """Return dict of fee info (maker/taker etc.)"""
+        raise NotImplementedError
 
-    # Trading
-    def place_order(self, symbol: str, side: str, ord_type: str,
-                    size: float, price: Optional[float] = None,
-                    client_id: Optional[str] = None, **kwargs) -> Dict[str, Any]: ...
-    def amend_order(self, order_id: str, **kwargs) -> Dict[str, Any]: ...
-    def cancel_order(self, order_id: str) -> Dict[str, Any]: ...
-    def cancel_all(self, symbol: Optional[str] = None) -> Dict[str, Any]: ...
+    # ---- Market data ----
+    def get_price(self, symbol):
+        """Return last price (float)"""
+        raise NotImplementedError
 
-    # Account
-    def balances(self) -> Dict[str, float]: ...
-    def positions(self) -> Dict[str, Any]: ...
-    def transfer(self, **kwargs) -> Dict[str, Any]: ...
+    def get_orderbook(self, symbol, level=50):
+        """Return dict: {'symbol': 'BTC-USDT[-SWAP]', 'bids': [...], 'asks': [...]}"""
+        raise NotImplementedError
+
+    def get_klines(self, symbol, timeframe, limit=200):
+        """Return list of dict rows:
+           [{'ts': 1710000000000, 'open':1.0,'high':2.0,'low':0.9,'close':1.5,'volume':123.45}, ...]"""
+        raise NotImplementedError
+
+    # ---- Trading ----
+    def place_order(self, symbol, side, ord_type, size, price=None, client_id=None, **kwargs):
+        """Place order, return dict with at least {'order_id': ..., 'client_id': ..., 'status': ..., 'raw': ...}"""
+        raise NotImplementedError
+
+    def amend_order(self, order_id, **kwargs):
+        """Amend/modify order"""
+        raise NotImplementedError
+
+    def cancel_order(self, order_id):
+        """Cancel a single order"""
+        raise NotImplementedError
+
+    def cancel_all(self, symbol=None):
+        """Cancel all (optionally filtered by symbol)"""
+        raise NotImplementedError
+
+    # ---- Account ----
+    def balances(self):
+        """Return dict like {'USDT': 123.45, 'BTC': 0.01, 'total_equity_usd': 123.45} (keys optional except totals)"""
+        raise NotImplementedError
+
+    def positions(self):
+        """Return dict of current positions (shape up to driver)"""
+        raise NotImplementedError
