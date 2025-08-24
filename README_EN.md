@@ -87,12 +87,30 @@ ctos/
 * **Account:** `balances()`, `positions()`, `margin_info()`, `transfer(...)`
 * **Ref‑data:** `symbols()`, `exchange_limits()`, `fees()`
 
-Design goals:
+### 🎯 CTOS Design Goals (For Beginners)
 
-* **Idempotency** (client order IDs), **retries**, **backoff**, **rate-limit awareness**.
-* **Normalization** of enums, sizes, price scales across exchanges.
-* **Metadata‑rich errors** (driver + syscall + payload + remote code).
+1. **Plug & Play** — one-click start, no complex setup.
+   👉 Even if you’re new, you can run your first trading strategy within minutes.
 
+2. **No Code Hassle** — prebuilt strategies included.
+   👉 Choose “mean reversion”, “grid”, or “hedge” with a single command, no coding required.
+
+3. **Multi-Exchange, One Interface**
+   👉 Trade on OKX, Binance, Backpack… without learning their different APIs.
+
+4. **Safe by Default**
+   👉 Built-in risk checks & kill-switch protect you from big losses due to mistakes.
+
+5. **Paper Trading First**
+   👉 Practice with **simulated money** before going live, so you can learn without risk.
+
+6. **Clear Insights**
+   👉 Auto-generated reports and charts show your profit/loss, risk, and performance clearly.
+
+7. **Step-by-Step Upgrade Path**
+   👉 Start with ready-made strategies → tweak simple configs → later write your own if you want.
+
+---
 ---
 
 ## Runtime & Safety
