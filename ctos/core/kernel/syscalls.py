@@ -13,12 +13,16 @@ class TradingSyscalls(object):
         """Return dict of exchange limits/scales"""
         raise NotImplementedError
 
+    def exchange_information(self):
+        """Return dict of exchange information"""
+        raise NotImplementedError
+
     def fees(self):
         """Return dict of fee info (maker/taker etc.)"""
         raise NotImplementedError
 
     # ---- Market data ----
-    def get_price(self, symbol):
+    def get_price_now(self, symbol):
         """Return last price (float)"""
         raise NotImplementedError
 
@@ -40,12 +44,20 @@ class TradingSyscalls(object):
         """Amend/modify order"""
         raise NotImplementedError
 
-    def cancel_order(self, order_id):
+    def revoke_order(self, order_id):
         """Cancel a single order"""
         raise NotImplementedError
 
     def cancel_all(self, symbol=None):
         """Cancel all (optionally filtered by symbol)"""
+        raise NotImplementedError
+
+    def get_open_orders(self, symbols):
+        """Return dict: {'symbol': 'order_id', ……}"""
+        raise NotImplementedError
+
+    def get_order_status(self, order_id):
+        """Return dict: order_info"""
         raise NotImplementedError
 
     # ---- Account ----

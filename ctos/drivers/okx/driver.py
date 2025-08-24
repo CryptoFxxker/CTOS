@@ -74,7 +74,7 @@ class OkxDriver(TradingSyscalls):
         return {"maker": None, "taker": None}
 
     # -------------- market data --------------
-    def get_price(self, symbol):
+    def get_price_now(self, symbol):
         full, base, _ = self._norm_symbol(symbol)
         # Strategy shows: okx.get_price_now('btc')
         if hasattr(self.okx, "get_price_now"):
@@ -102,44 +102,11 @@ class OkxDriver(TradingSyscalls):
         if not hasattr(self.okx, "get_kline"):
             raise NotImplementedError("okex.py client lacks get_kline(tf, limit, symbol)")
 
-        raw = self.okx.get_kline(str(timeframe), int(limit), full)
-        # Strategy.py shows: get_kline(tf, N, 'BTC-USDT-SWAP')[0]
-        if isinstance(raw, (list, tuple)) and len(raw) > 0:
-            raw = raw[0]
-
-        rows = []
-        # Case A: pandas.DataFrame
-        if hasattr(raw, "iloc"):
-            # Try to read known columns or fallback by index
-            for i in range(len(raw)):
-                r = raw.iloc[i]
-                ts = _safe_int(r, "ts", "time", default=0)
-                o = _safe_float(r, "open", 1)
-                h = _safe_float(r, "high", 2)
-                l = _safe_float(r, "low", 3)
-                c = _safe_float(r, "close", 4)
-                v = _safe_float(r, "volume", 5, default=0.0)
-                rows.append({"ts": ts, "open": o, "high": h, "low": l, "close": c, "volume": v})
-            return rows
-
-        # Case B: list of lists (OKX standard raw array)
-        if isinstance(raw, (list, tuple)):
-            for k in raw:
-                # Expected: [ts, open, high, low, close, volume, ...]
-                try:
-                    ts = int(k[0])
-                    o = float(k[1])
-                    h = float(k[2])
-                    l = float(k[3])
-                    c = float(k[4])
-                    v = float(k[5]) if len(k) > 5 else 0.0
-                except Exception:
-                    continue
-                rows.append({"ts": ts, "open": o, "high": h, "low": l, "close": c, "volume": v})
-            return rows
-
-        # Unknown shape -> return empty
-        return rows
+        raw, err = self.okx.get_kline(str(timeframe), int(limit), full)
+        if not err:
+            return raw, err
+        else:
+            return None, err
 
     # -------------- trading --------------
     def place_order(self, symbol, side, ord_type, size, price=None, client_id=None, **kwargs):
@@ -152,33 +119,42 @@ class OkxDriver(TradingSyscalls):
         if not hasattr(self.okx, "place_order"):
             raise NotImplementedError("okex.py client lacks place_order(...)")
 
-        resp = self.okx.place_order(
+        order_id, err = self.okx.place_order(
             symbol=full,
             side=str(side).lower(),
             type=str(ord_type).lower(),
             size=float(size),
             price=price,
-            client_oid=client_id,
             **kwargs
         )
-        order_id = _first_key(resp, ["order_id", "ordId", "id"])
-        status = resp.get("status") if isinstance(resp, dict) else None
-        return {"order_id": order_id, "client_id": client_id, "status": status, "raw": resp}
+        return order_id, err
 
     def amend_order(self, order_id, **kwargs):
         # Map to amend/modify if available
         if hasattr(self.okx, "amend_order"):
-            resp = self.okx.amend_order(order_id=order_id, **kwargs)
-            return {"order_id": order_id, "raw": resp}
+            order_id, err = self.okx.amend_order(order_id=order_id, **kwargs)
+            return order_id, err
         if hasattr(self.okx, "modify_order"):
-            resp = self.okx.modify_order(order_id=order_id, **kwargs)
-            return {"order_id": order_id, "raw": resp}
+            order_id, err  = self.okx.modify_order(order_id=order_id, **kwargs)
+            return order_id, err
         raise NotImplementedError("okex.py client lacks amend_order/modify_order")
 
-    def cancel_order(self, order_id):
-        if hasattr(self.okx, "cancel_order"):
-            resp = self.okx.cancel_order(order_id=order_id)
-            return {"order_id": order_id, "cancelled": True, "raw": resp}
+    def revoke_order(self, order_id):
+        if hasattr(self.okx, "revoke_order"):
+            success, error = self.okx.cancel_order(order_id=order_id)
+            return success, error
+        raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
+
+    def get_order_status(self, order_id):
+        if hasattr(self.okx, "get_order_status"):
+            success, error = self.okx.cancel_order(order_id=order_id)
+            return success, error
+        raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
+
+    def get_open_orders(self, instType='SWAP', symbol='ETH-USDT-SWAP'):
+        if hasattr(self.okx, "get_open_orders"):
+            success, error = self.okx.get_open_orders(instType=instType, symbol=symbol)
+            return success, error
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
     def cancel_all(self, symbol=None):
