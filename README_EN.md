@@ -188,20 +188,20 @@ Would you like me to also add a **table of example commands** for running the st
 * **v0.2**: Unified WS streaming, simulator/backtest parity, richer risk module.
 * **v0.3**: Multi‑exchange portfolio netting, live failover, warm restart, richer metrics UI.
 
----
-
-## 安全与合规（中文）
-
-* **API最小权限原则**：仅交易所需权限；提现永久关闭。
-* **密钥安全**：使用 `configs/secrets.yaml`（未纳入版本控制），可以结合系统密钥管理或环境变量。
-* **风控优先**：下单前风险检查、熔断与Kill‑switch、速率与风控日志留存。
-* **回测可复现**：策略输入/输出与市场数据快照可回放。
 
 ---
 
-## 许可与免责声明
+## Security & Compliance
 
-* **免责声明**：加密货币交易风险极高。CTOS仅为研究/工具框架，请自行评估并承担风险。
-* **License**：自选（MIT / Apache‑2.0 / GPL‑3.0），在 `LICENSE` 中明确。
+* **Principle of Least Privilege:** API keys should only have the necessary trading permissions; withdrawal must always remain disabled.
+* **Key Security:** Store secrets in `configs/secrets.yaml` (excluded from version control), or use environment variables / system key managers.
+* **Risk Controls First:** Pre-trade checks, circuit breakers, kill-switch mechanisms, rate-limit enforcement, and full logging.
+* **Reproducible Backtests:** All strategy inputs/outputs and market snapshots must be replayable.
 
 ---
+
+## License & Disclaimer
+
+* **Disclaimer:** Cryptocurrency trading carries extremely high risk. CTOS is provided as a research/tooling framework; use it at your own discretion and risk.
+* **License:** Choose an open-source license (MIT / Apache-2.0 / GPL-3.0) and specify it clearly in the `LICENSE` file.
+
