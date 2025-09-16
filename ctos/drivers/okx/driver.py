@@ -157,6 +157,43 @@ class OkxDriver(TradingSyscalls):
         )
         return order_id, err
 
+    def buy(self, symbol, size, price=None, order_type="limit", **kwargs):
+        """
+        Convenience wrapper for placing a buy order.
+        :param symbol: e.g. 'ETH-USDT-SWAP' or 'eth'
+        :param size: float quantity
+        :param price: optional price for limit/post_only; omit for market
+        :param order_type: 'limit' | 'market' | 'post_only'
+        :return: (order_id, err)
+        """
+        return self.place_order(
+            symbol=symbol,
+            side="buy",
+            order_type=str(order_type).lower(),
+            size=float(size),
+            price=price,
+            **kwargs,
+        )
+
+    def sell(self, symbol, size, price=None, order_type="limit", **kwargs):
+        """
+        Convenience wrapper for placing a sell order.
+        :param symbol: e.g. 'ETH-USDT-SWAP' or 'eth'
+        :param size: float quantity
+        :param price: optional price for limit/post_only; omit for market
+        :param order_type: 'limit' | 'market' | 'post_only'
+        :return: (order_id, err)
+        """
+        return self.place_order(
+            symbol=symbol,
+            side="sell",
+            order_type=str(order_type).lower(),
+            size=float(size),
+            price=price,
+            **kwargs,
+        )
+
+
     def amend_order(self, orderId, **kwargs):
         # Map to amend/modify if available
         if hasattr(self.okx, "amend_order"):
@@ -220,12 +257,12 @@ class OkxDriver(TradingSyscalls):
                 return e
         raise NotImplementedError("okex.py client lacks fetch_balance")
 
-    def get_posistion(self, symbol='ETH-USDT-SWAP'):
-        if hasattr(self.okx, "get_posistion"):
+    def get_position(self, symbol=None):
+        if hasattr(self.okx, "get_position"):
             try:
-                result = self.okx.get_posistion()
+                result = self.okx.get_position(symbol)
                 return result
             except Exception:
                 return None
-        raise NotImplementedError("okex.py client lacks get_posistion")
+        raise NotImplementedError("okex.py client lacks get_position")
 

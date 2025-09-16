@@ -65,6 +65,6 @@ class TradingSyscalls(object):
         """Return dict like {'USDT': 123.45, 'BTC': 0.01, 'total_equity_usd': 123.45} (keys optional except totals)"""
         raise NotImplementedError
 
-    def get_posistion(self, symbol):
+    def get_position(self, symbol):
         """Return dict of current positions (shape up to driver)"""
         raise NotImplementedError

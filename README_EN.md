@@ -105,7 +105,7 @@ ctos/
 ### Account/Position
 
 * `fetch_balance(currency)`: Returns the balance for all or a specified currency (case-insensitive).
-* `get_posistion(symbol=None)`: Returns position information for all or a specified trading pair.
+* `get_position(symbol=None)`: Returns position information for all or a specified trading pair.
 
 ### 🎯 CTOS Design Goals (For Beginners)
 

@@ -1,22 +1,38 @@
 import sys
 import os
-# 添加项目根目录到路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# 添加ctos/drivers/okx目录到路径
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'ctos', 'drivers', 'okx'))
+from pathlib import Path
 
-from ExecutionEngine import OkexExecutionEngine, init_OkxClient
+# 将项目根目录加入 sys.path，确保可以导入 `ctos` 包
+_THIS_FILE = Path(__file__).resolve()
+# apps/strategies/hedge/Strategy-BTC.py -> parents[3] == repo root (包含顶层 `ctos/` 目录)
+_PROJECT_ROOT = _THIS_FILE.parents[3]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+# 统一从 `ctos.drivers.okx.util` 导入工具函数
 try:
-    from util import get_rates, load_trade_log_once, update_rates, save_trade_log_once, save_para, load_para, \
-        number_to_ascii_art, cal_amount, BeijingTime, rate_price2order, get_min_amount_to_trade
-except ImportError as e:
-    print(f"导入util模块失败: {e}")
-    # 尝试从ctos.drivers.okx.util导入
-    from ctos.drivers.okx.util import get_rates, load_trade_log_once, update_rates, save_trade_log_once, save_para, load_para, \
-        number_to_ascii_art, cal_amount, BeijingTime, rate_price2order, get_min_amount_to_trade
+    from ctos.drivers.okx.util import (
+        get_rates,
+        load_trade_log_once,
+        update_rates,
+        save_trade_log_once,
+        save_para,
+        load_para,
+        number_to_ascii_art,
+        cal_amount,
+        BeijingTime,
+        rate_price2order,
+        get_min_amount_to_trade,
+    )
+except ImportError as import_error:
+    print(
+        f"导入失败: {import_error}. 请确认以项目根目录运行，或设置 PYTHONPATH={_PROJECT_ROOT}"
+    )
+    raise
 import math
 
 import  psutil, time
+from apps.ExecutionEngine import OkexExecutionEngine, init_OkxClient
 
 
 def set_leverage(increase_times, start_money, leverage_times):
@@ -65,7 +81,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     touch_lower_bolling = -1
     win_times = 0
     try:
-        with open('good_group.txt', 'r', encoding='utf8') as f:
+        with open(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'good_group.txt'), 'r', encoding='utf8') as f:
             data = f.readlines()
             good_group = data[0].strip().split(',')
             all_rate = [float(x) for x in data[1].strip().split(',')]
@@ -92,7 +108,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     is_btc_failed = False
     is_win = True if reset_start_money == 0 else False
     print('来咯来咯！比特币！带我开始赚钱咯！')
-    print(good_group, btc_rate, split_rate)
+    print('good_group, btc_rate, split_rate:', good_group, btc_rate, split_rate)
     if coins_to_be_bad:
         new_rate_place2order = {k: v for k, v in rate_price2order.items() if k in good_group + coins_to_be_bad}
     else:
@@ -104,14 +120,13 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
         if start_leverage < 0:
             is_btc_failed = True
             start_leverage = abs(start_leverage)
-        leverage_times = start_leverage if start_leverage > len(new_rate_place2order) * 10 / float(
-            engine.fetch_balance('USDT')['total_equity_usd']) else 1
+        leverage_times = start_leverage if start_leverage > len(new_rate_place2order) * 10 / float(engine.okex_spot.fetch_balance('USDT')) else 1
     print(new_rate_place2order)
     sanction_line = 0.01
-    min_coin_amount_to_trade = get_min_amount_to_trade(init_OkxClient)
+    min_coin_amount_to_trade = engine.min_amount_to_trade
 
     last_operation_time = 0
-    grid_add = 0.00388
+    grid_add = 0.00488
     grid_reduce_base = 0.00388
     grid_add_times = 0
 
@@ -139,10 +154,10 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                         leverage_times = 0.5
                 else:
                     pass
-                start_money = float(engine.fetch_balance('USDT')['total_equity_usd'])  ##  * (1 - win_times * 1.88/100)
+                start_money = float(engine.okex_spot.fetch_balance('USDT'))  ##  * (1 - win_times * 1.88/100)
             else:
                 start_money = reset_start_money if reset_start_money > 0 else float(
-                    engine.fetch_balance('USDT')['total_equity_usd'])
+                    engine.okex_spot.fetch_balance('USDT'))
                 reset_start_money = 0
             stop_with_leverage = math.sqrt(math.log(leverage_times if leverage_times > 1.5 else 1.5, 2))
             stop_rate = 1 + 0.01 * stop_with_leverage
@@ -156,7 +171,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
             max_leverage_times = leverage_times
             # 0. 开仓机制，不是直接计算仓位，而是通过对比当前仓位与预期仓位的差值，去进行对齐，避免突然中断导致的错误
             init_operate_position = start_money * leverage_times
-            target_money = float(engine.fetch_balance('USDT')['total_equity_usd'])
+            target_money = float(engine.okex_spot.fetch_balance('USDT'))
             if (not just_kill_position) and is_win:
                 usdt_amounts = []
                 coins_to_deal = []
@@ -186,12 +201,12 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
 
             # coinPrices_for_openPosition = {k: engine.okex_spot.get_price_now(k) for k in new_rate_place2order.keys()}
             # save_para(coinPrices_for_openPosition, 'coinPrices_for_openPosition.json')
-            coinPrices_for_openPosition = load_para('coinPrices_for_openPosition.json')
+            coinPrices_for_openPosition = load_para(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
             coinPrices_for_openPosition = {}
             if not coinPrices_for_openPosition:
                 coinPrices_for_openPosition = {k: engine.okex_spot.get_price_now(k) for k in
                                                new_rate_place2order.keys()}
-                save_para(coinPrices_for_openPosition, 'coinPrices_for_openPosition.json')
+                save_para(coinPrices_for_openPosition, os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
             #
             #  # 0.1 开仓之后，将一些参数存到本地，然后定时读取，做到参数热更新，
             #  param_file_path = 'btc_is_king_strategy_paras.json'
@@ -243,7 +258,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                     #########################################################
 
                     # 1.1 这个部分是加仓机制，下跌达到一定程度之后进行补仓操作，补仓有最低补仓价值，补完之后拉长补仓亏损率，避免杠杆拉高导致的急速高频加仓
-                    now_money = float(engine.fetch_balance('USDT')['total_equity_usd'])
+                    now_money = float(engine.okex_spot.fetch_balance('USDT'))
                     os.system(f'echo {now_money} > now_money.log')
 
                     if use_grid_with_index:
@@ -560,7 +575,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                                 # coinPrices_for_openPosition[good_coin] = now_price_for_all_coins[good_coin]
                                 for coin, _ in sell_list:
                                     coinPrices_for_openPosition[coin] = now_price_for_all_coins[coin]
-                                save_para(coinPrices_for_openPosition, 'coinPrices_for_openPosition.json')
+                                save_para(coinPrices_for_openPosition, os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
 
                                 engine.place_incremental_orders(buy_amt * 1.02, good_coin, 'buy',
                                                                 soft=False)

@@ -17,7 +17,7 @@ from util import BeijingTime, align_decimal_places, save_para, rate_price2order,
 import time
 # from average_method import get_good_bad_coin_group  # 暂时注释掉，文件不存在
 import json
-from SystemMonitor import SystemMonitor
+from .SystemMonitor import SystemMonitor
 import threading
 
 
@@ -35,7 +35,10 @@ class OkexExecutionEngine:
         self.init_balance = float(self.okex_spot.fetch_balance('USDT'))
         self.watch_threads = []  # 存储所有监控线程
         self.soft_orders_to_focus = []
-        self.min_amount_to_trade = get_min_amount_to_trade(init_OkxClient)
+        self.min_amount_to_trade = get_min_amount_to_trade(
+            init_OkxClient, 
+            path=os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'min_amount_to_trade.json')
+        )
 
     def setup_logger(self):
         """
@@ -55,7 +58,7 @@ class OkexExecutionEngine:
             if symbol.find('-') == -1:
                 symbol = f'{symbol.upper()}-USDT-SWAP'
             self.okex_spot.symbol = symbol
-            response = self.okex_spot.get_posistion()[0]
+            response = self.okex_spot.get_position()[0]
             # 如果API返回的代码不是'0'，记录错误消息
             if response['code'] == '0' and response['data']:  # 确保响应代码为'0'且有数据
                 data = response['data'][0]
@@ -288,9 +291,9 @@ class OkexExecutionEngine:
                 pass
             else:
                 if epoch == len(coins) // batch_size:
-                    position_infos = self.okex_spot.get_posistion(','.join(coins[i * 10:]))[0]['data']
+                    position_infos = self.okex_spot.get_position(','.join(coins[i * 10:]))[0]['data']
                 else:
-                    position_infos = self.okex_spot.get_posistion(','.join(coins[i * 10: i * 10 + 10]))[0]['data']
+                    position_infos = self.okex_spot.get_position(','.join(coins[i * 10: i * 10 + 10]))[0]['data']
             for data in position_infos:
                 try:
                     position_info = {
@@ -376,19 +379,18 @@ class OkexExecutionEngine:
                 pass
             else:
                 if epoch == len(coins) // batch_size:
-                    position_infos = self.okex_spot.get_posistion(','.join(coins[i * 10:]))[0]['data']
+                    position_infos = self.okex_spot.get_position(','.join(coins[i * 10:]))[0]['data']
                 else:
-                    position_infos = self.okex_spot.get_posistion(','.join(coins[i * 10: i * 10 + 10]))[0]['data']
+                    position_infos = self.okex_spot.get_position(','.join(coins[i * 10: i * 10 + 10]))[0]['data']
             for x in position_infos:
                 if float(x['pos']) != 0:
                     all_pos_info[x['instId']] = x
-        print(all_pos_info.keys())
+        print('all_pos_info.keys: ', all_pos_info.keys())
         for coin, usdt_amount in zip(coins, usdt_amounts):
             try:
                 symbol_full = f"{coin.upper()}-USDT-SWAP"
                 # exchange = init_OkxClient(coin)
                 data = all_pos_info.get(symbol_full, None)
-
                 if not data:
                     print('！！！！！！！！！！还没开仓呢哥！')
                     self.monitor.record_operation("SetCoinPosition KaiCang", self.strategy_detail,

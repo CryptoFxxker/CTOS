@@ -280,7 +280,7 @@ class OkexSpot:
         )
         return result[0]['data'][0]
 
-    def get_posistion(self, symbol=None):
+    def get_position(self, symbol=None):
         if not symbol:
             params = {"instId": self.symbol}
         else:

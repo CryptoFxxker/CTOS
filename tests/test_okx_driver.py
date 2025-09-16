@@ -99,12 +99,12 @@ try:
 except Exception as e:
     print("[TEST] after call: fetch_balance raised:", e)
 
-print("[TEST] before call: get_posistion")
+print("[TEST] before call: get_position")
 try:
-    res = okx.get_posistion('ETH-USDT-SWAP')
-    print("[TEST] after call: get_posistion ->", res)
+    res = okx.get_position('ETH-USDT-SWAP')
+    print("[TEST] after call: get_position ->", res)
 except Exception as e:
-    print("[TEST] after call: get_posistion raised:", e)
+    print("[TEST] after call: get_position raised:", e)
 
 print("[TEST] before call: symbols")
 try:

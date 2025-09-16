@@ -20,7 +20,7 @@ if __name__ == '__main__':
     # print(bp.get_order_status(symbol='ETH_USDC_PERP', order_id=order_id))
 
     # print(bp.revoke_order(order_id=order_id, symbol='ETH_USDC_PERP'))
-    pos, _ = bp.get_posistion()
+    pos, _ = bp.get_position()
     print(json.dumps(pos, indent=4))
 
     now_position = {x['symbol']:float(x['netCost']) for x in pos}

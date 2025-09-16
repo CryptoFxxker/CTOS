@@ -99,7 +99,7 @@ ctos/
   - `cancel_all(symbol)`：撤销指定交易对的全部未完成订单
 - 账户/仓位：
   - `fetch_balance(currency)`：返回全部或指定币种余额（大小写不敏感）
-  - `get_posistion(symbol=None)`：返回全部或指定交易对的仓位信息
+  - `get_position(symbol=None)`：返回全部或指定交易对的仓位信息
 
 ---
 

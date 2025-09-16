@@ -14,7 +14,17 @@ fi
 
 # 2. 选择 commit 类型
 echo "请选择 commit 类型:"
-options=("feat" "fix" "docs" "style" "refactor" "perf" "test" "chore" "ci")
+options=(
+  "feat     → ✨ 新功能 (feature)"
+  "fix      → 🐛 修复 bug"
+  "docs     → 📚 文档修改"
+  "style    → 💅 格式调整（不影响逻辑，如缩进、空格）"
+  "refactor → ♻️ 代码重构（非新增功能或修 bug）"
+  "perf     → ⚡ 性能优化"
+  "test     → ✅ 增加或修改测试"
+  "chore    → 🔧 构建/工具相关的改动（无源码影响）"
+  "ci       → 🤖 CI/CD 配置修改"
+)
 select type in "${options[@]}"; do
     if [[ -n "$type" ]]; then
         break
@@ -58,3 +68,4 @@ if [[ "$confirm" != "n" && "$confirm" != "N" ]]; then
 else
     echo "❌ 已取消提交"
 fi
+	

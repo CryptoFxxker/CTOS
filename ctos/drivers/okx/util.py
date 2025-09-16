@@ -203,6 +203,10 @@ def load_para(name='parameters.txt'):
 
 def save_para(paras, name='parameters.txt'):
     string = json.dumps(paras, indent=4)
+    if os.path.exists(name):
+        with open(name, 'w', encoding='utf8') as log:
+            log.write(string)
+        return 
     with open(f'trade_log_okex/{name}', 'w', encoding='utf8') as log:
         log.write(string)
 
@@ -375,8 +379,8 @@ rate_price2order = {
 
 
 
-def get_min_amount_to_trade(get_okexExchage):
-    min_amount_to_trade = load_para('min_amount_to_trade.json')
+def get_min_amount_to_trade(get_okexExchage, path='min_amount_to_trade.json'):
+    min_amount_to_trade = load_para(path)
     print(min_amount_to_trade)
     need_to_update = False
     for k in rate_price2order.keys():
@@ -406,5 +410,5 @@ def get_min_amount_to_trade(get_okexExchage):
                 if deincrease_times > 0:
                     deincrease_times -= 1
                 min_amount_to_trade[coin] = deincrease_times
-        save_para(min_amount_to_trade, 'min_amount_to_trade.json')
+        save_para(min_amount_to_trade, path)
     return min_amount_to_trade

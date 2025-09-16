@@ -31,7 +31,7 @@ OKX Driver 测试输出快照
 
 - 账户与仓位
   - fetch_balance: ✅ 通过 — 示例 USDT 余额 3097.7631607182693
-  - get_posistion: ✅ 通过 — 返回包含 avgPx/markPx/lever/upl 等字段
+  - get_position: ✅ 通过 — 返回包含 avgPx/markPx/lever/upl 等字段
 
 - 交易所信息
   - symbols: ✅ 通过 — 示例 ['BTC-USDT', 'ETH-USDT', 'SOL-USDT']

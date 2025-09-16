@@ -77,11 +77,11 @@ def main():
     append_log(out_lines, "  type:", type(oo))
     append_log(out_lines, "  ", str(oo)[:300])
 
-    append_log(out_lines, "[TEST] get_posistion()")
-    pos_all, perr = bp.get_posistion()
+    append_log(out_lines, "[TEST] get_position()")
+    pos_all, perr = bp.get_position()
     append_log(out_lines, "  all error:", perr)
     append_log(out_lines, "  all sample:", str(pos_all)[:300])
-    pos_one, perr2 = bp.get_posistion(symbol)
+    pos_one, perr2 = bp.get_position(symbol)
     append_log(out_lines, "  one error:", perr2)
     append_log(out_lines, "  one:", str(pos_one)[:300])
 

@@ -525,7 +525,7 @@ class BackpackDriver(TradingSyscalls):
                 return e
         raise NotImplementedError("Account.get_balances unavailable")
 
-    def get_posistion(self, symbol=None, window=None):
+    def get_position(self, symbol=None, window=None):
         """
         获取当前仓位。
         - symbol 为空: 返回全部仓位
@@ -581,7 +581,7 @@ class BackpackDriver(TradingSyscalls):
         :param side: "long" 仅平多仓, "short" 仅平空仓, None 表示不限
         :param is_good: True 仅平盈利仓, False 仅平亏损仓, None 表示不限
         """
-        positions = self.get_posistion(symbol=symbol)  # 获取所有仓位信息
+        positions = self.get_position(symbol=symbol)  # 获取所有仓位信息
         
         if not positions:
             print("✅ 当前无持仓")

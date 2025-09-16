@@ -84,7 +84,7 @@ test_results = {
         "description": "成功获取未完成订单列表（当前无订单）"
     },
     
-    "get_posistion": {
+    "get_position": {
         "status": "✅ 通过",
         "all_positions": {
             "error": None,
