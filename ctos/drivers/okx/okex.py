@@ -13,6 +13,27 @@ import hmac
 import base64
 import random
 
+
+def _add_bpx_path():
+    """添加bpx包路径到sys.path，支持多种运行方式"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    bpx_path = os.path.join(current_dir, 'bpx')
+    
+    # 添加当前目录的bpx路径
+    if bpx_path not in sys.path:
+        sys.path.insert(0, bpx_path)
+    
+    # 添加项目根目录的bpx路径（如果存在）
+    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
+    root_bpx_path = os.path.join(project_root, 'bpx')
+    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+        sys.path.insert(0, root_bpx_path)
+    if os.path.exists(project_root) and project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+# 执行路径添加
+_add_bpx_path()
+
 try:
     # 优先：绝对导入（当项目以包方式安装/运行时）
     from ctos.drivers.okx.util import *
@@ -275,10 +296,24 @@ class OkexSpot:
        :param currency: e.g. "USDT", "BTC"
        """
         params = {"instType": instType, "instId": symbol}
-        result = self.request(
+        result, err = self.request(
             "GET", "/api/v5/account/trade-fee", params=params, auth=True
         )
-        return result[0]['data'][0]
+        print(result)
+        return result['data'], err
+
+    def get_funding_rate(self, symbol='ETH-USDT-SWAP', instType='SPOT'):
+        """
+        获取当前资金费率
+        HTTP: GET /api/v5/public/funding-rate
+        :param symbol: 交易对，例如 'ETH-USDT-SWAP'；为空则使用当前实例的 symbol
+        :return: (result, error)
+        """
+        inst_id = symbol if symbol else self.symbol
+        uri = "/api/v5/public/funding-rate"
+        params = {"instId": inst_id}
+        success, error = self.request(method="GET", uri=uri, params=params)
+        return success, error
 
     def get_position(self, symbol=None):
         if not symbol:
@@ -417,7 +452,7 @@ class OkexSpot:
         if error:
             return order_id, error
         else:
-            return order_id, None
+            return True, None
 
     def transfer_money(self, usdt_amount, direction='z2j'):
         """
@@ -475,14 +510,12 @@ class OkexSpot:
                 success.append(order_id)
         return success, error
 
-    def get_open_orders(self, instType='SPOT', symbol='ETH-USDT-SWAP'):
+    def get_open_orders(self, instType='SPOT', symbol='ETH-USDT-SWAP', onlyOrderId=True):
 
         """Get all unfilled orders.
        * NOTE: up to 100 orders
        """
         symbol = self.symbol if not symbol else symbol
-        if symbol == 'ETH-BTC':
-            instType = 'MARGIN'
         uri = "/api/v5/trade/orders-pending"
         params = {"instType": instType, "instId": symbol}
         success, error = self.request(method="GET", uri=uri, params=params, auth=True)
@@ -492,7 +525,10 @@ class OkexSpot:
             order_ids = []
             if success.get("data"):
                 for order_info in success["data"]:
-                    order_ids.append(order_info["ordId"])
+                    if onlyOrderId:
+                        order_ids.append(order_info["ordId"])
+                    else:
+                        order_ids.append(order_info)
             return order_ids, None
 
     def amend_order(self, price=None, quantity=None, orderId=None):
@@ -517,7 +553,7 @@ class OkexSpot:
             return None, error
         return success["data"][0]["ordId"], error
 
-    def get_market(self, instId='', all=False, amountLimit=5000000, condition=None):
+    def get_market(self, instId='', all=False, condition='SWAP'):
         """Get all unfilled orders.
        * NOTE: up to 100 orders
        """
@@ -541,10 +577,6 @@ class OkexSpot:
             if success.get("data"):
                 for x in success["data"]:
                     if condition and x['instId'].find(condition) == -1:
-                        continue
-                    if (float(x['last']) * float(x['volCcy24h']) <= amountLimit):
-                        continue
-                    if (float(x['last']) - float(x['sodUtc8'])) / float(x['sodUtc8']) * 100 < 0:
                         continue
                     ccy_datas.append(x)
             return ccy_datas, None

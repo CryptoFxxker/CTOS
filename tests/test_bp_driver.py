@@ -4,106 +4,152 @@
 import os
 import sys
 from pathlib import Path
-from datetime import datetime
 
+# Ensure project root (which contains the `ctos/` package directory) is on sys.path
 _THIS_FILE = Path(__file__).resolve()
 _PROJECT_ROOT = _THIS_FILE.parents[1]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from ctos.drivers.backpack.driver import BackpackDriver
+from ctos.drivers.okx.util import align_decimal_places
 
 
-def append_log(buf, *parts):
-    line = " ".join(str(p) for p in parts)
-    print(line)
-    buf.append(line)
+bp = BackpackDriver(mode=os.getenv("BP_TEST_MODE", "perp"))
 
+symbol = os.getenv("BP_TEST_SYMBOL", "ETH_USDC_PERP")
 
-def main():
-    out_lines = []
-    append_log(out_lines, "[BP] Test start:", datetime.utcnow().isoformat())
+print(bp)
 
-    mode = os.getenv("BP_TEST_MODE", "perp")
-    symbol = os.getenv("BP_TEST_SYMBOL", "ETH_USDC_PERP" if mode == "perp" else "ETH_USDC")
+print("[BP_TEST] before call: get_price_now")
+try:
+    res = bp.get_price_now(symbol)
+    print("[BP_TEST] after call: get_price_now ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: get_price_now raised:", e)
 
-    bp = BackpackDriver(mode=mode)
+print("[BP_TEST] before call: get_orderbook")
+try:
+    res = bp.get_orderbook(symbol, level=1)['symbol']
+    print("[BP_TEST] after call: get_orderbook ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: get_orderbook raised:", e)
 
-    append_log(out_lines, "[TEST] symbols()")
-    syms, err = bp.symbols()
-    append_log(out_lines, "  error:", err)
-    append_log(out_lines, "  count:", len(syms) if syms else 0)
-    append_log(out_lines, "  sample:", (syms or [])[:10])
+print("[BP_TEST] before call: get_klines")
+try:
+    res = bp.get_klines(symbol, timeframe=os.getenv("BP_TEST_TIMEFRAME", "1h"), limit=int(os.getenv("BP_TEST_LIMIT", "20")))
+    print("[BP_TEST] after call: get_klines ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: get_klines raised:", e)
 
-    append_log(out_lines, "[TEST] get_price_now()")
+print("[BP_TEST] before call: place_order")
+try:
+    last = None
     try:
-        price = bp.get_price_now(symbol)
-        append_log(out_lines, "  price:", price)
-    except Exception as e:
-        append_log(out_lines, "  error:", e)
-        price = None
-
-    append_log(out_lines, "[TEST] get_orderbook()")
-    try:
-        ob = bp.get_orderbook(symbol, level=5)
-        append_log(out_lines, "  bids/asks:", len(ob.get('bids', [])), len(ob.get('asks', [])))
-    except Exception as e:
-        append_log(out_lines, "  error:", e)
-
-    append_log(out_lines, "[TEST] get_klines()")
-    k, kerr = bp.get_klines(symbol, timeframe=os.getenv("BP_TEST_TIMEFRAME", "15m"), limit=int(os.getenv("BP_TEST_LIMIT", "5")))
-    append_log(out_lines, "  error:", kerr)
-    try:
-        import pandas as pd  # noqa
-        if hasattr(k, "head"):
-            append_log(out_lines, "  head:\n" + str(k.head()))
-        else:
-            append_log(out_lines, "  first:", (k or [])[:2])
+        last = bp.get_price_now(symbol)
     except Exception:
-        append_log(out_lines, "  first:", (k or [])[:2] if isinstance(k, list) else k)
+        pass
+    price = align_decimal_places(last, last * 0.9  if isinstance(last, (int, float)) else None)
+    res = bp.place_order(symbol, side='buy', order_type='limit' if price else 'market', size=0.01, price=price)
+    order_id, err = res
+    print("[BP_TEST] after call: place_order ->", res)
+except Exception as e:
+    order_id = None
+    print("[BP_TEST] after call: place_order raised:", e)
 
-    append_log(out_lines, "[TEST] fees()")
-    fees, ferr = bp.fees(symbol)
-    append_log(out_lines, "  error:", ferr)
-    append_log(out_lines, "  latest:", (fees or {}).get('latest'))
+print("[BP_TEST] before call: amend_order")
+try:
+    if order_id:
+        last = bp.get_price_now(symbol)
+        res = bp.amend_order(order_id, symbol=symbol, price=align_decimal_places(last, last * 0.88))
+        order_id, err = res
+        print("[BP_TEST] after call: amend_order ->", res)
+    else:
+        print("[BP_TEST] amend_order skipped: no order_id")
+except Exception as e:
+    print("[BP_TEST] after call: amend_order raised:", e)
 
-    append_log(out_lines, "[TEST] fetch_balance()")
-    bal = bp.fetch_balance('USDC')
-    append_log(out_lines, "  USDC:", bal)
+print("[BP_TEST] before call: get_order_status")
+try:
+    if order_id:
+        res = bp.get_order_status(order_id, symbol=symbol, keep_origin=False)
+        print("[BP_TEST] after call: get_order_status ->", res)
+    else:
+        print("[BP_TEST] get_order_status skipped: no order_id")
+except Exception as e:
+    print("[BP_TEST] after call: get_order_status raised:", e)
 
-    append_log(out_lines, "[TEST] get_open_orders()")
-    oo, oerr = bp.get_open_orders(symbol)
-    append_log(out_lines, "  error:", oerr)
-    append_log(out_lines, "  type:", type(oo))
-    append_log(out_lines, "  ", str(oo)[:300])
-
-    append_log(out_lines, "[TEST] get_position()")
-    pos_all, perr = bp.get_position()
-    append_log(out_lines, "  all error:", perr)
-    append_log(out_lines, "  all sample:", str(pos_all)[:300])
-    pos_one, perr2 = bp.get_position(symbol)
-    append_log(out_lines, "  one error:", perr2)
-    append_log(out_lines, "  one:", str(pos_one)[:300])
-
-    # 写入 README_bp.py
-    readme_path = _PROJECT_ROOT / "tests" / "README_bp.py"
-    try:
-        with open(readme_path, "w", encoding="utf-8") as f:
-            f.write("# -*- coding: utf-8 -*-\n")
-            f.write("\n")
-            f.write("""
-                    BP Driver Test Output Snapshot
-                    --------------------------------
-                    """
-                    )
-            for line in out_lines:
-                f.write(str(line) + "\n")
-        append_log(out_lines, "[BP] Wrote:", str(readme_path))
-    except Exception as e:
-        append_log(out_lines, "[BP] Write README_bp.py failed:", e)
+print("[BP_TEST] before call: get_open_orders only Orderids")
+try:
+    res = bp.get_open_orders(symbol='eth', keep_origin=False)
+    print("[BP_TEST] after call: get_open_orders ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: get_open_orders raised:", e)
 
 
-if __name__ == "__main__":
-    main()
+print("[BP_TEST] before call: get_open_orders all infos")
+try:
+    res = bp.get_open_orders(symbol='eth', onlyOrderId=False, keep_origin=False)
+    print("[BP_TEST] after call: get_open_orders ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: get_open_orders raised:", e)
 
 
+print("[BP_TEST] before call: revoke_order")
+try:
+    if order_id:
+        res = bp.revoke_order(order_id, symbol=symbol)
+        print("[BP_TEST] after call: revoke_order ->", res)
+    else:
+        print("[BP_TEST] revoke_order skipped: no order_id")
+except Exception as e:
+    print("[BP_TEST] after call: revoke_order raised:", e)
+
+print("[BP_TEST] before call: cancel_all (no symbol)")
+try:
+    res = bp.cancel_all()
+    print("[BP_TEST] after call: cancel_all (no symbol) ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: cancel_all (no symbol) raised:", e)
+
+print("[BP_TEST] before call: cancel_all (with symbol)")
+try:
+    res = bp.cancel_all(symbol)
+    print("[BP_TEST] after call: cancel_all (with symbol) ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: cancel_all (with symbol) raised:", e)
+
+print("[BP_TEST] before call: fetch_balance")
+try:
+    res = bp.fetch_balance('USDC')
+    print("[BP_TEST] after call: fetch_balance ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: fetch_balance raised:", e)
+
+print("[BP_TEST] before call: get_position")
+try:
+    res = bp.get_position(symbol, keep_origin=False)
+    print("[BP_TEST] after call: get_position ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: get_position raised:", e)
+
+print("[BP_TEST] before call: symbols")
+try:
+    res = bp.symbols()[0][:10]
+    print("[BP_TEST] after call: symbols ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: symbols raised:", e)
+
+print("[BP_TEST] before call: exchange_limits")
+try:
+    res = bp.exchange_limits()
+    print("[BP_TEST] after call: exchange_limits ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: exchange_limits raised:", e)
+
+print("[BP_TEST] before call: fees")
+try:
+    res = bp.fees(symbol)
+    print("[BP_TEST] after call: fees ->", res)
+except Exception as e:
+    print("[BP_TEST] after call: fees raised:", e)

@@ -82,23 +82,98 @@ class OkxDriver(TradingSyscalls):
         return full, base.lower(), quote.upper()
 
     # -------------- ref-data / meta --------------
-    def symbols(self):
-        # Provide a tiny default. Replace with a real call if your okex.py exposes one.
-        return ["BTC-USDT", "ETH-USDT", "SOL-USDT"]
+    def symbols(self, instType='SWAP'):
+        """
+        返回指定类型的交易对列表。
+        :param instType: 'SWAP' | 'SPOT' | 'MARGIN' 等，默认 'SWAP'
+        :return: list[str]，如 ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', ...]
+        """
+        if not hasattr(self.okx, 'get_market'):
+            # 兜底：无法从底层获取时，返回少量默认
+            return ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP"] if str(instType).upper() == 'SWAP' else ["BTC-USDT", "ETH-USDT", "SOL-USDT"]
+
+        try:
+            condition = str(instType).upper() if instType else None
+            data, err = self.okx.get_market(instId='', all=True, condition=condition)
+            if err:
+                # 出错时返回空列表
+                return [], err
+            # 提取并去重
+            symbols = []
+            seen = set()
+            for item in data or []:
+                inst_id = item.get('instId') if isinstance(item, dict) else None
+                if not inst_id:
+                    continue
+                if condition and condition not in inst_id:
+                    continue
+                if inst_id not in seen:
+                    seen.add(inst_id)
+                    symbols.append(inst_id)
+            return symbols, None
+        except Exception as e:
+            return [], e
 
     def exchange_limits(self):
         return {"price_scale": self.price_scale, "size_scale": self.size_scale}
 
-    def fees(self, symbol='ETH-USDT-SWAP', instType='SPOT'):
-        # If your okex client exposes real fees, put them here.
+    def fees(self, symbol='ETH-USDT-SWAP', instType='SWAP', keep_origin=False):
+        """
+        统一资金费率返回结构，标准化为“每小时资金费率”。
+        返回:
+          ({
+             'symbol': str,
+             'instType': str,
+             'fundingRate_hourly': float,   # 每小时
+             'fundingRate_period': float,   # 原始周期费率
+             'period_hours': float,         # 原始周期长度(小时)
+             'fundingTime': int,            # 当前结算或下一次结算时间戳(ms)，按OKX
+             'raw': Any
+          }, None) 或 (None, err)
+        """
         full, _, _ = self._norm_symbol(symbol)
-        if not hasattr(self.okx, "get_fee"):
-            raise NotImplementedError("okex.py client lacks get_fee(symbol, instType)")
-        raw, err = self.okx.get_fee(full, instType)
-        if not err:
+        if not hasattr(self.okx, "get_funding_rate"):
+            raise NotImplementedError("okex.py client lacks get_funding_rate(symbol, instType)")
+
+        raw, err = self.okx.get_funding_rate(full, instType)
+        if keep_origin:
             return raw, err
-        else:
+        if err:
             return None, err
+
+        try:
+            # OKX 风格 raw: {'code': '0', 'data': [{ 'instId', 'instType', 'fundingRate', 'fundingTime', 'nextFundingRate', 'nextFundingTime', ... }], 'msg': ''}
+            data_list = None
+            if isinstance(raw, dict):
+                data_list = raw.get('data')
+            if isinstance(data_list, list) and data_list:
+                d0 = data_list[0]
+                fr_period = float(d0.get('fundingRate')) if d0.get('fundingRate') not in (None, '') else 0.0
+
+                # 推断周期：使用 nextFundingTime - fundingTime，若不可用，OKX 永续通常8小时一结
+                ts = d0.get('fundingTime') or d0.get('ts')
+                nts = d0.get('nextFundingTime')
+                if ts is not None and nts is not None:
+                    period_hours = max(1.0, (float(nts) - float(ts)) / 1000.0 / 3600.0)
+                else:
+                    period_hours = 8.0
+
+                hourly = fr_period / period_hours if period_hours else fr_period
+                result = {
+                    'symbol': d0.get('instId', full),
+                    'instType': d0.get('instType', instType),
+                    'fundingRate_hourly': hourly,
+                    'fundingRate_period': fr_period,
+                    'period_hours': period_hours,
+                    'fundingTime': int(d0.get('fundingTime') or d0.get('ts') or 0),
+                    'raw': raw,
+                }
+                return result, None
+
+            # 回退：原样返回
+            return {'symbol': full, 'instType': instType, 'fundingRate_hourly': None, 'fundingRate_period': None, 'period_hours': None, 'fundingTime': None, 'raw': raw}, None
+        except Exception as e:
+            return None, e
 
     # -------------- market data --------------
     def get_price_now(self, symbol='ETH-USDT-SWAP'):
@@ -210,16 +285,125 @@ class OkxDriver(TradingSyscalls):
             return success, error
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
-    def get_order_status(self, order_id):
+    def get_order_status(self, order_id, keep_origin=True):
         if hasattr(self.okx, "get_order_status"):
             success, error = self.okx.get_order_status(order_id=order_id)
-            return success, error
+            if keep_origin:
+                return success, error
+
+            if error:
+                return None, error
+
+            od = None
+            if isinstance(success, dict):
+                # OKX 返回 {'code': '0', 'data': [ {...order...} ], 'msg': ''}
+                data_list = success.get('data')
+                if isinstance(data_list, list) and data_list:
+                    od = data_list[0]
+                else:
+                    # 兜底：若直接就是订单对象
+                    od = success
+            if not isinstance(od, dict):
+                return None, None
+
+            def _val(k):
+                v = od.get(k)
+                return v
+
+            def _float(v):
+                try:
+                    return float(v)
+                except Exception:
+                    return None
+
+            normalized = {
+                'orderId': _val('ordId'),
+                'symbol': _val('instId'),
+                'side': (str(_val('side')).lower() if _val('side') is not None else None),
+                'orderType': (str(_val('ordType')).lower() if _val('ordType') is not None else None),
+                'price': _float(_val('px')),
+                'quantity': _float(_val('sz')),
+                'filledQuantity': _float(_val('accFillSz') or _val('fillSz') or 0.0),
+                'status': _val('state'),
+                'timeInForce': _val('timeInForce') or _val('tif'),
+                'postOnly': _val('postOnly'),
+                'reduceOnly': _val('reduceOnly'),
+                'clientId': _val('clOrdId'),
+                'createdAt': int(_val('cTime') or 0) if _val('cTime') else None,
+                'updatedAt': int(_val('uTime') or 0) if _val('uTime') else None,
+                'raw': od,
+            }
+            return normalized, None
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
-    def get_open_orders(self, instType='SWAP', symbol='ETH-USDT-SWAP'):
+    def get_open_orders(self, symbol='ETH-USDT-SWAP', instType='SWAP', onlyOrderId=True, keep_origin=True):
         if hasattr(self.okx, "get_open_orders"):
-            success, error = self.okx.get_open_orders(instType=instType, symbol=symbol)
-            return success, error
+            success, error = self.okx.get_open_orders(instType=instType, symbol=symbol, onlyOrderId=onlyOrderId)
+            if onlyOrderId or keep_origin:
+                return success, error
+
+            if error:
+                return None, error
+
+            # success 应为 list[dict]
+            orders = success or []
+            normalized = []
+            for od in orders:
+                if not isinstance(od, dict):
+                    continue
+                def _f(key, default=None):
+                    v = od.get(key)
+                    return v if v is not None else default
+                # 解析字段
+                order_id = _f('ordId')
+                sym = _f('instId')
+                side = str(_f('side', '')).lower() or None
+                order_type = str(_f('ordType', '')).lower() or None
+                try:
+                    price = float(_f('px')) if _f('px') not in (None, '') else None
+                except Exception:
+                    price = None
+                try:
+                    qty = float(_f('sz')) if _f('sz') not in (None, '') else None
+                except Exception:
+                    qty = None
+                # 成交数量：优先 accFillSz，其次 fillSz
+                try:
+                    filled = float(_f('accFillSz') or _f('fillSz') or 0.0)
+                except Exception:
+                    filled = None
+                status = _f('state')
+                tif = _f('timeInForce') or _f('tif')  # OKX无明确字段时留空
+                post_only = _f('postOnly')
+                reduce_only = _f('reduceOnly')
+                client_id = _f('clOrdId')
+                try:
+                    created_at = int(_f('cTime') or 0)
+                except Exception:
+                    created_at = None
+                try:
+                    updated_at = int(_f('uTime') or 0)
+                except Exception:
+                    updated_at = None
+
+                normalized.append({
+                    'orderId': order_id,
+                    'symbol': sym,
+                    'side': side,
+                    'orderType': order_type,
+                    'price': price,
+                    'quantity': qty,
+                    'filledQuantity': filled,
+                    'status': status,
+                    'timeInForce': tif,
+                    'postOnly': post_only,
+                    'reduceOnly': reduce_only,
+                    'clientId': client_id,
+                    'createdAt': created_at,
+                    'updatedAt': updated_at,
+                    'raw': od,
+                })
+            return normalized, None
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
     def cancel_all(self, symbol='ETH-USDT-SWAP'):
@@ -257,12 +441,80 @@ class OkxDriver(TradingSyscalls):
                 return e
         raise NotImplementedError("okex.py client lacks fetch_balance")
 
-    def get_position(self, symbol=None):
+    def get_position(self, symbol=None, keep_origin=True):
         if hasattr(self.okx, "get_position"):
             try:
-                result = self.okx.get_position(symbol)
-                return result
-            except Exception:
-                return None
+                success, error = self.okx.get_position(symbol)
+                if keep_origin:
+                    return success, error
+
+                if error:
+                    return None, error
+
+                # 统一结构：list[{
+                #   symbol, positionId, side, quantity, entryPrice, markPrice,
+                #   pnlUnrealized, pnlRealized, leverage, liquidationPrice, ts
+                # }]
+                unified = []
+                data = None
+                if isinstance(success, dict):
+                    data = success.get('data')
+                if isinstance(data, list):
+                    for d in data:
+                        try:
+                            qty = float(d.get('pos') or 0.0)
+                        except Exception:
+                            qty = 0.0
+                        side = 'long' if qty > 0 else ('short' if qty < 0 else 'flat')
+                        try:
+                            entry = float(d.get('avgPx') or d.get('nonSettleAvgPx') or 0.0)
+                        except Exception:
+                            entry = None
+                        try:
+                            mark = float(d.get('markPx') or d.get('last') or 0.0)
+                        except Exception:
+                            mark = None
+                        try:
+                            upl = float(d.get('upl') or 0.0)
+                        except Exception:
+                            upl = None
+                        try:
+                            realized = float(d.get('realizedPnl') or d.get('settledPnl') or 0.0)
+                        except Exception:
+                            realized = None
+                        try:
+                            lev = float(d.get('lever') or 0.0)
+                        except Exception:
+                            lev = None
+                        try:
+                            liq = float(d.get('liqPx') or 0.0) if d.get('liqPx') not in (None, '') else None
+                        except Exception:
+                            liq = None
+                        try:
+                            ts = int(d.get('uTime') or d.get('cTime') or 0)
+                        except Exception:
+                            ts = None
+                        unified.append({
+                            'symbol': d.get('instId'),
+                            'positionId': d.get('posId'),
+                            'side': side,
+                            'quantity': abs(qty),
+                            'entryPrice': entry,
+                            'markPrice': mark,
+                            'pnlUnrealized': upl,
+                            'pnlRealized': realized,
+                            'leverage': lev,
+                            'liquidationPrice': liq,
+                            'ts': ts,
+                        })
+
+                if symbol and isinstance(unified, list):
+                    # 筛选单个 symbol
+                    for u in unified:
+                        if str(u.get('symbol')).upper() == str(symbol).upper():
+                            return u, None
+                return unified, None
+            except Exception as e:
+                return None, e
         raise NotImplementedError("okex.py client lacks get_position")
 

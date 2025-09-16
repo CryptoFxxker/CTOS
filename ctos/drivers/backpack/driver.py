@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+from ast import main
 import os
 import time
 from datetime import datetime, timezone
@@ -32,14 +33,28 @@ def _add_bpx_path():
 # 执行路径添加
 _add_bpx_path()
 
+# Import Backpack clients (robust to different execution contexts)
 try:
-    from .bpx.account import Account
-    from .bpx.public import Public
-except ImportError as e:
-    print(f'Error importing bpx clients: {e}')
-    print(f'Current sys.path: {sys.path[:3]}...')  # 只显示前3个路径
-    Account = object  # fallback for static analyzers
-    Public = object
+    # When imported as part of the package
+    from .bpx.account import Account  # type: ignore
+    from .bpx.public import Public    # type: ignore
+except Exception:
+    try:
+        # When the full package is available in sys.path
+        from ctos.drivers.backpack.bpx.account import Account  # type: ignore
+        from ctos.drivers.backpack.bpx.public import Public    # type: ignore
+    except Exception as e:
+        # As a last resort, add the local folder so `bpx` can be found when running this file directly
+        backpack_dir = os.path.dirname(__file__)
+        if backpack_dir not in sys.path:
+            sys.path.append(backpack_dir)
+        try:
+            from bpx.account import Account  # type: ignore
+            from bpx.public import Public    # type: ignore
+        except Exception as e2:
+            print(f'Error importing bpx clients: {e2}')
+            print(f'Current sys.path: {sys.path}...')  # 只显示前3个路径
+            sys.exit(1)
 
 # Import syscall base
 try:
@@ -153,7 +168,7 @@ class BackpackDriver(TradingSyscalls):
             raise ValueError("Unsupported timeframe: %s" % timeframe)
 
     # -------------- ref-data / meta --------------
-    def symbols(self):
+    def symbols(self, instType='PERP'):
         """
         返回 (symbols, error)
         - 成功: (list[str], None)
@@ -178,11 +193,8 @@ class BackpackDriver(TradingSyscalls):
                     if sym:
                         raw_symbols.append(sym)
 
-            if self.mode == 'perp':
-                symbols = [s for s in raw_symbols if str(s).upper().endswith('_PERP')]
-            else:
-                symbols = [s for s in raw_symbols if not str(s).upper().endswith('_PERP')]
-
+            symbols = [s for s in raw_symbols if str(s).upper().endswith(instType.upper())]
+    
             return symbols, None
         except Exception as e:
             return None, e
@@ -191,28 +203,67 @@ class BackpackDriver(TradingSyscalls):
         # Unknown from Backpack; return empty or basic defaults
         return {}
 
-    def fees(self, symbol='ETH_USDC_PERP', instType='PERP', limit=3, offset=0):
+    def fees(self, symbol='ETH_USDC_PERP', instType='PERP', keep_origin=False, limit=3, offset=0):
         """
         获取资金费率信息。
         - 对于 Backpack，使用 Public.get_funding_interval_rates(symbol, limit, offset)
         - 返回 (result, error)
-        - 若返回列表，附带 latest 字段指向最新一条记录
+        - 统一返回结构到“每小时资金费率”。
         """
         if not hasattr(self.public, 'get_funding_interval_rates'):
             raise NotImplementedError('Public.get_funding_interval_rates unavailable')
 
         full, _, _ = self._norm_symbol(symbol)
         try:
-            raw = self.public.get_funding_interval_rates(full, int(limit), int(offset))
-            # 标准化输出，尽量提供 latest
-            result = { 'symbol': full, 'raw': raw }
+            raw, err = self.public.get_funding_interval_rates(full, int(limit), int(offset))
+            if keep_origin:
+                return raw, err
+            # 标准化输出，尽量提供 latest，并统一为每小时资金费率
+            latest = None
+            rows = None
+            if isinstance(raw, dict) and 'data' in raw:
+                rows = raw.get('data') or []
+            elif isinstance(raw, list):
+                rows = raw
+            rows = rows or []
+
+            if rows:
+                latest = rows[-1]
+            
+            # Backpack 单条字段示例: {'fundingRate': '0.0000125', 'intervalEndTimestamp': '2025-09-16T16:00:00', 'symbol': 'ETH_USDC_PERP'}
+            fr_period = None
+            period_hours = None
+            ts_ms = None
             try:
-                if isinstance(raw, dict) and 'data' in raw and isinstance(raw['data'], list) and raw['data']:
-                    result['latest'] = raw['data'][-1]
-                elif isinstance(raw, list) and raw:
-                    result['latest'] = raw[-1]
+                if latest and isinstance(latest, dict):
+                    fr_period = float(latest.get('fundingRate')) if latest.get('fundingRate') not in (None, '') else None
+                    # Backpack 返回的是按区间（通常1小时）结算的费率，时间在 intervalEndTimestamp
+                    tstr = latest.get('intervalEndTimestamp')
+                    if tstr:
+                        try:
+                            dt = datetime.strptime(str(tstr), '%Y-%m-%dT%H:%M:%S').replace(tzinfo=timezone.utc)
+                            ts_ms = int(dt.timestamp() * 1000)
+                        except Exception:
+                            ts_ms = None
+                    # 默认按1小时区间
+                    period_hours = 1.0
             except Exception:
                 pass
+
+            hourly = None
+            if fr_period is not None:
+                hourly = fr_period / (period_hours or 1.0)
+
+            result = {
+                'symbol': full,
+                'instType': instType,
+                'fundingRate_hourly': hourly,
+                'fundingRate_period': fr_period,
+                'period_hours': period_hours,
+                'fundingTime': ts_ms,
+                'raw': raw,
+                'latest': latest,
+            }
             return result, None
         except Exception as e:
             return None, e
@@ -369,12 +420,11 @@ class BackpackDriver(TradingSyscalls):
         # 1) 查单
         existing_order = None
         try:
-            od, oerr = self.get_order_status(full, order_id=order_id)
+            od, oerr = self.get_order_status(order_id=order_id, symbol=full)
             if oerr is None and od:
                 existing_order = od
         except Exception:
             existing_order = None
-
         # 2) 撤单
         ok, cerr = self.revoke_order(order_id, symbol=full)
         if not ok:
@@ -440,35 +490,79 @@ class BackpackDriver(TradingSyscalls):
         raise NotImplementedError("Account.cancel_order unavailable")
 
 
-    def get_order_status(self,  order_id=None, symbol='ETH_USDC_PERP', market_type=None, window=None):
+    def get_order_status(self,  order_id=None, symbol='ETH_USDC_PERP', market_type=None, window=None, keep_origin=True):
         full, _, _ = self._norm_symbol(symbol)
         if not hasattr(self.account, "get_open_order"):
             raise NotImplementedError("Account.get_open_order unavailable")
         try:
             resp = self.account.get_open_order(full, order_id=order_id)
-            if order_id is None:
-                return resp, None
-            # 过滤指定 order_id
-            if isinstance(resp, dict):
-                if str(resp.get('id')) == str(order_id):
+            if keep_origin:
+                if order_id is None:
                     return resp, None
+                # 过滤指定 order_id
+                if isinstance(resp, dict):
+                    if str(resp.get('id')) == str(order_id):
+                        return resp, None
+                    return None, None
+                if isinstance(resp, list):
+                    for od in resp:
+                        try:
+                            if str(od.get('id')) == str(order_id):
+                                return od, None
+                        except Exception:
+                            continue
+                    return None, None
                 return None, None
-            if isinstance(resp, list):
-                for od in resp:
+
+            # 统一结构
+            od = None
+            if isinstance(resp, dict):
+                od = resp
+            elif isinstance(resp, list):
+                for item in resp:
                     try:
-                        if str(od.get('id')) == str(order_id):
-                            return od, None
+                        if str(item.get('id')) == str(order_id):
+                            od = item
+                            break
                     except Exception:
                         continue
+            if not od:
                 return None, None
-            return None, None
+
+            def _f(v, cast=float):
+                try:
+                    return cast(v)
+                except Exception:
+                    return None
+
+            normalized = {
+                'orderId': od.get('id') or od.get('ordId'),
+                'symbol': od.get('symbol') or od.get('market') or od.get('instId'),
+                'side': (od.get('side') or '').lower() if od.get('side') else None,
+                'orderType': (od.get('orderType') or od.get('type') or '').lower() if (od.get('orderType') or od.get('type')) else None,
+                'price': _f(od.get('price')),
+                'quantity': _f(od.get('quantity')),
+                'filledQuantity': _f(od.get('executedQuantity')),
+                'status': od.get('status'),
+                'timeInForce': od.get('timeInForce') or od.get('time_in_force'),
+                'postOnly': od.get('postOnly') or od.get('post_only'),
+                'reduceOnly': od.get('reduceOnly') or od.get('reduce_only'),
+                'clientId': od.get('clientId') or od.get('client_id'),
+                'createdAt': _f(od.get('createdAt'), int),
+                'updatedAt': _f(od.get('triggeredAt'), int),
+                'raw': od,
+            }
+            return normalized, None
         except Exception as e:
             return None, e
 
-    def get_open_orders(self, symbol=None, market_type='PERP'):
+    def get_open_orders(self, symbol=None, instType='PERP', onlyOrderId=False, keep_origin=True):
         """
-        获取未完成订单列表，或按 order_id 过滤返回单个。
-        返回 (result, error)
+        获取未完成订单列表。
+        :param symbol: 指定交易对；为空则返回全部（若底层支持）
+        :param market_type: 市场类型，默认 'PERP'
+        :param onlyOrderId: True 则仅返回订单号列表；False 返回完整订单对象列表
+        :return: (result, error)
         """
         if hasattr(self.account, "get_open_orders"):
             try:
@@ -480,8 +574,84 @@ class BackpackDriver(TradingSyscalls):
                 else:
                     full = symbol
                 print(full)
-                resp = self.account.get_open_orders(market_type=market_type, symbol=full)
-                return resp, None
+                resp = self.account.get_open_orders(market_type=instType, symbol=full)
+
+                if onlyOrderId:
+                    order_ids = []
+                    # 兼容 list / dict 两种返回结构
+                    if isinstance(resp, list):
+                        for od in resp:
+                            try:
+                                oid = od.get('id') if isinstance(od, dict) else None
+                                if oid is not None:
+                                    order_ids.append(str(oid))
+                            except Exception:
+                                continue
+                    elif isinstance(resp, dict):
+                        data = resp.get('data')
+                        if isinstance(data, list):
+                            for od in data:
+                                try:
+                                    oid = od.get('id') if isinstance(od, dict) else None
+                                    if oid is not None:
+                                        order_ids.append(str(oid))
+                                except Exception:
+                                    continue
+                        else:
+                            # 单个订单或以键为订单号等情况
+                            oid = resp.get('id')
+                            if oid is not None:
+                                order_ids.append(str(oid))
+                    return order_ids, None
+
+                if keep_origin:
+                    return resp, None
+
+                # 统一结构输出 list[dict]
+                def to_norm(od):
+                    if not isinstance(od, dict):
+                        return None
+                    def _f(v, cast=float):
+                        try:
+                            return cast(v)
+                        except Exception:
+                            return None
+                    return {
+                        'orderId': od.get('id') or od.get('ordId'),
+                        'symbol': od.get('symbol') or od.get('market') or od.get('instId'),
+                        'side': (od.get('side') or '').lower() if od.get('side') else None,
+                        'orderType': (od.get('orderType') or od.get('type') or '').lower() if (od.get('orderType') or od.get('type')) else None,
+                        'price': _f(od.get('price')),  # str -> float
+                        'quantity': _f(od.get('quantity')),  # str -> float
+                        'filledQuantity': _f(od.get('executedQuantity')),  # str -> float
+                        'status': od.get('status'),
+                        'timeInForce': od.get('timeInForce') or od.get('time_in_force'),
+                        'postOnly': od.get('postOnly') or od.get('post_only'),
+                        'reduceOnly': od.get('reduceOnly') or od.get('reduce_only'),
+                        'clientId': od.get('clientId') or od.get('client_id'),
+                        'createdAt': _f(od.get('createdAt'), int),
+                        'updatedAt': _f(od.get('triggeredAt'), int),
+                        'raw': od,
+                    }
+
+                normalized = []
+                if isinstance(resp, list):
+                    for od in resp:
+                        n = to_norm(od)
+                        if n:
+                            normalized.append(n)
+                elif isinstance(resp, dict):
+                    data = resp.get('data')
+                    if isinstance(data, list):
+                        for od in data:
+                            n = to_norm(od)
+                            if n:
+                                normalized.append(n)
+                    else:
+                        n = to_norm(resp)
+                        if n:
+                            normalized.append(n)
+                return normalized, None
             except Exception as e:
                 return None, e
         else:
@@ -525,7 +695,7 @@ class BackpackDriver(TradingSyscalls):
                 return e
         raise NotImplementedError("Account.get_balances unavailable")
 
-    def get_position(self, symbol=None, window=None):
+    def get_position(self, symbol=None, window=None, keep_origin=True):
         """
         获取当前仓位。
         - symbol 为空: 返回全部仓位
@@ -537,35 +707,84 @@ class BackpackDriver(TradingSyscalls):
 
         try:
             resp = self.account.get_open_positions(window=window)
-            if not symbol:
-                return resp, None
-
-            full, _, _ = self._norm_symbol(symbol)
-
-            # 可能返回 list[dict] 或 dict
-            if isinstance(resp, list):
-                for pos in resp:
-                    try:
-                        ps = pos.get('symbol') or pos.get('market') or pos.get('instId')
-                        if ps and str(ps).upper() == full:
-                            return pos, None
-                    except Exception:
-                        continue
-                return None, None
-
-            if isinstance(resp, dict):
-                # 单个仓位或按 symbol 作为键
-                if 'symbol' in resp or 'market' in resp or 'instId' in resp:
-                    ps = resp.get('symbol') or resp.get('market') or resp.get('instId')
-                    if ps and str(ps).upper() == full:
-                        return resp, None
+            if keep_origin:
+                if not symbol:
+                    return resp, None
+                full, _, _ = self._norm_symbol(symbol)
+                # 可能返回 list[dict] 或 dict
+                if isinstance(resp, list):
+                    for pos in resp:
+                        try:
+                            ps = pos.get('symbol') or pos.get('market') or pos.get('instId')
+                            if ps and str(ps).upper() == full:
+                                return pos, None
+                        except Exception:
+                            continue
                     return None, None
-                # 若是 {symbol: position}
-                for k, v in resp.items():
-                    if str(k).upper() == full:
-                        return v, None
+                if isinstance(resp, dict):
+                    if 'symbol' in resp or 'market' in resp or 'instId' in resp:
+                        ps = resp.get('symbol') or resp.get('market') or resp.get('instId')
+                        if ps and str(ps).upper() == full:
+                            return resp, None
+                        return None, None
+                    for k, v in resp.items():
+                        if str(k).upper() == full:
+                            return v, None
+                    return None, None
                 return None, None
 
+            # 统一结构输出
+            def to_unified(pos):
+                try:
+                    qty = float(pos.get('netQuantity') or pos.get('netExposureQuantity') or pos.get('pos') or 0.0)
+                except Exception:
+                    qty = 0.0
+                side = 'long' if qty > 0 else ('short' if qty < 0 else 'flat')
+                def _f(v):
+                    try:
+                        return float(v)
+                    except Exception:
+                        return None
+                entry = _f(pos.get('entryPrice'))
+                mark = _f(pos.get('markPrice'))
+                upl = _f(pos.get('pnlUnrealized'))
+                realized = _f(pos.get('pnlRealized'))
+                lev = _f(pos.get('leverage'))
+                liq = _f(pos.get('estLiquidationPrice'))
+                # Backpack 未提供时间戳，置空
+                ts = None
+                return {
+                    'symbol': pos.get('symbol') or pos.get('market') or pos.get('instId'),
+                    'positionId': pos.get('positionId') or pos.get('posId'),
+                    'side': side,
+                    'quantity': abs(qty),
+                    'entryPrice': entry,
+                    'markPrice': mark,
+                    'pnlUnrealized': upl,
+                    'pnlRealized': realized,
+                    'leverage': lev,
+                    'liquidationPrice': liq,
+                    'ts': ts,
+                }
+
+            unified = None
+            if isinstance(resp, list):
+                unified = [to_unified(p) for p in resp]
+            elif isinstance(resp, dict):
+                # 单个或映射
+                if 'symbol' in resp or 'market' in resp or 'instId' in resp:
+                    unified = [to_unified(resp)]
+                else:
+                    unified = [to_unified(v) for _, v in resp.items()]
+            else:
+                unified = []
+
+            if not symbol:
+                return unified, None
+            full, _, _ = self._norm_symbol(symbol)
+            for u in unified:
+                if str(u.get('symbol')).upper() == full:
+                    return u, None
             return None, None
         except Exception as e:
             return None, e
@@ -635,3 +854,7 @@ class BackpackDriver(TradingSyscalls):
 
             else:
                 raise ValueError("mode 必须是 'market' 或 'limit'")
+
+if __name__ == "__main__":
+    bp = BackpackDriver()
+    print(bp.get_position())

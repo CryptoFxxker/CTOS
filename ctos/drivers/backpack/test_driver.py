@@ -33,8 +33,8 @@ if __name__ == '__main__':
     print(all_coins, len(all_coins))
 
 
-    while True:
-        time.sleep(3)
+    # while True:
+    #     time.sleep(3)
 
     with open('good_group.txt', 'r', encoding='utf8') as f:
         data = f.readlines()
@@ -44,12 +44,13 @@ if __name__ == '__main__':
         split_rate = {good_group[x + 1]: all_rate[x + 1] / sum(all_rate) for x in range(len(all_rate) - 1)}
 
 
-    init_operate_position = bp.fetch_balance()
+    init_operate_position = bp.fetch_balance() * 0.1
     new_rate_place2order = {k:v for k,v in rate_price2order.items() if k in all_coins}
 
     usdt_amounts = []
     coins_to_deal = []
     is_btc_failed = False
+    now_position = {}
     for coin in all_coins:
         time.sleep(0.2)
         if coin in good_group:
@@ -93,3 +94,5 @@ if __name__ == '__main__':
             order_id , err = bp.place_order(coin, 'buy', 'Limit', price=buy_price, size=abs(buy_quan))
             if err:
                 print(err, sell_price, sell_quan, coin)
+            else:
+                print(order_id, coin)
