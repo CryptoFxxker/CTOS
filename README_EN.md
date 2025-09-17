@@ -232,7 +232,7 @@ Would you like me to also add a **table of example commands** for running the st
 * **v0.3**
   Multi-exchange portfolio net asset management; real-time failover; hot restart; stronger indicators and UI
 
-* **🎉 Milestone (Today)**
+* **🎉 Milestone (2025.09.17)**
   ✅ Completed unified API design and abstraction for 2 exchanges.
   🚀 Achieved a significant milestone today: **AI-driven, system-call-based grid strategy code** has been generated, fine-tuned, and officially deployed!
   📂 Location: `apps/strategies/grid/Grid.py`
