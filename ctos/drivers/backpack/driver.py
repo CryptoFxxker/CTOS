@@ -107,6 +107,7 @@ class BackpackDriver(TradingSyscalls):
 
     def __init__(self, account_client=None, public_client=None, mode="perp", default_quote="USDC"):
         self.cex = 'Backpack'
+        self.quote_ccy = 'USDC'
         if account_client is None or public_client is None:
             acc, pub = init_BackpackClients()
             self.account = account_client or acc

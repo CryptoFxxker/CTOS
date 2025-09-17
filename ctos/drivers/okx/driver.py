@@ -58,6 +58,7 @@ class OkxDriver(TradingSyscalls):
     def __init__(self, okx_client=None, mode="swap", default_quote="USDT",
                  price_scale=1e-8, size_scale=1e-8):
         self.cex = 'OKX'
+        self.quote_ccy = 'USDT'
         """
         :param okx_client: Optional. An initialized client from okex.py (authenticated).
                            If None, will try to instantiate OkexSpot() with defaults.

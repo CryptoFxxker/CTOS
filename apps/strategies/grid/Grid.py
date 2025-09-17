@@ -83,8 +83,8 @@ def main():
     print(f"使用交易所: {exch}")
 
     # 符号
-    default_symbol = 'ETH-USDT-SWAP' if exch == 'okx' else 'ETH_USDC_PERP'
-    symbol = input(f"交易对 symbol (默认 {default_symbol}): ").strip() or default_symbol
+    default_symbol = 'eth'
+    symbol = input(f"交易对 symbol (默认 {driver._norm_symbol(default_symbol)}): ").strip() or driver._norm_symbol(default_symbol)
 
     # 获取中心价
     try:
@@ -119,7 +119,7 @@ def main():
             t0 = time.time()
             # 余额
             try:
-                quote_ccy = 'USDT' if 'USDT' in symbol or exch == 'okx' else 'USDC'
+                quote_ccy = driver.quote_ccy
                 balance = driver.fetch_balance(quote_ccy)
             except Exception as e:
                 print('??? fetch_balance: ', e)
@@ -157,10 +157,7 @@ def main():
     except KeyboardInterrupt:
         try:
             print('\n尝试撤销全部未完成订单...')
-            if exch == 'okx':
-                driver.cancel_all(symbol)
-            else:
-                driver.cancel_all(symbol)
+            driver.cancel_all(symbol)
         except Exception as e:
             print('撤单失败:', e)
         print('退出。')

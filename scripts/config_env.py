@@ -277,7 +277,8 @@ def main():
         return 1
 
     print(t('final_hint'))
-    print(f"echo 'set -a; [ -f {env_path} ] && source {env_path}; set +a' >> ~/.bashrc; source ~/.bashrc")
+    print(f"echo 'set -a; [ -f {env_path} ] && source {env_path}; set +a' >> ~/.bashrc")
+    print("source ~/.bashrc")
     return 0
 
 
