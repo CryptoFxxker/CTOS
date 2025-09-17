@@ -701,9 +701,9 @@ class BackpackDriver(TradingSyscalls):
                     if cur in raw:
                         return float(raw[cur]['available'])
                     # 容错：键名大小写不一致
-                    for k, v in raw.items():
-                        if str(k).upper() == cur:
-                            return float(v['available'])
+                    # for k, v in raw.items():
+                    #     if str(k).upper() == cur:
+                    #         return float(v['available'])
                 return {}
             except Exception as e:
                 return e
@@ -873,3 +873,14 @@ class BackpackDriver(TradingSyscalls):
 if __name__ == "__main__":
     bp = BackpackDriver()
     print(bp.get_position())
+
+# last = x.fetch_balance()
+# now = time.time()
+# for i in range(10):  # 连续测 10 次
+#     balance = x.fetch_balance()
+#     print(f"[{now}] USDT balance = {balance}")
+    
+#     if balance != last:
+#         print(f" {time.time() - now} ⚡ 变化了！")
+#         break    
+#     time.sleep(60)  # 每 2 秒请求一次
