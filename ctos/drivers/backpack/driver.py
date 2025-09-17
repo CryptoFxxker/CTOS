@@ -74,6 +74,15 @@ def init_BackpackClients(window=10000):
     """
     public_key = os.getenv("BP_PUBLIC_KEY")
     secret_key = os.getenv("BP_SECRET_KEY")
+    missing = []
+    if not public_key:
+        missing.append("BP_PUBLIC_KEY")
+    if not secret_key:
+        missing.append("BP_SECRET_KEY")
+    if missing:
+        print("[Backpack] Missing environment vars:", ", ".join(missing))
+        print("[Backpack] 建议: 运行 scripts/config_env.py 配置，或手动在 .env 中添加上述键并加载。")
+        print("[Backpack] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
     account = None
     public = None
     try:
@@ -97,6 +106,7 @@ class BackpackDriver(TradingSyscalls):
     """
 
     def __init__(self, account_client=None, public_client=None, mode="perp", default_quote="USDC"):
+        self.cex = 'Backpack'
         if account_client is None or public_client is None:
             acc, pub = init_BackpackClients()
             self.account = account_client or acc
@@ -556,7 +566,7 @@ class BackpackDriver(TradingSyscalls):
         except Exception as e:
             return None, e
 
-    def get_open_orders(self, symbol=None, instType='PERP', onlyOrderId=False, keep_origin=True):
+    def get_open_orders(self, symbol=None, instType='PERP', onlyOrderId=True, keep_origin=True):
         """
         获取未完成订单列表。
         :param symbol: 指定交易对；为空则返回全部（若底层支持）
@@ -749,6 +759,7 @@ class BackpackDriver(TradingSyscalls):
                 upl = _f(pos.get('pnlUnrealized'))
                 realized = _f(pos.get('pnlRealized'))
                 lev = _f(pos.get('leverage'))
+                fee = _f(pos.get('cumulativeFundingPayment'))
                 liq = _f(pos.get('estLiquidationPrice'))
                 # Backpack 未提供时间戳，置空
                 ts = None
@@ -764,6 +775,7 @@ class BackpackDriver(TradingSyscalls):
                     'leverage': lev,
                     'liquidationPrice': liq,
                     'ts': ts,
+                    'fee':fee
                 }
 
             unified = None
@@ -789,7 +801,7 @@ class BackpackDriver(TradingSyscalls):
             return None, e
 
 
-    def close_all_positions(self, mode="market", price_offset=0.001, symbol=None, side=None, is_good=None):
+    def close_all_positions(self, mode="market", price_offset=0.0005, symbol=None, side=None, is_good=None):
         """
         平掉所有仓位，可附加过滤条件
 

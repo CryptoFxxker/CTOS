@@ -114,7 +114,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     else:
         new_rate_place2order = rate_price2order
     if start_leverage == 0:
-        engine.soft_stop_fast(list(new_rate_place2order.keys()))
+        engine.okex_spot.close_all_positions(mode="limit", price_offset=0.0005)
         return
     else:
         if start_leverage < 0:
@@ -610,64 +610,41 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
 
 
 def print_options():
-    print("\n✨ 可选策略如下：")
-    print("  1. btc   —— BTC多，其他空对冲，示例：btc 1000 1.5 eth,xrp   | 最后一个参数可以不输入，默认会做空23种其他币")
-    print("  2. fib   —— Fibonacci 策略，示例：fib 500 10 eth  | 这个策略有点风险不可控，后期优化，推荐第一个")
-    print("  3. boll  —— 布林带穿越策略，示例：boll 300  | 先别跑，这个是我后期准备修改的")
-    print("  4. grid  —— 网格合约策略，示例：grid 1000 0 eth,xrp | 网格策略，蛮不错的，建议可以直接python okex.py平替，这个我没正式跑，okex.py跑好几年了\n")
-
-
-def hello_world_spin_greet():
-    robot.home()  # INIT
-    start_t = now()
-    robot.rotate_in_place(speed=0.35)  # ≈ 20°/s · SPIN
-    while True:
-        person = sense_object("human")  # 视觉检测
-        if person:
-            stop_motion()
-            speak("Hello World")  # GREET
-            break
-        if now() - start_t > 15:  # TIMEOUT
-            stop_motion()
-            break
-        wait(0.2)
-    return "DONE"
+    print("\n✨ 策略说明：BTC_IS_THE_KING")
+    print("  - 核心思想：以 BTC 为核心方向（多或空），对其他币做相对冲击与对冲，通过分配权重与网格/阈值机制实现动态加减仓。")
+    print("  - 运行形态：单进程长期运行，定期检测收益、网格阈值、加减仓条件，并进行资金划转维持安全边际。\n")
+    print("📌 参数说明：")
+    print("  - account: 账户编号（0 主账户，其它为子账户）。用于划转资金与权限判断。")
+    print("  - leverage(start_leverage): 初始杠杆倍数。>0 表示做多 BTC 方向；<0 表示先按绝对值设置杠杆，同时视为做空 BTC（反向操作）。")
+    print("  - coins(optional): 逗号分隔的币种列表（如 eth,xrp）。用于增强/对冲的目标池；不填则使用默认集合。\n")
+    print("🧠 运行流程（概要）：")
+    print("  1) 初始化引擎、杀重进程 → 读取 good_group 分配、账户可用资金。")
+    print("  2) 按策略分配目标持仓并下单，进入循环：")
+    print("     - 定时评估净值 now_money 与阈值：达到阈值‘加仓/减仓’、记录与划转。")
+    print("     - 识别局部超涨/超跌（相对 BTC）进行‘关税’轮换调整。")
+    print("     - 达成止盈目标时减杠杆/转移部分资金，维持曲线平滑。")
+    print("  3) 稳态运行，支持用文件热更新部分参数（预留）。\n")
+    print("🧪 启动示例：")
+    print("  - 交互模式：python Strategy-BTC.py  → 按提示输入 account / leverage / coins")
+    print("  - 命令行：python Strategy-BTC.py btc 0 1.5 eth,xrp\n")
 
 
 if __name__ == '__main__':
     print(sys.argv)
     if len(sys.argv) == 1:
         print_options()
-        method_choosen = input("📌 请选择一个策略名（btc/fib/boll/grid）默认btc: ").strip() or 'btc'
-        account = int(input("💰 请输入账户选择（默认0为主账户，其他为子账户）: ").strip() or 0)
-        arg3 = input("📊 请输入第三个参数（如杠杆倍数/网格数）: ").strip() or 0
-        coin = input("🪙 输入涉及币种，用英文逗号分隔（如eth,xrp）: ").strip() or ''
+        account = int(input("💰 账户（0 主账户，其他为子账户，默认0）: ").strip() or 0)
+        leverage = input("📊 初始杠杆（正数做多BTC，负数做空BTC，默认1.0）: ").strip() or '1.0'
+        coin = input("🪙 增强/对冲币种(逗号分隔，如 eth,xrp，留空使用默认): ").strip() or ''
     else:
-        method_choosen = sys.argv[1]
-        account = int(sys.argv[2] if sys.argv[2] else 0)
-        arg3 = sys.argv[3] if sys.argv[3] else 0
-        coin = '' if sys.argv[4] == 0 else sys.argv[4]
+        # 兼容旧调用：python Strategy-BTC.py btc 0 1.5 eth,xrp
+        account = int(sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 0)
+        leverage = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else '1.0'
+        coin = '' if len(sys.argv) <= 4 or sys.argv[4] == '0' else sys.argv[4]
 
-    if method_choosen == 'btc':
-        if len(coin) > 1:
-            coins = list(coin.split(','))
-        else:
-            coins = []
-        btc_is_the_king(account=account, start_leverage=float(arg3), coins_to_be_bad=coins)
-    elif method_choosen == 'fib':
-        fibonacci_strategy(account=account, fib_orders=int(arg3 if float(arg3) > 5 else 10),
-                           symbol=f'{coin.upper()}-USDT-SWAP')
-    elif method_choosen == 'boll':
-        from Bollinger_cross import BollingerCrossStrategy
-
-        strategy = BollingerCrossStrategy(account)
-        strategy.trade_loop()
-    elif method_choosen == 'grid':
-        if len(coin) > 1:
-            coins = list(coin.split(','))
-        else:
-            coins = None
-        grid_heyue(account=account, coins=coins, _rates=get_rates())
-    else:
-        print(f"❌ 未识别的策略名：{method_choosen}")
-        print_options()
+    coins = list(coin.split(',')) if len(coin) > 1 else []
+    print(f"\n🚀 启动 BTC_IS_THE_KING | account={account} | leverage={leverage} | coins={coins}")
+    try:
+        btc_is_the_king(account=account, start_leverage=float(leverage), coins_to_be_bad=coins)
+    except Exception as e:
+        print(f"❌ 启动失败: {e}")

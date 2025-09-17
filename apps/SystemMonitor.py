@@ -138,7 +138,7 @@ class SystemMonitor:
                           tolerance_threshold=5, pos_change_pct_thresh=50, upl_change_thresh=500):
         """
         监控多个币种的仓位：
-          1. 对每个币种，通过 fetch_position 获取当前仓位信息；
+          1. 对每个币种，通过 get_positions 获取当前仓位信息；
           2. 若与上次记录相比，持仓数量或未实现收益变化超过预设阈值（例如持仓数量变化超过 10% 或未实现收益变化超过 500），则发出异常波动警告；
           3. 同时，根据 tolerance_threshold、杠杆、最新标记价格及持仓数量计算风险，
              如果绝对未实现收益 (upl) 超过 loss_limit，则视为风险超出容忍值并记录警告。
@@ -152,7 +152,7 @@ class SystemMonitor:
             symbol = f'{coin.upper()}-USDT-SWAP'
             try:
                 # 获取当前仓位信息
-                pos_info = self.execution_engine.fetch_position(symbol, show=False)
+                pos_info = self.execution_engine.okex_spot.get_positions(symbol, show=False)
                 if not pos_info:
                     self.logger.error(f"monitor_positions: 获取 {symbol} 持仓信息失败")
                     continue

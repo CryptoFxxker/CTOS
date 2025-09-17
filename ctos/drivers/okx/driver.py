@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 import math
+import os
 
 try:
     # Import your own client defined in /mnt/data/okex.py (or your project path).
@@ -25,6 +26,21 @@ except ImportError:
     from ctos.core.kernel.syscalls import TradingSyscalls
 
 def init_OkxClient(symbol="ETH-USDT-SWAP", account=0, show=False):
+    # ACCESS_KEY = ACCESS_KEY if not os.getenv("OKX_PUBLIC_KEY") else ACCESS_KEY
+    # SECRET_KEY = SECRET_KEY if not os.getenv("OKX_SECRET_KEY") else SECRET_KEY
+    # PASSPHRASE = PASSPHRASE if not os.getenv("OKX_PASSPHRASE") else PASSPHRASE
+
+    missing = []
+    if not ACCESS_KEY:
+        missing.append("OKX_ACCESS_KEY")
+    if not SECRET_KEY:
+        missing.append("OKX_SECRET_KEY")
+    if not PASSPHRASE:
+        missing.append("OKX_PASSPHRASE")
+    if missing:
+        print("[OKX] Missing environment vars:", ", ".join(missing))
+        print("[OKX] 建议: 运行 scripts/config_env.py 配置，或手动在 .env 中添加上述键并加载。")
+        print("[OKX] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
     if symbol.find('-') == -1:
         symbol = f'{symbol.upper()}-USDT-SWAP'
     return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None)
@@ -41,6 +57,7 @@ class OkxDriver(TradingSyscalls):
 
     def __init__(self, okx_client=None, mode="swap", default_quote="USDT",
                  price_scale=1e-8, size_scale=1e-8):
+        self.cex = 'OKX'
         """
         :param okx_client: Optional. An initialized client from okex.py (authenticated).
                            If None, will try to instantiate OkexSpot() with defaults.
@@ -494,6 +511,10 @@ class OkxDriver(TradingSyscalls):
                             ts = int(d.get('uTime') or d.get('cTime') or 0)
                         except Exception:
                             ts = None
+                        try:
+                            fee = float(d.get('fundingFee') or d.get('fundingFee') or 0)
+                        except Exception:
+                            ts = None
                         unified.append({
                             'symbol': d.get('instId'),
                             'positionId': d.get('posId'),
@@ -506,6 +527,7 @@ class OkxDriver(TradingSyscalls):
                             'leverage': lev,
                             'liquidationPrice': liq,
                             'ts': ts,
+                            'fee': fee,
                         })
 
                 if symbol and isinstance(unified, list):
@@ -518,3 +540,92 @@ class OkxDriver(TradingSyscalls):
                 return None, e
         raise NotImplementedError("okex.py client lacks get_position")
 
+    def close_all_positions(self, mode="market", price_offset=0.0005, symbol=None, side=None, is_good=None):
+        """
+        平掉所有仓位，可附加过滤条件（OKX 版）
+
+        :param mode: "market" 或 "limit"
+        :param price_offset: limit 平仓时的价格偏移系数（相对 markPx）
+        :param symbol: 仅平某个币种 (e.g. "ETH-USDT-SWAP")
+        :param side: "long" 仅平多仓, "short" 仅平空仓, None 表示不限
+        :param is_good: True 仅平盈利仓, False 仅平亏损仓, None 表示不限
+        """
+        # 获取原始仓位数据
+        pos_raw, err = self.get_position(symbol=symbol, keep_origin=True)
+        if err:
+            print("[OKX] get_position error:", err)
+            return
+
+        # 解析列表
+        rows = None
+        if isinstance(pos_raw, dict):
+            rows = pos_raw.get('data')
+        if not isinstance(rows, list):
+            rows = []
+
+        if not rows:
+            print("✅ 当前无持仓")
+            return
+
+        # 归一化 symbol 用于比较
+        full_sym = None
+        if symbol:
+            full_sym, _, _ = self._norm_symbol(symbol)
+
+        for pos in rows:
+            try:
+                sym = pos.get('instId')
+                qty = float(pos.get('pos') or 0.0)
+                mark_price = float(pos.get('markPx') or pos.get('last') or 0.0)
+                pnl_unreal = float(pos.get('upl') or 0.0)
+            except Exception:
+                continue
+
+            if qty == 0:
+                continue  # 跳过空仓
+
+            # 过滤 symbol
+            if full_sym and sym != full_sym:
+                continue
+
+            # 判断仓位方向
+            pos_side = "long" if qty > 0 else "short"
+
+            # 过滤 side
+            if side and side != pos_side:
+                continue
+
+            # 过滤 盈亏
+            if is_good is True and pnl_unreal <= 0:
+                continue
+            if is_good is False and pnl_unreal > 0:
+                continue
+
+            # 构造平仓单（OKX 下：多仓 -> 卖出，空仓 -> 买入）
+            if qty > 0:
+                order_side = "sell"
+                size = abs(qty)
+            else:
+                order_side = "buy"
+                size = abs(qty)
+
+            if mode == "market":
+                try:
+                    self.place_order(symbol=sym, side=order_side, order_type="market", size=size)
+                    print(f"📤 市价平仓: {sym} {order_side} {size}")
+                except Exception as e:
+                    print(f"[OKX] 市价平仓失败 {sym}: {e}")
+            elif mode == "limit":
+                try:
+                    if order_side == "sell":
+                        price = mark_price * (1 + price_offset)
+                    else:
+                        price = mark_price * (1 - price_offset)
+                    self.place_order(symbol=sym, side=order_side, order_type="limit", size=size, price=price)
+                    print(f"📤 限价平仓: {sym} {order_side} {size} @ {price}")
+                except Exception as e:
+                    print(f"[OKX] 限价平仓失败 {sym}: {e}")
+            else:
+                raise ValueError("mode 必须是 'market' 或 'limit'")
+
+    

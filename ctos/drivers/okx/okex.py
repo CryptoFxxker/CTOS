@@ -4,7 +4,6 @@ import math
 import os
 import sys
 import time
-from tkinter import NO
 from urllib.parse import urljoin
 import pandas as pd
 import json
@@ -317,7 +316,7 @@ class OkexSpot:
         return success, error
 
     def get_position(self, symbol=None, instType='SWAP'):
-        if not symbol and instType is not None:
+        if not symbol:
             params = {"instType": instType}
         else:
             if symbol:

@@ -81,7 +81,7 @@ except Exception as e:
 
 print("\n\n[BP_TEST] before call: get_open_orders only Orderids")
 try:
-    res = bp.get_open_orders(symbol='eth', keep_origin=False)
+    res = bp.get_open_orders(symbol='eth',  onlyOrderId=True, keep_origin=False)
     print("\n\n[BP_TEST] after call: get_open_orders ->", res)
 except Exception as e:
     print("\n\n[BP_TEST] after call: get_open_orders raised:", e)
@@ -128,10 +128,21 @@ except Exception as e:
 
 print("\n\n[BP_TEST] before call: get_position")
 try:
-    res = bp.get_position(symbol, keep_origin=False)
+    res = len(bp.get_position(keep_origin=False)[0])
     print("\n\n[BP_TEST] after call: get_position ->", res)
 except Exception as e:
     print("\n\n[BP_TEST] after call: get_position raised:", e)
+
+
+
+print("\n\n[BP_TEST] before call: get_position keep_origin")
+try:
+    res = bp.get_position(symbol, keep_origin=True)
+    print("\n\n[BP_TEST] after call: get_position ->", res)
+except Exception as e:
+    print("\n\n[BP_TEST] after call: get_position raised:", e)
+
+
 
 print("\n\n[BP_TEST] before call: symbols")
 try:

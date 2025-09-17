@@ -12,12 +12,13 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from ctos.drivers.okx.driver import OkxDriver, init_OkxClient
-from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
 from ctos.drivers.okx.okex import *
 from ctos.drivers.okx.util import *
 
 
 okx = OkxDriver()
+symbol = os.getenv("OKX_TEST_SYMBOL", "ETH-USDT-SWAP")
+
 
 print(okx)
 print("\n\n[OKX_TEST] before call: get_price_now")
@@ -66,7 +67,7 @@ except Exception as e:
 
 print("\n\n[OKX_TEST] before call: get_open_orders only Orderids")
 try:
-    res = okx.get_open_orders(symbol='ETH-USDT-SWAP', keep_origin=False)
+    res = okx.get_open_orders(symbol='ETH-USDT-SWAP',  onlyOrderId=True, keep_origin=False)
     print("\n\n[OKX_TEST] after call: get_open_orders ->", res)
 except Exception as e:
     print("\n\n[OKX_TEST] after call: get_open_orders raised:", e)
@@ -110,10 +111,18 @@ except Exception as e:
 
 print("\n\n[OKX_TEST] before call: get_position")
 try:
-    res = okx.get_position(None, keep_origin=False)[0][0]
+    res = len(okx.get_position(keep_origin=False)[0])
     print("\n\n[OKX_TEST] after call: get_position ->", res)
 except Exception as e:
     print("\n\n[OKX_TEST] after call: get_position raised:", e)
+
+print("\n\n[OKX_TEST] before call: get_position keep_origin")
+try:
+    res = okx.get_position(symbol, keep_origin=True)
+    print("\n\n[OKX_TEST] after call: get_position ->", res)
+except Exception as e:
+    print("\n\n[OKX_TEST] after call: get_position raised:", e)
+
 
 print("\n\n[OKX_TEST] before call: symbols")
 try:
