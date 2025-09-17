@@ -40,7 +40,7 @@ tests/
 | 交易所 | 测试脚本 | 输出文件 | 状态 | 说明 |
 |--------|----------|----------|------|------|
 | OKX | `test_okx_driver.py` | [README_okx.md](./README_okx.md) | ✅ 可用 | 完整功能测试结果 |
-| Backpack | `test_bp_driver.py` | [README_bp.py](./README_bp.py) | ✅ 可用 | 自动生成的测试快照 |
+| Backpack | `test_bp_driver.py` | [README_bp.py](./README_bp.md) | ✅ 可用 | 自动生成的测试快照 |
 
 ### 计划中的测试结果
 
