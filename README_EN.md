@@ -222,10 +222,21 @@ Would you like me to also add a **table of example commands** for running the st
 
 ## Roadmap
 
-* **v0.1**: Syscall spec, drivers (OKX/Backpack/Binance) skeletons, runtime orchestration, paper‑trading.
-* **v0.2**: Unified WS streaming, simulator/backtest parity, richer risk module.
-* **v0.3**: Multi‑exchange portfolio netting, live failover, warm restart, richer metrics UI.
 
+* **v0.1**
+  Syscall specification; driver skeleton (OKX / Backpack / Binance); runtime scheduling; simulated trading
+
+* **v0.2**
+  Unified WebSocket stream; consistency between backtesting and simulation; richer risk-control modules
+
+* **v0.3**
+  Multi-exchange portfolio net asset management; real-time failover; hot restart; stronger indicators and UI
+
+* **🎉 Milestone (Today)**
+  ✅ Completed unified API design and abstraction for 2 exchanges.
+  🚀 Achieved a significant milestone today: **AI-driven, system-call-based grid strategy code** has been generated, fine-tuned, and officially deployed!
+  📂 Location: `apps/strategies/grid/Grid.py`
+  🥂🎊 Cheers to this launch — onward to the next stage!
 
 ---
 

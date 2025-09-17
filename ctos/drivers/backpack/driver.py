@@ -583,7 +583,6 @@ class BackpackDriver(TradingSyscalls):
                         full = symbol
                 else:
                     full = symbol
-                print(full)
                 resp = self.account.get_open_orders(market_type=instType, symbol=full)
 
                 if onlyOrderId:
@@ -667,14 +666,18 @@ class BackpackDriver(TradingSyscalls):
         else:
             print('我草你妈')
                 
-    def cancel_all(self, symbol='ETH_USDC_PERP'):
+    def cancel_all(self, symbol='ETH_USDC_PERP', order_ids=[]):
         full, _, _ = self._norm_symbol(symbol)
         if hasattr(self.account, "cancel_all_orders"):
-            try:
-                resp = self.account.cancel_all_orders(full)
-                return {"ok": True, "raw": resp}
-            except Exception as e:
-                return {"ok": False, "error": str(e)}
+            if not symbol and len(order_ids) > 0:
+                for ord in order_ids:
+                    resp = self.revoke_order(ord)
+            else:
+                try:
+                    resp = self.account.cancel_all_orders(full)
+                    return {"ok": True, "raw": resp}
+                except Exception as e:
+                    return {"ok": False, "error": str(e)}
         raise NotImplementedError("Account.cancel_all_orders unavailable")
 
     # -------------- account --------------

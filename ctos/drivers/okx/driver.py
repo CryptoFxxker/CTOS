@@ -195,7 +195,7 @@ class OkxDriver(TradingSyscalls):
     # -------------- market data --------------
     def get_price_now(self, symbol='ETH-USDT-SWAP'):
         full, base, _ = self._norm_symbol(symbol)
-        print(full, base)
+        # print(full, base)
         # Strategy shows: okx.get_price_now('btc')
         if hasattr(self.okx, "get_price_now"):
             return float(self.okx.get_price_now(full))
@@ -423,9 +423,13 @@ class OkxDriver(TradingSyscalls):
             return normalized, None
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
-    def cancel_all(self, symbol='ETH-USDT-SWAP'):
+    def cancel_all(self, symbol='ETH-USDT-SWAP', order_ids=[]):
         # Strategy.py shows revoke_orders(...)
         if hasattr(self.okx, "revoke_orders"):
+            if not symbol and len(order_ids) > 0:
+                for ord in order_ids:
+                    resp = self.revoke_order(ord)
+                    return {"ok": True, "raw": resp}
             if symbol:
                 full, _, _ = self._norm_symbol(symbol)
                 resp = self.okx.revoke_orders(symbol=full)
@@ -433,13 +437,6 @@ class OkxDriver(TradingSyscalls):
                 resp = self.okx.revoke_orders()
             return {"ok": True, "raw": resp}
 
-        if hasattr(self.okx, "cancel_all"):
-            if symbol:
-                full, _, _ = self._norm_symbol(symbol)
-                resp = self.okx.cancel_all(symbol=full)
-            else:
-                resp = self.okx.cancel_all()
-            return {"ok": True, "raw": resp}
 
         raise NotImplementedError("okex.py client lacks revoke_orders/cancel_all")
 

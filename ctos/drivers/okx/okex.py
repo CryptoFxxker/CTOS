@@ -299,7 +299,6 @@ class OkexSpot:
         result, err = self.request(
             "GET", "/api/v5/account/trade-fee", params=params, auth=True
         )
-        print(result)
         return result['data'], err
 
     def get_funding_rate(self, symbol='ETH-USDT-SWAP', instType='SPOT'):
@@ -502,7 +501,7 @@ class OkexSpot:
         symbol = self.symbol if not symbol else symbol
         success, error = [], []
         if not order_ids and symbol:
-            order_ids = self.get_open_orders(symbol=symbol)[0]
+            order_ids = self.get_open_orders(symbol=symbol, onlyOrderId=True)[0]
         for order_id in order_ids:
             _, e = self.revoke_order(order_id)
             if e:
@@ -511,7 +510,7 @@ class OkexSpot:
                 success.append(order_id)
         return success, error
 
-    def get_open_orders(self, instType='SPOT', symbol='ETH-USDT-SWAP', onlyOrderId=True):
+    def get_open_orders(self, instType='SWAP', symbol='ETH-USDT-SWAP', onlyOrderId=True):
 
         """Get all unfilled orders.
        * NOTE: up to 100 orders
