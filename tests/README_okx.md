@@ -1,86 +1,123 @@
-OKX Driver 测试输出快照
-=======================
+没这个pyfiglet包
+<ctos.drivers.okx.driver.OkxDriver object at 0x7faee4ed38b0>
 
-测试时间: 请在运行后补充实际时间戳（例如 2025-09-16T05:36:32）
-测试环境: OKX Exchange API（合约：ETH-USDT-SWAP）
 
-测试结果概览
-------------
+[OKX_TEST] before call: get_price_now
+ETH-USDT-SWAP eth
 
-- 总测试数: 15
-- 通过数: 12
-- 失败数: 3（cancel_all 两项、fees 一项）
-- 预计用时: ~2-4 秒
 
-详细测试结果
-------------
+[OKX_TEST] after call: get_price_now -> 4480.6
 
-- 市场数据
-  - get_price_now: ✅ 通过 — 示例价格 4377.81
-  - get_orderbook: ✅ 通过 — 返回结构正常（示例 bids/asks 为空数组）
-  - get_klines: ✅ 通过 — 返回标准化数据（示例包含 trade_date/open/high/low/close/vol1/vol）
 
-- 交易与订单
-  - place_order: ✅ 通过 — 示例返回 ordId '2852827355428593664'
-  - amend_order: ✅ 通过 — 修改订单成功
-  - get_order_status: ✅ 通过 — 返回状态 live、类型 limit、sz 0.01 等字段
-  - get_open_orders: ✅ 通过 — 示例返回 ['2852827355428593664']
-  - revoke_order: ✅ 通过 — 订单撤销成功
-  - cancel_all（无 symbol）: ❌ 失败 — 'NoneType' object is not iterable
-  - cancel_all（指定 symbol）: ❌ 失败 — 'NoneType' object is not iterable
+[OKX_TEST] before call: get_orderbook
 
-- 账户与仓位
-  - fetch_balance: ✅ 通过 — 示例 USDT 余额 3097.7631607182693
-  - get_position: ✅ 通过 — 返回包含 avgPx/markPx/lever/upl 等字段
 
-- 交易所信息
-  - symbols: ✅ 通过 — 示例 ['BTC-USDT', 'ETH-USDT', 'SOL-USDT']
-  - exchange_limits: ✅ 通过 — 示例 {'price_scale': 1e-08, 'size_scale': 1e-08}
-  - fees: ❌ 失败 — too many values to unpack (expected 2)
+[OKX_TEST] after call: get_orderbook -> ETH-USDT-SWAP
 
-功能特性验证
-------------
 
-- 市场数据: 价格、订单簿、K 线 ✅
-- 订单管理: 下单、改价、查询、撤单 ✅；批量取消 ❌（待修复）
-- 账户信息: 余额、仓位 ✅
-- 交易所信息: 交易对、交易限制 ✅；费率接口 ❌（待修复）
+[OKX_TEST] before call: get_klines
 
-性能指标（样例）
---------------
 
-- API 响应: < 1 秒（大部分请求）
-- 数据处理: 正常
-- 稳定性: 通过
+[OKX_TEST] after call: get_klines -> (       trade_date     open     high  ...    close        vol1               vol
+0   1758085200000  4474.86   4487.9  ...   4480.6   35879.836   160803368.99939
+1   1758081600000     4495   4502.8  ...  4474.86  133741.562   599260283.77045
+2   1758078000000  4528.54  4528.98  ...     4495   110262.29   497364959.77206
+3   1758074400000   4511.2     4550  ...  4528.55  160533.933   727323880.85123
+4   1758070800000  4510.83   4517.5  ...  4511.19   49339.013    222416620.7888
+5   1758067200000     4499  4514.23  ...  4510.82   54087.991   243648155.13861
+6   1758063600000  4517.14     4521  ...     4499   59232.438   266851343.34425
+7   1758060000000     4505  4523.33  ...  4517.14    61757.93   278614163.99551
+8   1758056400000     4496  4507.99  ...     4505   48803.038   219561984.03363
+9   1758052800000  4488.87  4496.64  ...  4496.01   34752.404   156046215.89025
+10  1758049200000  4471.68  4493.13  ...  4488.87   42756.116   191573559.74722
+11  1758045600000  4483.75  4493.98  ...  4471.68   76629.632   343217844.19881
+12  1758042000000  4460.48  4507.85  ...  4483.75  210559.853   945036504.28658
+13  1758038400000     4465  4468.99  ...  4460.48  112862.783   503072318.27244
+14  1758034800000  4443.37     4468  ...     4465  151373.794   672942137.96668
+15  1758031200000  4470.84  4470.84  ...  4443.37  338096.513  1500377538.80441
+16  1758027600000  4498.54   4510.5  ...  4470.83  451628.841  2014989681.65394
+17  1758024000000   4499.6     4505  ...  4498.54   48418.352   217855682.97216
+18  1758020400000  4496.01  4505.33  ...  4499.59   60124.273   270467791.31238
+19  1758016800000   4509.2  4512.49  ...  4496.01   56203.731   253077270.57042
 
-运行方式
---------
+[20 rows x 7 columns], None)
 
-1) 配置 API 密钥（本地开发示例）
 
-   - 在 `ctos/drivers/okx/Config.py` 中设置 `ACCESS_KEY`、`SECRET_KEY`、`PASSPHRASE`
+[OKX_TEST] before call: place_order
+ETH-USDT-SWAP eth
 
-2) 运行测试
 
-```bash
-python -m tests.test_okx_driver
-```
+[OKX_TEST] after call: place_order -> ('2871733629465567232', None)
 
-3) 查看输出
 
-- 终端打印当前运行结果
-- 可参考本文件了解期望的输出结构与字段
+[OKX_TEST] before call: amend_order
+ETH-USDT-SWAP eth
 
-已知问题与后续计划
-------------------
 
-- cancel_all 接口在无参数/带 symbol 两种调用下均出现迭代错误（NoneType）。计划：
-  - 检查驱动内部返回值是否始终为可迭代结构；
-  - 对 None 做显式保护与合并空列表处理。
-- fees 接口返回解包错误。计划：
-  - 统一接口返回值签名（期望二元组或显式对象），补齐测试断言与错误分支。
+[OKX_TEST] after call: amend_order -> ('2871733629465567232', None)
 
-总结
-----
 
-OKX 驱动核心功能可用，市场数据、下单流程、账户/仓位查询均通过。后续需修复批量取消与费率接口，完善异常与空值处理，以保证边界场景的稳定性。
+[OKX_TEST] before call: get_order_status
+
+
+[OKX_TEST] after call: get_order_status -> ({'orderId': '2871733629465567232', 'symbol': 'ETH-USDT-SWAP', 'side': 'buy', 'orderType': 'limit', 'price': 3584.12, 'quantity': 0.01, 'filledQuantity': 0.0, 'status': 'live', 'timeInForce': None, 'postOnly': None, 'reduceOnly': 'false', 'clientId': '', 'createdAt': 1758086731436, 'updatedAt': 1758086732904, 'raw': {'accFillSz': '0', 'algoClOrdId': '', 'algoId': '', 'attachAlgoClOrdId': '', 'attachAlgoOrds': [], 'avgPx': '', 'cTime': '1758086731436', 'cancelSource': '', 'cancelSourceReason': '', 'category': 'normal', 'ccy': '', 'clOrdId': '', 'fee': '0', 'feeCcy': 'USDT', 'fillPx': '', 'fillSz': '0', 'fillTime': '', 'instId': 'ETH-USDT-SWAP', 'instType': 'SWAP', 'isTpLimit': 'false', 'lever': '20', 'linkedAlgoOrd': {'algoId': ''}, 'ordId': '2871733629465567232', 'ordType': 'limit', 'pnl': '0', 'posSide': 'net', 'px': '3584.12', 'pxType': '', 'pxUsd': '', 'pxVol': '', 'quickMgnType': '', 'rebate': '0', 'rebateCcy': 'USDT', 'reduceOnly': 'false', 'side': 'buy', 'slOrdPx': '', 'slTriggerPx': '', 'slTriggerPxType': '', 'source': '', 'state': 'live', 'stpId': '', 'stpMode': 'cancel_maker', 'sz': '0.01', 'tag': '', 'tdMode': 'cross', 'tgtCcy': '', 'tpOrdPx': '', 'tpTriggerPx': '', 'tpTriggerPxType': '', 'tradeId': '', 'tradeQuoteCcy': '', 'uTime': '1758086732904'}}, None)
+
+
+[OKX_TEST] before call: get_open_orders only Orderids
+
+
+[OKX_TEST] after call: get_open_orders -> (['2871733629465567232'], None)
+
+
+[OKX_TEST] before call: get_open_orders all infos
+
+
+[OKX_TEST] after call: get_open_orders -> ([{'orderId': '2871733629465567232', 'symbol': 'ETH-USDT-SWAP', 'side': 'buy', 'orderType': 'limit', 'price': 3584.12, 'quantity': 0.01, 'filledQuantity': 0.0, 'status': 'live', 'timeInForce': None, 'postOnly': None, 'reduceOnly': 'false', 'clientId': '', 'createdAt': 1758086731436, 'updatedAt': 1758086732904, 'raw': {'accFillSz': '0', 'algoClOrdId': '', 'algoId': '', 'attachAlgoClOrdId': '', 'attachAlgoOrds': [], 'avgPx': '', 'cTime': '1758086731436', 'cancelSource': '', 'cancelSourceReason': '', 'category': 'normal', 'ccy': '', 'clOrdId': '', 'fee': '0', 'feeCcy': 'USDT', 'fillPx': '', 'fillSz': '0', 'fillTime': '', 'instId': 'ETH-USDT-SWAP', 'instType': 'SWAP', 'isTpLimit': 'false', 'lever': '20', 'linkedAlgoOrd': {'algoId': ''}, 'ordId': '2871733629465567232', 'ordType': 'limit', 'pnl': '0', 'posSide': 'net', 'px': '3584.12', 'pxType': '', 'pxUsd': '', 'pxVol': '', 'quickMgnType': '', 'rebate': '0', 'rebateCcy': 'USDT', 'reduceOnly': 'false', 'side': 'buy', 'slOrdPx': '', 'slTriggerPx': '', 'slTriggerPxType': '', 'source': '', 'state': 'live', 'stpId': '', 'stpMode': 'cancel_maker', 'sz': '0.01', 'tag': '', 'tdMode': 'cross', 'tgtCcy': '', 'tpOrdPx': '', 'tpTriggerPx': '', 'tpTriggerPxType': '', 'tradeId': '', 'tradeQuoteCcy': '', 'uTime': '1758086732904'}}], None)
+
+
+[OKX_TEST] before call: revoke_order
+
+
+[OKX_TEST] after call: revoke_order -> (True, None)
+
+
+[OKX_TEST] before call: cancel_all (no symbol)
+
+
+[OKX_TEST] after call: cancel_all (no symbol) raised: 'NoneType' object is not iterable
+
+
+[OKX_TEST] before call: cancel_all (with symbol)
+
+
+[OKX_TEST] after call: cancel_all (with symbol) raised: 'NoneType' object is not iterable
+
+
+[OKX_TEST] before call: fetch_balance
+
+
+[OKX_TEST] after call: fetch_balance -> 3651.262698055444
+
+
+[OKX_TEST] before call: get_position
+
+
+[OKX_TEST] after call: get_position -> {'symbol': 'HYPE-USDT-SWAP', 'positionId': '2607751765412978688', 'side': 'short', 'quantity': 49.0, 'entryPrice': 53.452471836734695, 'markPrice': 54.269, 'pnlUnrealized': -4.000987999999987, 'pnlRealized': 1.1578178889628183, 'leverage': 20.0, 'liquidationPrice': 745.7783960544394, 'ts': 1758081600489}
+
+
+[OKX_TEST] before call: symbols
+
+
+[OKX_TEST] after call: symbols -> ['MOG-USDT-SWAP', 'CETUS-USDT-SWAP', 'WIF-USDT-SWAP', 'PI-USDT-SWAP', 'SUSHI-USDT-SWAP', 'XLM-USDT-SWAP', 'GPS-USDT-SWAP', 'CRO-USDT-SWAP', 'UNI-USDT-SWAP', 'STRK-USDT-SWAP']
+
+
+[OKX_TEST] before call: exchange_limits
+
+
+[OKX_TEST] after call: exchange_limits -> {'price_scale': 1e-08, 'size_scale': 1e-08}
+
+
+[OKX_TEST] before call: fees
+
+
+[OKX_TEST] after call: fees -> ({'symbol': 'ETH-USDT-SWAP', 'instType': 'SWAP', 'fundingRate_hourly': -5.3457456351125e-06, 'fundingRate_period': -4.27659650809e-05, 'period_hours': 8.0, 'fundingTime': 1758096000000, 'raw': {'code': '0', 'data': [{'formulaType': 'withRate', 'fundingRate': '-0.0000427659650809', 'fundingTime': '1758096000000', 'impactValue': '20000.0000000000000000', 'instId': 'ETH-USDT-SWAP', 'instType': 'SWAP', 'interestRate': '0.0001000000000000', 'maxFundingRate': '0.0075', 'method': 'current_period', 'minFundingRate': '-0.0075', 'nextFundingRate': '', 'nextFundingTime': '1758124800000', 'premium': '-0.0005376571978021', 'settFundingRate': '-0.0000686128088225', 'settState': 'settled', 'ts': '1758086700087'}], 'msg': ''}}, None)

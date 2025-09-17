@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '
 import logging
 from ctos.drivers.okx.driver import OkxDriver, init_OkxClient
 from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
-from util import BeijingTime, align_decimal_places, save_para, rate_price2order, cal_amount, get_min_amount_to_trade
+from ctos.drivers.okx.util import BeijingTime, align_decimal_places, save_para, rate_price2order, cal_amount, get_min_amount_to_trade
 import time
 # from average_method import get_good_bad_coin_group  # 暂时注释掉，文件不存在
 import json

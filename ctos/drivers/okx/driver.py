@@ -441,10 +441,10 @@ class OkxDriver(TradingSyscalls):
                 return e
         raise NotImplementedError("okex.py client lacks fetch_balance")
 
-    def get_position(self, symbol=None, keep_origin=True):
+    def get_position(self, symbol=None, keep_origin=True, instType='SWAP'):
         if hasattr(self.okx, "get_position"):
             try:
-                success, error = self.okx.get_position(symbol)
+                success, error = self.okx.get_position(symbol, instType=instType)
                 if keep_origin:
                     return success, error
 

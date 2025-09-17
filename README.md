@@ -100,6 +100,7 @@ ctos/
 - 账户/仓位：
   - `fetch_balance(currency)`：返回全部或指定币种余额（大小写不敏感）
   - `get_position(symbol=None)`：返回全部或指定交易对的仓位信息
+  - `close_all_positions(symbol=None)`：返回全部或指定交易对的仓位信息
 
 ---
 

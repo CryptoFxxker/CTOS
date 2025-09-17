@@ -704,7 +704,6 @@ class BackpackDriver(TradingSyscalls):
         """
         if not hasattr(self.account, 'get_open_positions'):
             return None, NotImplementedError('Account.get_open_positions unavailable')
-
         try:
             resp = self.account.get_open_positions(window=window)
             if keep_origin:

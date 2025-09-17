@@ -4,6 +4,7 @@ import math
 import os
 import sys
 import time
+from tkinter import NO
 from urllib.parse import urljoin
 import pandas as pd
 import json
@@ -315,18 +316,19 @@ class OkexSpot:
         success, error = self.request(method="GET", uri=uri, params=params)
         return success, error
 
-    def get_position(self, symbol=None):
-        if not symbol:
-            params = {"instId": self.symbol}
+    def get_position(self, symbol=None, instType='SWAP'):
+        if not symbol and instType is not None:
+            params = {"instType": instType}
         else:
-            if symbol.find(',') != -1:
-                symbolList = [x if x.find('-') != -1 else f'{x.upper()}-USDT-SWAP' for x in symbol.split(',')]
-            else:
-                if symbol.find('USDT') == -1:
-                    symbolList = [f'{symbol.upper()}-USDT-SWAP']
+            if symbol:
+                if symbol.find(',') != -1:
+                    symbolList = [x if x.find('-') != -1 else f'{x.upper()}-USDT-SWAP' for x in symbol.split(',')]
                 else:
-                    symbolList = [symbol.upper()]
-            params = {"instId": ','.join(symbolList)}
+                    if symbol.find('USDT') == -1:
+                        symbolList = [f'{symbol.upper()}-USDT-SWAP']
+                    else:
+                        symbolList = [symbol.upper()]
+                params = {"instId": ','.join(symbolList)}
         result = self.request(
             "GET", "/api/v5/account/positions", params=params, auth=True
         )
