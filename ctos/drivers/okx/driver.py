@@ -526,6 +526,7 @@ class OkxDriver(TradingSyscalls):
                             'liquidationPrice': liq,
                             'ts': ts,
                             'fee': fee,
+                            'breakEvenPrice':pos.get('bePx')
                         })
 
                 if symbol and isinstance(unified, list):

@@ -44,7 +44,7 @@ if __name__ == '__main__':
         split_rate = {good_group[x + 1]: all_rate[x + 1] / sum(all_rate) for x in range(len(all_rate) - 1)}
 
 
-    init_operate_position = bp.fetch_balance() * 0.1
+    init_operate_position = bp.fetch_balance() * 0.15
     new_rate_place2order = {k:v for k,v in rate_price2order.items() if k in all_coins}
 
     usdt_amounts = []

@@ -226,10 +226,10 @@ class BackpackDriver(TradingSyscalls):
 
         full, _, _ = self._norm_symbol(symbol)
         try:
-            raw, err = self.public.get_funding_interval_rates(full, int(limit), int(offset))
+            # print(self.public.get_funding_interval_rates(full, int(limit), int(offset)))
+            raw = self.public.get_funding_interval_rates(full, int(limit), int(offset))
             if keep_origin:
-                return raw, err
-            # 标准化输出，尽量提供 latest，并统一为每小时资金费率
+                return raw            # 标准化输出，尽量提供 latest，并统一为每小时资金费率
             latest = None
             rows = None
             if isinstance(raw, dict) and 'data' in raw:
@@ -779,7 +779,8 @@ class BackpackDriver(TradingSyscalls):
                     'leverage': lev,
                     'liquidationPrice': liq,
                     'ts': ts,
-                    'fee':fee
+                    'fee':fee,
+                    'breakEvenPrice':pos.get('breakEvenPrice')
                 }
 
             unified = None
