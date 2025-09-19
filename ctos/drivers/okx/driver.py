@@ -6,13 +6,36 @@
 from __future__ import print_function
 import math
 import os
+import sys
+def _add_bpx_path():
+    """添加bpx包路径到sys.path，支持多种运行方式"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    bpx_path = os.path.join(current_dir, 'bpx')
+    
+    # 添加当前目录的bpx路径
+    if bpx_path not in sys.path:
+        sys.path.insert(0, bpx_path)
+    
+    # 添加项目根目录的bpx路径（如果存在）
+    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
+    root_bpx_path = os.path.join(project_root, 'bpx')
+    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+        sys.path.insert(0, root_bpx_path)
+    if os.path.exists(project_root) and project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+# 执行路径添加
+_add_bpx_path()
 
 try:
+    # 优先：绝对导入（当项目以包方式安装/运行时）
+    from ctos.drivers.okx.util import *
+    from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
+    from ctos.drivers.okx.okex import *
     # Import your own client defined in /mnt/data/okex.py (or your project path).
     # Change the name below to match your class or factory if different.
-    from .okex import OkexSpot, ACCESS_KEY, SECRET_KEY, PASSPHRASE
 except Exception as e:
-    print('Error from okex import ')
+    print('Error from okex import ', e)
     OkexSpot = object  # fallback for static analyzers / import-late patterns
 
 # Import syscall base
@@ -26,21 +49,21 @@ except ImportError:
     from ctos.core.kernel.syscalls import TradingSyscalls
 
 def init_OkxClient(symbol="ETH-USDT-SWAP", account=0, show=False):
-    ACCESS_KEY = ACCESS_KEY if not os.getenv("OKX_ACCESS_KEY") else ACCESS_KEY
-    SECRET_KEY = SECRET_KEY if not os.getenv("OKX_SECRET_KEY") else SECRET_KEY
-    PASSPHRASE = PASSPHRASE if not os.getenv("OKX_PASSPHRASE") else PASSPHRASE
+    # ACCESS_KEY = ACCESS_KEY if not os.getenv("OKX_ACCESS_KEY") else ACCESS_KEY
+    # SECRET_KEY = SECRET_KEY if not os.getenv("OKX_SECRET_KEY") else SECRET_KEY
+    # PASSPHRASE = PASSPHRASE if not os.getenv("OKX_PASSPHRASE") else PASSPHRASE
 
-    missing = []
-    if not ACCESS_KEY:
-        missing.append("OKX_ACCESS_KEY")
-    if not SECRET_KEY:
-        missing.append("OKX_SECRET_KEY")
-    if not PASSPHRASE:
-        missing.append("OKX_PASSPHRASE")
-    if missing:
-        print("[OKX] Missing environment vars:", ", ".join(missing))
-        print("[OKX] 建议: 运行 scripts/config_env.py 配置，或手动在 .env 中添加上述键并加载。")
-        print("[OKX] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
+    # missing = []
+    # if not ACCESS_KEY:
+    #     missing.append("OKX_ACCESS_KEY")
+    # if not SECRET_KEY:
+    #     missing.append("OKX_SECRET_KEY")
+    # if not PASSPHRASE:
+    #     missing.append("OKX_PASSPHRASE")
+    # if missing:
+    #     print("[OKX] Missing environment vars:", ", ".join(missing))
+    #     print("[OKX] 建议: 运行 scripts/config_env.py 配置，或手动在 .env 中添加上述键并加载。")
+    #     print("[OKX] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
     if symbol.find('-') == -1:
         symbol = f'{symbol.upper()}-USDT-SWAP'
     return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None)
