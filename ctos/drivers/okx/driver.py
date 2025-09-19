@@ -26,9 +26,9 @@ except ImportError:
     from ctos.core.kernel.syscalls import TradingSyscalls
 
 def init_OkxClient(symbol="ETH-USDT-SWAP", account=0, show=False):
-    # ACCESS_KEY = ACCESS_KEY if not os.getenv("OKX_PUBLIC_KEY") else ACCESS_KEY
-    # SECRET_KEY = SECRET_KEY if not os.getenv("OKX_SECRET_KEY") else SECRET_KEY
-    # PASSPHRASE = PASSPHRASE if not os.getenv("OKX_PASSPHRASE") else PASSPHRASE
+    ACCESS_KEY = ACCESS_KEY if not os.getenv("OKX_ACCESS_KEY") else ACCESS_KEY
+    SECRET_KEY = SECRET_KEY if not os.getenv("OKX_SECRET_KEY") else SECRET_KEY
+    PASSPHRASE = PASSPHRASE if not os.getenv("OKX_PASSPHRASE") else PASSPHRASE
 
     missing = []
     if not ACCESS_KEY:

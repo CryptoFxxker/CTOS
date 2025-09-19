@@ -81,17 +81,17 @@ def print_position(sym, pos, init_price, start_ts):
 
     header = f"=== [仓位监控] {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
     line = (
-        f"现价={price_now:.4f} | "
-        f"起步价_init_price={init_price:.4f} | "
+        f"现价={round_dynamic(price_now)} | "
+        f"起步价_init_price={round_dynamic(init_price)} | "
         f"均价_avg_cost={avg_cost:.4f} | "
-        f"数量={size:.6f} | "
+        f"数量={round_to_two_digits(size)} | "
         f"方向={side} | "
         f"浮盈={pnlUnrealized:+.2f} | "
         f"涨跌幅={change_pct:+.2f}%"
     )
     output = header + line + '===='
-    if len(output) < 80:
-        output += '*' * (80 - len(output))
+    if len(output) < 180:
+        output += ' ' * (180 - len(output))
     print('\r' + output, end='')
 
 def main():
@@ -133,8 +133,13 @@ def main():
                             oid, err = driver.place_order(sym, side="sell",
                                                           order_type="limit",
                                                           size=qty, price=price_align)
-                            if err:
+                            if err is not None:
                                 print(f"\n[{sym}] 卖单失败:", err, '\n')
+                                if err['message'].find('Quantity decimal too long') != -1:
+                                    qty = str(qty)[:len(str(qty))-1]
+                                    oid, err = driver.place_order(sym, side="sell",
+                                                          order_type="limit",
+                                                          size=qty, price=price_align)
                             else:
                                 print(f"\n[{sym}] 卖出 {qty}, px={price_align}, id={oid}\n")
                                 data["init_price"] = price_now
@@ -149,8 +154,13 @@ def main():
                             oid, err = driver.place_order(sym, side="buy",
                                                         order_type="limit",
                                                         size=qty, price=price_align)
-                            if err:
+                            if err is not None:
                                 print(f"\n[{sym}] 买单失败:", err, '\n')
+                            if err['message'].find('Quantity decimal too long') != -1:
+                                qty = str(qty)[:len(str(qty))-1]
+                                oid, err = driver.place_order(sym, side="buy",
+                                                        order_type="limit",
+                                                        size=qty, price=price_align)
                             else:
                                 print(f"\n[{sym}] 买入 {qty}, px={price_align}, id={oid}\n")
                                 data["init_price"] = price_now
@@ -160,6 +170,7 @@ def main():
 
                 except Exception as e:
                     print(f"[{sym}] 循环异常:", e)
+                    break
 
             time.sleep(60)
 

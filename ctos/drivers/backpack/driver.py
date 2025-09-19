@@ -409,7 +409,8 @@ class BackpackDriver(TradingSyscalls):
         # Unify return to (order_id or order, error)
         if isinstance(order, dict) and 'id' in order:
             return order.get('id'), None
-        return order, None
+        else:
+            return None, order
 
     def amend_order(self, order_id, symbol, price=None, size=None, side=None, order_type=None,
                     time_in_force=None, post_only=None, **kwargs):

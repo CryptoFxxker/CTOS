@@ -52,8 +52,6 @@ class OkexExecutionEngine:
 
     def set_coin_position_to_target(self, usdt_amounts=[10], coins=['eth'], soft=False):
         start_time = time.time()
-        batch_size = 10
-        epoch = len(coins) // batch_size + 1
         position_infos = self.okex_spot.get_position(keep_origin=False)
         all_pos_info = {}
         for x in position_infos:
