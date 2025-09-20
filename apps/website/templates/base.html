@@ -1,0 +1,28 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CTOS Web GUI</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <header>
+    <h1>CTOS 系统管理平台</h1>
+    <nav>
+      <a href="{% url 'home' %}">主页</a>
+      <a href="/accounts/">账户信息</a>
+      <a href="/metrics/">指标可视化</a>
+      <a href="/trading/">账户交易</a>
+      <a href="/strategies/">策略执行</a>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+</body>
+</html>

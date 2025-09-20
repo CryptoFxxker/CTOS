@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>账户信息</h2>
+  <table border="1" cellpadding="5">
+    <tr><th>交易所</th><th>子账户</th><th>余额 (USDT)</th></tr>
+    {% for acc in accounts %}
+    <tr>
+      <td>{{ acc.exchange }}</td>
+      <td>{{ acc.sub }}</td>
+      <td>{{ acc.balance }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
