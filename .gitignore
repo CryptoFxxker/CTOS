@@ -6,7 +6,7 @@ __pycache__/
 .venv/
 .env
 .ipynb_checkpoints/
-
+account.yaml
 # OS
 .DS_Store
 

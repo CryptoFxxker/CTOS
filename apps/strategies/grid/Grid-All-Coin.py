@@ -172,7 +172,7 @@ def main():
                     print(f"[{sym}] 循环异常:", e)
                     break
 
-            time.sleep(60)
+            time.sleep(30)
 
     except KeyboardInterrupt:
         print("手动退出。")

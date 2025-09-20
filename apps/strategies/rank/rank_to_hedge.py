@@ -40,11 +40,9 @@ class HourlyLongShortStrategy:
     def get_last_hour_returns(self):
         """获取上一小时的涨跌幅"""
         returns = {}
-        end = int(time.time())
-        start = end - 3600
         for coin in self.coins:
             symbol, _, _ = self.driver._norm_symbol(f"{coin}-USDT-SWAP")
-            df, err = self.driver.get_klines(symbol, timeframe='1m', limit=61)
+            df, err = self.driver.get_klines(symbol, timeframe='1m', limit=60)
             if err or df is None or len(df) < 2:
                 continue
             if isinstance(df, pd.DataFrame):
@@ -77,36 +75,45 @@ class HourlyLongShortStrategy:
         short_cap = self.capital_per_side / max(1, len(shorts))
 
         print(f"\n[{datetime.now()}] 开始新一轮调仓")
-        print("涨幅排名:", sorted_coins)
+        # print("涨幅排名:", sorted_coins)
 
         # 多头
         for coin, ret in longs:
             price = self.driver.get_price_now(f"{coin}-USDT-SWAP")
-            print(f"➡️ 做多 {coin}: {long_cap} USDT @ {price}")
+            print(f"\r➡️ 做多 {coin}: {long_cap} USDT @ {price}", end='')
             self.positions[coin] = {"side": "long", "entry": price}
 
         # 空头
         for coin, ret in shorts:
             price = self.driver.get_price_now(f"{coin}-USDT-SWAP")
-            print(f"⬅️ 做空 {coin}: {short_cap} USDT @ {price}")
+            print(f"\r⬅️ 做空 {coin}: {short_cap} USDT @ {price}", end='')
             self.positions[coin] = {"side": "short", "entry": price}
 
     def evaluate(self):
         """每小时最后10秒：评估盈亏"""
         print(f"\n[{datetime.now()}] 本小时结束，评估仓位表现")
         results = {}
+        total_pnl = 0.0
+        n = 0
+
         for coin, info in self.positions.items():
             side = info['side']
             entry = info['entry']
             now_price = self.driver.get_price_now(f"{coin}-USDT-SWAP")
             pnl_ratio = (now_price - entry) / entry if side == 'long' else (entry - now_price) / entry
             results[coin] = {"side": side, "entry": entry, "now": now_price, "pnl_ratio": pnl_ratio}
-            print(f"📊 {coin} {side} 入场 {entry:.2f} → 现价 {now_price:.2f}, 收益 {pnl_ratio*100:.2f}%")
-        return results
+            print(f"\r📊 {coin:<6} {side:<5} 入场 {entry:.4f} → 现价 {now_price:.4f}, 收益 {pnl_ratio*100:.4f}%", end='')
 
+            total_pnl += pnl_ratio
+            n += 1
+
+        avg_pnl = total_pnl / n if n > 0 else 0.0
+        print(f"\n📈 本小时总体平均收益率: {avg_pnl*100:.4f}%")
+
+        return results, avg_pnl
 def main():
     ex_name, driver = pick_exchange()
-    coins = ['BTC', 'ETH', 'SOL', 'XRP']  # 示例
+    coins = [x.upper() for x in rate_price2order.keys()]  # 示例
     strat = HourlyLongShortStrategy(driver, coins)
 
     while True:

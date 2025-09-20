@@ -352,8 +352,8 @@ def round_dynamic(x: float) -> float:
     """
     动态保留有效数字：
     - x > 1000: 保留 6 位有效数字
-    - 1 <= x <= 1000: 保留 5 位有效数字
-    - 0 < x < 1: 保留 4 位有效数字
+    - 100 <= x <= 1000: 保留 5 位有效数字
+    - x < 100: 保留 4 位有效数字
     """
     if x == 0:
         return 0.0
@@ -361,7 +361,7 @@ def round_dynamic(x: float) -> float:
     # 确定保留位数
     if abs(x) > 1000:
         digits = 6
-    elif abs(x) >= 1:
+    elif abs(x) >= 100:
         digits = 5
     else:
         digits = 4
@@ -372,6 +372,7 @@ def round_dynamic(x: float) -> float:
 
     # 额外处理浮点误差，保留到合理小数位
     return float(f"{result:.12g}")
+
 
 def discover_min_trade_quantity(bp, symbol, start_usd=10, price_buffer=0.95, max_steps=8):
     """

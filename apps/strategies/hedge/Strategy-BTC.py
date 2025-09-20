@@ -32,7 +32,7 @@ except ImportError as import_error:
 import math
 
 import  psutil, time
-from apps.ExecutionEngine import OkexExecutionEngine, init_OkxClient
+from ctos.core.kernel.runtime.ExecutionEngine import OkexExecutionEngine, init_OkxClient
 
 
 def set_leverage(increase_times, start_money, leverage_times):
