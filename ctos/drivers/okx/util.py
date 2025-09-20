@@ -131,6 +131,7 @@ def convert_columns_to_numeric(df, columns=None):
 
 
 
+
 def get_host_ip():
     """
     查询本机ip地址
@@ -412,3 +413,12 @@ def get_min_amount_to_trade(get_okexExchage, path='min_amount_to_trade.json'):
                 min_amount_to_trade[coin] = deincrease_times
         save_para(min_amount_to_trade, path)
     return min_amount_to_trade
+
+
+def get_current_file_path() -> str:
+    """返回当前文件的绝对路径"""
+    return os.path.abspath(__file__)
+
+def get_current_dir() -> str:
+    """返回当前文件所在的目录"""
+    return os.path.dirname(os.path.abspath(__file__))

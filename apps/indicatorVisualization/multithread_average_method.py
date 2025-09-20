@@ -27,11 +27,54 @@ try:
     import mplfinance as mpf
 except Exception as e:
     print(e)
-from util import BeijingTime, get_host_ip, rate_price2order, pad_dataframe_to_length_fast
 import threading
 from collections import defaultdict
 import gzip, pickle, copy
 from pathlib import Path
+
+
+
+def add_project_paths(project_name="ctos", subpackages=None):
+    """
+    自动查找项目根目录，并将其及常见子包路径添加到 sys.path。
+    
+    :param project_name: 项目根目录标识（默认 'ctos'）
+    :param subpackages: 需要暴露的子包列表（默认 ["ctos", "bpx", "okx", "backpack", "apps"]）
+    """
+    if subpackages is None:
+        subpackages = ["ctos", "bpx", "okx", "backpack", "apps"]
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = None
+
+    # 向上回溯，找到项目根目录
+    path = current_dir
+    while path != os.path.dirname(path):  # 一直回溯到根目录
+        if os.path.basename(path) == project_name or os.path.exists(os.path.join(path, ".git")):
+            project_root = path
+            break
+        path = os.path.dirname(path)
+
+    if not project_root:
+        raise RuntimeError(f"未找到项目根目录（包含 {project_name} 或 .git）")
+
+    # 添加根目录
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+    # 添加子包目录
+    for pkg in subpackages:
+        pkg_path = os.path.join(project_root, pkg)
+        if os.path.exists(pkg_path) and pkg_path not in sys.path:
+            sys.path.insert(0, pkg_path)
+
+    return project_root
+
+
+# 执行路径添加
+PROJECT_ROOT = add_project_paths()
+from ctos.criver.okx.util import BeijingTime, get_host_ip, rate_price2order, pad_dataframe_to_length_fast, get_current_dir
+
 
 # === 配置 ===
 COINS = list(rate_price2order.keys())
@@ -83,7 +126,7 @@ ls_cycle    = ['-','--','-.',':']
 
 color_iter = itertools.cycle(color_cycle)
 ls_iter    = itertools.cycle(ls_cycle)
-balance_file_path = '../trade_runtime_files/total_balance.json'
+balance_file_path = get_current_dir() + '/' +'total_balance.json'
 
 
 
@@ -145,14 +188,14 @@ def log_asset():
     total_equity_usd = exchange.fetch_balance('USDT')
     
     # 保存到文件
-    if os.path.exists('total_balance.json'):
-        with open('total_balance.json', 'r') as f:
+    if os.path.exists():
+        with open(balance_file_path, 'r') as f:
             data = json.load(f)
         data.append({'timestamp': time.time(), 'total_equity_usd': total_equity_usd})
     else:
         data = [{'timestamp': time.time(), 'total_equity_usd': total_equity_usd}]
     
-    with open('total_balance.json', 'w') as f:
+    with open(balance_file_path, 'w') as f:
         json.dump(data, f)
     
     return data
@@ -864,7 +907,7 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     #      'uni', 'hbar', 'ton', 'sui', 'avax', 'fil', 'ip', 'gala', 'sand']
     if len(good_group) == 0:
         try:
-            with open('good_group_plot.txt', 'r', encoding='utf8') as f:
+            with open(get_current_dir() + '/' + 'good_group_plot.txt', 'r', encoding='utf8') as f:
                 data = f.readlines()
                 good_group = data[0].strip().split(',')
                 all_rate = [float(x) for x in data[1].strip().split(',')]
