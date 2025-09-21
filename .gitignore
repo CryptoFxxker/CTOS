@@ -7,6 +7,7 @@ __pycache__/
 .env
 .ipynb_checkpoints/
 account.yaml
+draw_hedge_index.py
 # OS
 .DS_Store
 

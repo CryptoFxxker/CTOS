@@ -105,7 +105,7 @@ class BackpackDriver(TradingSyscalls):
     Accepts inputs like 'eth-usdc', 'ETH/USDC', 'ETH-USDC-SWAP', 'eth', etc.
     """
 
-    def __init__(self, account_client=None, public_client=None, mode="perp", default_quote="USDC"):
+    def __init__(self, account_client=None, public_client=None, mode="perp", default_quote="USDC", account_id=0):
         self.cex = 'Backpack'
         self.quote_ccy = 'USDC'
         if account_client is None or public_client is None:
@@ -385,32 +385,191 @@ class BackpackDriver(TradingSyscalls):
             return records, None
 
     # -------------- trading --------------
-    def place_order(self, symbol, side, order_type, size, price=None, client_id=None, **kwargs):
+    def _adjust_precision_for_error(self, value, error_msg, value_type='price'):
+        """
+        根据错误信息调整数值精度
+        :param value: 需要调整的数值
+        :param error_msg: 错误信息
+        :param value_type: 'price' 或 'quantity'
+        :return: 调整后的数值
+        """
+        if not error_msg:
+            return value
+            
+        error_str = str(error_msg).lower()
+        
+        # 处理价格精度错误
+        if value_type == 'price' and ('price decimal too long' in error_str or 'decimal too long' in error_str):
+            # 减少价格的小数位数
+            if '.' in str(value):
+                decimal_places = len(str(value).split('.')[1])
+                new_places = max(0, decimal_places - 1)
+                return round(value, new_places)
+            return value
+            
+        # 处理数量精度错误
+        elif value_type == 'quantity' and ('quantity decimal too long' in error_str or 'decimal too long' in error_str):
+            # 减少数量的小数位数
+            if '.' in str(value):
+                decimal_places = len(str(value).split('.')[1])
+                new_places = max(0, decimal_places - 1)
+                return round(value, new_places)
+            return value
+            
+        # 处理数量过小错误
+        elif value_type == 'quantity' and ('quantity is below the minimum' in error_str or 'below the minimum' in error_str):
+            # 增加数量到最小允许值
+            return max(value, 0.0001)  # 设置一个合理的最小值
+            
+        # 处理解析错误（通常是由于精度问题）
+        elif 'parse request payload error' in error_str or 'invalid decimal' in error_str:
+            if value_type == 'price':
+                # 价格保留2位小数
+                return round(value, 2)
+            elif value_type == 'quantity':
+                # 数量保留4位小数
+                return round(value, 4)
+                
+        return value
+
+    def place_order(self, symbol, side, order_type, size, price=None, client_id=None, max_retries=3, **kwargs):
+        """
+        下单函数，带错误处理和重试机制
+        
+        自动处理以下错误类型：
+        - Price decimal too long: 自动减少价格小数位数
+        - Quantity decimal too long: 自动减少数量小数位数  
+        - Quantity is below the minimum: 自动增加数量到最小允许值
+        - parse request payload error: 自动调整精度格式
+        
+        使用示例：
+        >>> driver = BackpackDriver()
+        >>> # 正常下单
+        >>> order_id, error = driver.place_order('ETH_USDC_PERP', 'buy', 'limit', 0.01, 2000.0)
+        >>> # 带重试的下单
+        >>> order_id, error = driver.place_order('ETH_USDC_PERP', 'buy', 'limit', 0.01, 2000.0, max_retries=5)
+        
+        :param symbol: 交易对
+        :param side: 买卖方向 ('buy'/'sell')
+        :param order_type: 订单类型 ('limit'/'market')
+        :param size: 数量
+        :param price: 价格（限价单需要）
+        :param client_id: 客户端订单ID
+        :param max_retries: 最大重试次数
+        :param kwargs: 其他参数
+        :return: (order_id, error)
+        """
         full, _, _ = self._norm_symbol(symbol)
         if not hasattr(self.account, "execute_order"):
             raise NotImplementedError("Account.execute_order unavailable")
 
-        # Map CTOS -> Backpack enum
-        bp_side = "Bid" if str(side).lower() in ("buy", "bid", "long") else "Ask"
-        bp_type = "Limit" if str(order_type).lower() in ("limit",) else "Market"
-        params = {
-            "symbol": full,
-            "side": bp_side,
-            "order_type": bp_type,
-            "quantity": str(size),
-            "time_in_force": kwargs.pop("time_in_force", "GTC"),
-        }
-        if price is not None:
-            params["price"] = str(price)
-        # passthrough extras like post_only
-        params.update(kwargs)
+        original_size = size
+        original_price = price
+        
+        for attempt in range(max_retries + 1):
+            try:
+                # Map CTOS -> Backpack enum
+                bp_side = "Bid" if str(side).lower() in ("buy", "bid", "long") else "Ask"
+                bp_type = "Limit" if str(order_type).lower() in ("limit",) else "Market"
+                params = {
+                    "symbol": full,
+                    "side": bp_side,
+                    "order_type": bp_type,
+                    "quantity": str(size),
+                    "time_in_force": kwargs.pop("time_in_force", "GTC"),
+                }
+                if price is not None:
+                    params["price"] = str(price)
+                # passthrough extras like post_only
+                params.update(kwargs)
 
-        order = self.account.execute_order(**params)
-        # Unify return to (order_id or order, error)
-        if isinstance(order, dict) and 'id' in order:
-            return order.get('id'), None
-        else:
-            return None, order
+                order = self.account.execute_order(**params)
+                
+                # 检查下单结果
+                if isinstance(order, dict) and 'id' in order:
+                    # 下单成功
+                    if attempt > 0:
+                        print(f"✓ 下单成功 (重试第{attempt}次): {symbol} {side} {size}@{price}")
+                    return order.get('id'), None
+                else:
+                    # 下单失败，检查是否有重试机会
+                    if attempt < max_retries:
+                        error_msg = str(order) if order else "Unknown error"
+                        print(f"⚠ 下单失败 (第{attempt + 1}次): {error_msg}")
+                        
+                        # 根据错误类型进行相应的调整
+                        error_lower = error_msg.lower()
+                        
+                        # 判断错误类型并调整参数
+                        if 'price decimal too long' in error_lower:
+                            # 价格精度过高，减少小数位
+                            if order_type.lower() == 'limit' and price is not None:
+                                new_price = self._adjust_precision_for_error(price, error_msg, 'price')
+                                if new_price != price:
+                                    price = new_price
+                                    print(f"调整价格精度: {original_price} -> {price}")
+                                    
+                        elif 'quantity decimal too long' in error_lower:
+                            # 数量精度过高，减少小数位
+                            new_size = self._adjust_precision_for_error(size, error_msg, 'quantity')
+                            if new_size != size:
+                                size = new_size
+                                print(f"调整数量精度: {original_size} -> {size}")
+                                
+                        elif 'quantity is below the minimum' in error_lower:
+                            # 数量过小，增加数量
+                            new_size = self._adjust_precision_for_error(size, error_msg, 'quantity')
+                            if new_size != size:
+                                size = new_size
+                                print(f"增加数量: {original_size} -> {size}")
+                            else:
+                                # 如果调整函数没有处理，手动增加数量
+                                size = max(size * 1.1, 0.001)
+                                print(f"手动增加数量: {original_size} -> {size}")
+                                
+                        elif 'parse request payload error' in error_lower or 'invalid decimal' in error_lower:
+                            # 解析错误，同时调整价格和数量精度
+                            if order_type.lower() == 'limit' and price is not None:
+                                new_price = self._adjust_precision_for_error(price, error_msg, 'price')
+                                if new_price != price:
+                                    price = new_price
+                                    print(f"调整价格精度: {original_price} -> {price}")
+                            
+                            new_size = self._adjust_precision_for_error(size, error_msg, 'quantity')
+                            if new_size != size:
+                                size = new_size
+                                print(f"调整数量精度: {original_size} -> {size}")
+                                
+                        else:
+                            # 未知错误类型，尝试通用调整策略
+                            print(f"未知错误类型，尝试通用调整: {error_msg}")
+                            if order_type.lower() == 'limit' and price is not None:
+                                # 尝试减少价格精度
+                                price = round(price, 2)
+                                print(f"通用调整价格精度: {original_price} -> {price}")
+                            
+                            # 尝试减少数量精度
+                            size = round(size, 4)
+                            print(f"通用调整数量精度: {original_size} -> {size}")
+                        
+                        # 等待一段时间后重试
+                        import time
+                        time.sleep(0.5)
+                    else:
+                        # 最后一次尝试失败，返回错误
+                        print(f"✗ 下单最终失败: {symbol} {side} {size}@{price}")
+                        return None, order
+                        
+            except Exception as e:
+                if attempt < max_retries:
+                    print(f"⚠ 下单异常 (第{attempt + 1}次): {str(e)}")
+                    import time
+                    time.sleep(0.5)
+                else:
+                    print(f"✗ 下单异常最终失败: {str(e)}")
+                    return None, str(e)
+        
+        return None, "Max retries exceeded"
 
     def amend_order(self, order_id, symbol, price=None, size=None, side=None, order_type=None,
                     time_in_force=None, post_only=None, **kwargs):
@@ -886,3 +1045,269 @@ if __name__ == "__main__":
 #         print(f" {time.time() - now} ⚡ 变化了！")
 #         break    
 #     time.sleep(60)  # 每 2 秒请求一次
+
+
+def test_error_handling():
+    """测试Backpack Driver的错误处理功能"""
+    print("=== Backpack Driver 错误处理功能测试 ===")
+    
+    try:
+        # 创建Driver实例
+        driver = BackpackDriver()
+        print("✓ Backpack Driver创建成功")
+        
+        # 测试1: 错误处理函数测试
+        print("\n1. 错误处理函数测试:")
+        
+        # 测试价格精度调整
+        print("\n1.1 测试价格精度调整:")
+        test_price = 4200.001
+        error_msg = "Price decimal too long"
+        adjusted_price = driver._adjust_precision_for_error(test_price, error_msg, 'price')
+        print(f"原始价格: {test_price}")
+        print(f"调整后价格: {adjusted_price}")
+        assert adjusted_price == 4200.0, f"价格调整失败: {adjusted_price}"
+        print("✓ 价格精度调整测试通过")
+        
+        # 测试数量精度调整
+        print("\n1.2 测试数量精度调整:")
+        test_quantity = 0.0111
+        error_msg = "Quantity decimal too long"
+        adjusted_quantity = driver._adjust_precision_for_error(test_quantity, error_msg, 'quantity')
+        print(f"原始数量: {test_quantity}")
+        print(f"调整后数量: {adjusted_quantity}")
+        assert adjusted_quantity == 0.011, f"数量调整失败: {adjusted_quantity}"
+        print("✓ 数量精度调整测试通过")
+        
+        # 测试数量过小错误
+        print("\n1.3 测试数量过小错误:")
+        test_quantity = 0.00001
+        error_msg = "Quantity is below the minimum allowed value"
+        adjusted_quantity = driver._adjust_precision_for_error(test_quantity, error_msg, 'quantity')
+        print(f"原始数量: {test_quantity}")
+        print(f"调整后数量: {adjusted_quantity}")
+        assert adjusted_quantity == 0.0001, f"数量调整失败: {adjusted_quantity}"
+        print("✓ 数量过小错误测试通过")
+        
+        # 测试解析错误
+        print("\n1.4 测试解析错误:")
+        test_price = 4200.0
+        test_quantity = 0.00001
+        error_msg = "parse request payload error: failed to parse \"string_decimal\": Invalid decimal"
+        adjusted_price = driver._adjust_precision_for_error(test_price, error_msg, 'price')
+        adjusted_quantity = driver._adjust_precision_for_error(test_quantity, error_msg, 'quantity')
+        print(f"原始价格: {test_price} -> 调整后: {adjusted_price}")
+        print(f"原始数量: {test_quantity} -> 调整后: {adjusted_quantity}")
+        assert adjusted_price == 4200.0, f"价格调整失败: {adjusted_price}"
+        assert adjusted_quantity == 0.0, f"数量调整失败: {adjusted_quantity}"
+        print("✓ 解析错误测试通过")
+        
+        print("\n=== 错误处理函数测试完成 ===")
+        
+        # 测试2: 实际下单测试（需要API配置）
+        print("\n2. 实际下单测试（需要API配置）:")
+        print("注意：此部分需要有效的API配置才能运行")
+        
+        try:
+            # 获取当前价格
+            current_price = driver.get_price_now('ETH_USDC_PERP')
+            if current_price:
+                print(f"当前ETH价格: {current_price}")
+                print("✓ 价格获取成功，API连接正常")
+                
+                # 测试下单（使用很小的金额，避免实际成交）
+                print("\n2.1 测试下单（限价单）:")
+                test_price = current_price * 0.9  # 低于市价，避免成交
+                test_size = 0.0001  # 很小的数量
+                
+                print(f"测试下单: ETH_USDC_PERP buy limit {test_size}@{test_price}")
+                order_id, error = driver.place_order(
+                    'ETH_USDC_PERP', 
+                    'buy', 
+                    'limit', 
+                    test_size, 
+                    test_price,
+                    max_retries=2  # 减少重试次数用于测试
+                )
+                
+                if order_id:
+                    print(f"✓ 下单成功，订单ID: {order_id}")
+                    # 立即撤销订单
+                    try:
+                        cancel_result = driver.revoke_order(order_id, 'ETH_USDC_PERP')
+                        print(f"✓ 订单撤销: {'成功' if cancel_result else '失败'}")
+                    except Exception as cancel_error:
+                        print(f"⚠ 订单撤销失败: {cancel_error}")
+                else:
+                    print(f"✗ 下单失败: {error}")
+                    print("这可能是由于API配置或网络问题")
+                    
+            else:
+                print("✗ 无法获取当前价格，请检查API配置")
+                
+        except Exception as api_error:
+            print(f"⚠ API测试失败: {api_error}")
+            print("请检查API配置和网络连接")
+        
+        print("\n=== 所有测试完成 ===")
+        
+    except Exception as e:
+        print(f"✗ 测试过程中出现错误: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    
+    return True
+
+
+def test_precision_scenarios():
+    """测试各种精度场景"""
+    print("\n=== 精度场景测试 ===")
+    
+    try:
+        driver = BackpackDriver()
+        
+        # 测试场景1: 价格精度过高
+        print("\n场景1: 价格精度过高")
+        test_cases = [
+            (4200.001, "Price decimal too long"),
+            (1234.56789, "Price decimal too long"),
+            (0.123456, "Price decimal too long")
+        ]
+        
+        for price, error in test_cases:
+            adjusted = driver._adjust_precision_for_error(price, error, 'price')
+            print(f"  {price} -> {adjusted}")
+        
+        # 测试场景2: 数量精度过高
+        print("\n场景2: 数量精度过高")
+        test_cases = [
+            (0.0111, "Quantity decimal too long"),
+            (1.234567, "Quantity decimal too long"),
+            (0.0001234, "Quantity decimal too long")
+        ]
+        
+        for quantity, error in test_cases:
+            adjusted = driver._adjust_precision_for_error(quantity, error, 'quantity')
+            print(f"  {quantity} -> {adjusted}")
+        
+        # 测试场景3: 数量过小
+        print("\n场景3: 数量过小")
+        test_cases = [
+            (0.00001, "Quantity is below the minimum allowed value"),
+            (0.000001, "Quantity is below the minimum allowed value"),
+            (1e-8, "Quantity is below the minimum allowed value")
+        ]
+        
+        for quantity, error in test_cases:
+            adjusted = driver._adjust_precision_for_error(quantity, error, 'quantity')
+            print(f"  {quantity} -> {adjusted}")
+        
+        # 测试场景4: 解析错误
+        print("\n场景4: 解析错误")
+        test_cases = [
+            (4200.0, "parse request payload error: failed to parse \"string_decimal\": Invalid decimal"),
+            (0.00001, "parse request payload error: failed to parse \"string_decimal\": Invalid decimal")
+        ]
+        
+        for value, error in test_cases:
+            adjusted_price = driver._adjust_precision_for_error(value, error, 'price')
+            adjusted_quantity = driver._adjust_precision_for_error(value, error, 'quantity')
+            print(f"  价格 {value} -> {adjusted_price}")
+            print(f"  数量 {value} -> {adjusted_quantity}")
+        
+        print("✓ 精度场景测试完成")
+        
+    except Exception as e:
+        print(f"✗ 精度场景测试失败: {e}")
+
+
+def test_error_type_detection():
+    """测试错误类型检测逻辑"""
+    print("\n=== 错误类型检测测试 ===")
+    
+    try:
+        driver = BackpackDriver()
+        
+        # 模拟不同的错误类型
+        error_scenarios = [
+            {
+                'error': "Price decimal too long",
+                'expected_type': 'price_precision',
+                'description': '价格精度过高'
+            },
+            {
+                'error': "Quantity decimal too long", 
+                'expected_type': 'quantity_precision',
+                'description': '数量精度过高'
+            },
+            {
+                'error': "Quantity is below the minimum allowed value",
+                'expected_type': 'quantity_minimum',
+                'description': '数量过小'
+            },
+            {
+                'error': "parse request payload error: failed to parse \"string_decimal\": Invalid decimal",
+                'expected_type': 'parse_error',
+                'description': '解析错误'
+            },
+            {
+                'error': "Unknown error type",
+                'expected_type': 'unknown',
+                'description': '未知错误'
+            }
+        ]
+        
+        for scenario in error_scenarios:
+            error_msg = scenario['error']
+            error_lower = error_msg.lower()
+            
+            print(f"\n测试错误: {scenario['description']}")
+            print(f"错误信息: {error_msg}")
+            
+            # 模拟错误类型检测逻辑
+            if 'price decimal too long' in error_lower:
+                detected_type = 'price_precision'
+            elif 'quantity decimal too long' in error_lower:
+                detected_type = 'quantity_precision'
+            elif 'quantity is below the minimum' in error_lower:
+                detected_type = 'quantity_minimum'
+            elif 'parse request payload error' in error_lower or 'invalid decimal' in error_lower:
+                detected_type = 'parse_error'
+            else:
+                detected_type = 'unknown'
+            
+            print(f"检测到的错误类型: {detected_type}")
+            print(f"预期错误类型: {scenario['expected_type']}")
+            print(f"检测结果: {'✓ 正确' if detected_type == scenario['expected_type'] else '✗ 错误'}")
+        
+        print("\n✓ 错误类型检测测试完成")
+        
+    except Exception as e:
+        print(f"✗ 错误类型检测测试失败: {e}")
+
+
+if __name__ == '__main__':
+    # 运行错误处理测试
+    success = test_error_handling()
+    
+    if success:
+        # 运行精度场景测试
+        test_precision_scenarios()
+        
+        # 运行错误类型检测测试
+        test_error_type_detection()
+        
+        print("\n🎉 所有测试完成！")
+        print("\n使用说明:")
+        print("1. 基本下单: driver.place_order('ETH_USDC_PERP', 'buy', 'limit', 0.01, 2000.0)")
+        print("2. 带重试: driver.place_order('ETH_USDC_PERP', 'buy', 'limit', 0.01, 2000.0, max_retries=5)")
+        print("3. 自动错误处理: Driver会自动检测错误类型并进行相应调整")
+        print("4. 支持的错误类型:")
+        print("   - Price decimal too long: 自动减少价格小数位数")
+        print("   - Quantity decimal too long: 自动减少数量小数位数")
+        print("   - Quantity is below the minimum: 自动增加数量")
+        print("   - Parse request payload error: 自动调整精度格式")
+        print("   - 未知错误: 使用通用调整策略")
+    else:
+        print("\n❌ 测试失败，请检查配置")

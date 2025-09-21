@@ -371,13 +371,23 @@ rate_price2order = {
     'hype': 0.1,
     'inj': 0.1,
     'ldo': 1,
-    'mkr': 0.01,
+    'atom': 1,
+    'pengu': 100,
+    'wld':1,
+    'render':1,
     'pepe': 10000000,
     'ondo': 10,
     'stx': 10,
     'arb': 10,
+    'jup': 10,
+    'bonk': 100000,
+    'op':1,
+    'tia':1,
+    'crv':1,
+    'imx':1,
+    'xtz':1,
+    #'okb':0.01,
 }
-
 
 
 def get_min_amount_to_trade(get_okexExchage, path='min_amount_to_trade.json'):

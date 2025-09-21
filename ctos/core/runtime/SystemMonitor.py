@@ -152,7 +152,7 @@ class SystemMonitor:
             symbol = f'{coin.upper()}-USDT-SWAP'
             try:
                 # 获取当前仓位信息
-                pos_info = self.execution_engine.okex_spot.get_positions(symbol, show=False)
+                pos_info = self.execution_engine.cex_driver.get_positions(symbol, show=False)
                 if not pos_info:
                     self.logger.error(f"monitor_positions: 获取 {symbol} 持仓信息失败")
                     continue

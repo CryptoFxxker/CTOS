@@ -1,43 +1,236 @@
 import sys
 import os
+import re
+import decimal
 
-from pathlib import Path
-# Ensure project root (which contains the `ctos/` package directory) is on sys.path
-_THIS_FILE = Path(__file__).resolve()
-_PROJECT_ROOT = _THIS_FILE.parents[1]  # repo root containing the top-level `ctos/` package dir
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
-
+# 确保项目根目录在sys.path中
+def _add_bpx_path():
+    """添加bpx包路径到sys.path，支持多种运行方式"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    bpx_path = os.path.join(current_dir, 'bpx')
+    if bpx_path not in sys.path:
+        sys.path.insert(0, bpx_path)
+    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
+    root_bpx_path = os.path.join(project_root, 'bpx')
+    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+        sys.path.insert(0, root_bpx_path)
+    if os.path.exists(project_root) and project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    return project_root
+# 执行路径添加
+_PROJECT_ROOT = _add_bpx_path()
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ctos', 'drivers', 'okx'))
 import logging
-from ctos.drivers.okx.driver import OkxDriver, init_OkxClient
 from ctos.drivers.okx.util import BeijingTime, align_decimal_places, save_para, rate_price2order, cal_amount, get_min_amount_to_trade
 import time
 # from average_method import get_good_bad_coin_group  # 暂时注释掉，文件不存在
 import json
-from .SystemMonitor import SystemMonitor
+from ctos.core.runtime.SystemMonitor import SystemMonitor
+from ctos.core.runtime.AccountManager import AccountManager, ExchangeType, get_account_manager
 import threading
 
 
 class OkexExecutionEngine:
-    def __init__(self, account=0, strategy='Classical', strategy_detail="StrategyAdjustment", symbol='eth'):
+    def __init__(self, account=0, strategy='Classical', strategy_detail="StrategyAdjustment", 
+                 symbol='eth', exchange_type='okx', account_manager=None):
         """
         Initialize the execution engine with API credentials and setup logging.
+        
+        Args:
+            account: 账户ID
+            strategy: 策略名称
+            strategy_detail: 策略详情
+            symbol: 交易对
+            exchange_type: 交易所类型 ('okx', 'backpack')
+            account_manager: AccountManager实例，如果为None则使用全局实例
         """
         self.account = account
-        self.okex_spot =  OkxDriver()
+        self.exchange_type = exchange_type.lower()
         self.strategy_detail = strategy_detail
+        
+        # 获取AccountManager
+        if account_manager is None:
+            self.account_manager = get_account_manager()
+        else:
+            self.account_manager = account_manager
+        
+        # 获取Driver
+        self.cex_driver = self.account_manager.get_driver(
+            ExchangeType(self.exchange_type), 
+            account, 
+            auto_create=True
+        )
+        
+        if self.cex_driver is None:
+            raise RuntimeError(f"Failed to get {self.exchange_type} driver for account {account}")
+        
+        # 初始化监控和日志
         self.monitor = SystemMonitor(self, strategy)
         self.logger = self.monitor.logger
-        # self.setup_logger()
-        self.init_balance = float(self.okex_spot.fetch_balance('USDT'))
+        
+        # 初始化交易所特定配置
+        if self.exchange_type == 'okx':
+            from ctos.drivers.okx.driver import init_OkxClient
+            self.min_amount_to_trade = get_min_amount_to_trade(
+                init_OkxClient, 
+                path=os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'min_amount_to_trade.json')
+            )
+        else:
+            # 其他交易所的配置
+            self.min_amount_to_trade = {}
+        
+        # 初始化余额（如果支持）
+        try:
+            self.init_balance = float(self.cex_driver.fetch_balance('USDT'))
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch initial balance: {e}")
+            self.init_balance = 0.0
+        
+        # 初始化其他属性
         self.watch_threads = []  # 存储所有监控线程
         self.soft_orders_to_focus = []
-        self.min_amount_to_trade = get_min_amount_to_trade(
-            init_OkxClient, 
-            path=os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'min_amount_to_trade.json')
-        )
+        
+        self.logger.info(f"ExecutionEngine initialized for {self.exchange_type} account {account}")
+
+
+    def _adjust_precision_for_error(self, value, error_msg, value_type='price'):
+        """
+        根据错误信息调整数值精度
+        :param value: 需要调整的数值
+        :param error_msg: 错误信息
+        :param value_type: 'price' 或 'quantity'
+        :return: 调整后的数值
+        """
+        if not error_msg:
+            return value
+            
+        error_str = str(error_msg).lower()
+        
+        # 处理价格精度错误
+        if value_type == 'price' and ('price decimal too long' in error_str or 'decimal too long' in error_str):
+            # 减少价格的小数位数
+            if '.' in str(value):
+                decimal_places = len(str(value).split('.')[1])
+                new_places = max(0, decimal_places - 1)
+                return round(value, new_places)
+            return value
+            
+        # 处理数量精度错误
+        elif value_type == 'quantity' and ('quantity decimal too long' in error_str or 'decimal too long' in error_str):
+            # 减少数量的小数位数
+            if '.' in str(value):
+                decimal_places = len(str(value).split('.')[1])
+                new_places = max(0, decimal_places - 1)
+                return round(value, new_places)
+            return value
+            
+        # 处理数量过小错误
+        elif value_type == 'quantity' and ('quantity is below the minimum' in error_str or 'below the minimum' in error_str):
+            # 增加数量到最小允许值
+            return max(value, 0.0001)  # 设置一个合理的最小值
+            
+        # 处理解析错误（通常是由于精度问题）
+        elif 'parse request payload error' in error_str or 'invalid decimal' in error_str:
+            if value_type == 'price':
+                # 价格保留2位小数
+                return round(value, 2)
+            elif value_type == 'quantity':
+                # 数量保留4位小数
+                return round(value, 4)
+        return value
+
+    def _unified_place_order(self, symbol, side, order_type, size, price=None, max_retries=3, **kwargs):
+        """
+        统一的下单函数，处理不同CEX的错误格式并进行重试
+        :param symbol: 交易对
+        :param side: 买卖方向 ('buy'/'sell')
+        :param order_type: 订单类型 ('limit'/'market')
+        :param size: 数量
+        :param price: 价格（限价单需要）
+        :param max_retries: 最大重试次数
+        :param kwargs: 其他参数
+        :return: (order_id, error)
+        """
+        exchange = self.cex_driver
+        original_size = size
+        original_price = price
+        
+        for attempt in range(max_retries + 1):
+            try:
+                # 调用原始下单方法
+                if side.lower() == 'buy':
+                    order_id, error = exchange.place_order(symbol, 'buy', order_type, size, price, **kwargs)
+                else:
+                    order_id, error = exchange.place_order(symbol,  'sell', order_type, size, price, **kwargs)
+                
+                # 如果下单成功，直接返回
+                if order_id and not error:
+                    if attempt > 0:
+                        self.logger.info(f"下单成功 (重试第{attempt}次): {symbol} {side} {size}@{price}")
+                    return order_id, None
+                
+                # 如果还有重试机会，根据错误调整参数
+                if attempt < max_retries and error:
+                    error_str = str(error)
+                    self.logger.warning(f"下单失败 (第{attempt + 1}次): {error_str}")
+                    
+                    # 记录错误信息
+                    self.monitor.record_operation("UnifiedPlaceOrder_Error", self.strategy_detail, {
+                        "symbol": symbol,
+                        "side": side,
+                        "order_type": order_type,
+                        "size": size,
+                        "price": price,
+                        "error": error_str,
+                        "attempt": attempt + 1
+                    })
+                    
+                    # 根据错误类型调整参数
+                    if order_type.lower() == 'limit' and price is not None:
+                        # 调整价格精度
+                        new_price = self._adjust_precision_for_error(price, error_str, 'price')
+                        if new_price != price:
+                            price = new_price
+                            self.logger.info(f"调整价格精度: {original_price} -> {price}")
+                    
+                    # 调整数量精度
+                    new_size = self._adjust_precision_for_error(size, error_str, 'quantity')
+                    if new_size != size:
+                        size = new_size
+                        self.logger.info(f"调整数量精度: {original_size} -> {size}")
+                    
+                    # 如果调整后参数没有变化，尝试其他调整策略
+                    if new_price == price and new_size == size:
+                        if 'quantity is below the minimum' in error_str.lower():
+                            # 数量过小，尝试增加数量
+                            size = max(size * 1.1, 0.001)
+                            self.logger.info(f"增加数量: {original_size} -> {size}")
+                        elif 'price decimal too long' in error_str.lower():
+                            # 价格精度过高，减少小数位
+                            price = round(price, 2)
+                            self.logger.info(f"减少价格精度: {original_price} -> {price}")
+                        elif 'quantity decimal too long' in error_str.lower():
+                            # 数量精度过高，减少小数位
+                            size = round(size, 4)
+                            self.logger.info(f"减少数量精度: {original_size} -> {size}")
+                    
+                    # 等待一段时间后重试
+                    time.sleep(0.5)
+                else:
+                    # 最后一次尝试失败，返回错误
+                    self.monitor.handle_error(str(error), context=f"UnifiedPlaceOrder final attempt failed for {symbol}")
+                    return None, error
+                    
+            except Exception as e:
+                if attempt < max_retries:
+                    self.logger.warning(f"下单异常 (第{attempt + 1}次): {str(e)}")
+                    time.sleep(0.5)
+                else:
+                    self.monitor.handle_error(str(e), context=f"UnifiedPlaceOrder exception for {symbol}")
+                    return None, str(e)
+        
+        return None, "Max retries exceeded"
 
     def setup_logger(self):
         """
@@ -52,7 +245,7 @@ class OkexExecutionEngine:
 
     def set_coin_position_to_target(self, usdt_amounts=[10], coins=['eth'], soft=False):
         start_time = time.time()
-        position_infos = self.okex_spot.get_position(keep_origin=False)
+        position_infos = self.cex_driver.get_position(keep_origin=False)
         all_pos_info = {}
         for x in position_infos:
             if float(x['quantity']) != 0:
@@ -78,7 +271,7 @@ class OkexExecutionEngine:
                                                           self.strategy_detail + "not position_info",
                                                           {
                                                               "symbol": symbol_full, "action": "sell",
-                                                              "order_price": self.okex_spot.get_price_now(symbol_full),
+                                                              "order_price": self.cex_driver.get_price_now(symbol_full),
                                                               "amount": usdt_amount
                                                           })
                         else:
@@ -88,7 +281,7 @@ class OkexExecutionEngine:
                                                           self.strategy_detail + "not position_info",
                                                           {
                                                               "symbol": symbol_full, "action": "buy",
-                                                              "order_price": self.okex_spot.get_price_now(symbol_full),
+                                                              "order_price": self.cex_driver.get_price_now(symbol_full),
                                                               "amount": usdt_amount
                                                           })
                     except Exception as ex:
@@ -172,7 +365,7 @@ class OkexExecutionEngine:
                         self.monitor.record_operation("SetCoinPosition BaoCuoChuli",
                                                       self.strategy_detail + "ExceptionFallback", {
                                                           "symbol": symbol_full, "action": "sell",
-                                                          "order_price": self.okex_spot.get_price_now(symbol_full),
+                                                          "order_price": self.cex_driver.get_price_now(symbol_full),
                                                           "amount": usdt_amount
                                                       })
                     else:
@@ -182,7 +375,7 @@ class OkexExecutionEngine:
                         self.monitor.record_operation("SetCoinPosition BaoCuoChuli",
                                                       self.strategy_detail + "ExceptionFallback", {
                                                           "symbol": symbol_full, "action": "buy",
-                                                          "order_price": self.okex_spot.get_price_now(symbol_full),
+                                                          "order_price": self.cex_driver.get_price_now(symbol_full),
                                                           "amount": usdt_amount
                                                       })
                 except Exception as ex:
@@ -198,7 +391,7 @@ class OkexExecutionEngine:
         done_coin = []
         time.sleep(10)
         coin_process_times = {}
-        exchange = self.okex_spot
+        exchange = self.cex_driver
         watch_times_for_all_coins = 0
         while True:
             need_to_watch = False
@@ -264,8 +457,8 @@ class OkexExecutionEngine:
             symbol_full = f"{coin.upper()}-USDT-SWAP"
         else:
             symbol_full = coin
-        self.okex_spot.symbol = symbol_full
-        exchange = self.okex_spot
+        self.cex_driver.symbol = symbol_full
+        exchange = self.cex_driver
         if soft:
             soft_orders_to_focus = []
         if rap:
@@ -297,10 +490,11 @@ class OkexExecutionEngine:
         if direction.lower() == 'buy':
             if not soft:
                 if order_amount > 0:
-                    order_id, _ = exchange.buy(price, round(order_amount, 2), 'MARKET')
+                    order_id, _ = self._unified_place_order(symbol_full, 'buy', 'MARKET', round(order_amount, 2))
             else:
                 if order_amount > 0:
-                    order_id, _ = exchange.buy(align_decimal_places(price, price * 0.9999), round(order_amount, 2))
+                    limit_price = align_decimal_places(price, price * 0.9999)
+                    order_id, _ = self._unified_place_order(symbol_full, 'buy', 'limit', round(order_amount, 2), limit_price)
                     if order_id:
                         soft_orders_to_focus.append(order_id)
 
@@ -312,10 +506,11 @@ class OkexExecutionEngine:
         elif direction.lower() == 'sell':
             if not soft:
                 if order_amount > 0:
-                    order_id, _ = exchange.sell(price, round(order_amount, 2), 'MARKET')
+                    order_id, _ = self._unified_place_order(symbol_full, 'sell', 'MARKET', round(order_amount, 2))
             else:
                 if order_amount > 0:
-                    order_id, _ = exchange.sell(align_decimal_places(price, price * 1.0001), round(order_amount, 2))
+                    limit_price = align_decimal_places(price, price * 1.0001)
+                    order_id, _ = self._unified_place_order(symbol_full, 'sell', 'limit', round(order_amount, 2), limit_price)
                     if order_id:
                         soft_orders_to_focus.append(order_id)
             print(
@@ -336,17 +531,130 @@ class OkexExecutionEngine:
             return []
 
 
-def init_all_thing():
-    engine = OkexExecutionEngine()
-    eth = init_OkxClient('eth', engine.account)
-    btc = init_OkxClient('btc', engine.account)
+def init_all_thing(exchange_type='okx', account=0):
+    """
+    初始化所有组件
+    
+    Args:
+        exchange_type: 交易所类型 ('okx', 'backpack')
+        account: 账户ID
+        
+    Returns:
+        (engine, eth_client, btc_client)
+    """
+    # 创建ExecutionEngine
+    engine = OkexExecutionEngine(account=account, exchange_type=exchange_type)
+    
+    # 获取AccountManager
+    account_manager = engine.account_manager
+    
+    # 获取ETH和BTC客户端（仅对OKX有效）
+    eth = None
+    btc = None
+    
+    if exchange_type.lower() == 'okx':
+        try:
+            from ctos.drivers.okx.driver import init_OkxClient
+            eth = init_OkxClient('eth', account)
+            btc = init_OkxClient('btc', account)
+        except Exception as e:
+            engine.logger.warning(f"Failed to create ETH/BTC clients: {e}")
+    
     return engine, eth, btc
 
 
 
 if __name__ == '__main__':
-    # Example usage
-    engine = OkexExecutionEngine()
-    engine.okex_spot.symbol = 'ETH-USDT-SWAP'
-    engine.okex_spot.get_price_now()
+    # 测试AccountManager和ExecutionEngine集成
+    print("=== 测试AccountManager和ExecutionEngine集成 ===")
+    
+    try:
+        # 1. 测试AccountManager
+        print("\n1. 测试AccountManager:")
+        from .AccountManager import get_account_manager, ExchangeType
+        
+        # 获取AccountManager实例
+        account_manager = get_account_manager()
+        print("✓ AccountManager获取成功")
+        
+        # 测试创建OKX Driver
+        print("\n1.1 测试创建OKX Driver:")
+        okx_driver = account_manager.get_driver(ExchangeType.OKX, 0)
+        if okx_driver:
+            print("✓ OKX Driver创建成功")
+        else:
+            print("✗ OKX Driver创建失败")
+        
+        # 测试创建Backpack Driver
+        print("\n1.2 测试创建Backpack Driver:")
+        bp_driver = account_manager.get_driver(ExchangeType.BACKPACK, 0)
+        if bp_driver:
+            print("✓ Backpack Driver创建成功")
+        else:
+            print("✗ Backpack Driver创建失败")
+        
+        # 获取统计信息
+        stats = account_manager.get_stats()
+        print(f"Driver统计: {stats}")
+        
+        # 2. 测试ExecutionEngine
+        print("\n2. 测试ExecutionEngine:")
+        
+        # 测试OKX ExecutionEngine
+        print("\n2.1 测试OKX ExecutionEngine:")
+        try:
+            okx_engine = OkexExecutionEngine(account=0, exchange_type='okx')
+            print("✓ OKX ExecutionEngine创建成功")
+            print(f"交易所类型: {okx_engine.exchange_type}")
+            print(f"账户ID: {okx_engine.account}")
+        except Exception as e:
+            print(f"✗ OKX ExecutionEngine创建失败: {e}")
+        
+        # 测试Backpack ExecutionEngine
+        print("\n2.2 测试Backpack ExecutionEngine:")
+        try:
+            bp_engine = OkexExecutionEngine(account=0, exchange_type='backpack')
+            print("✓ Backpack ExecutionEngine创建成功")
+            print(f"交易所类型: {bp_engine.exchange_type}")
+            print(f"账户ID: {bp_engine.account}")
+        except Exception as e:
+            print(f"✗ Backpack ExecutionEngine创建失败: {e}")
+        
+        # 3. 测试错误处理函数
+        print("\n3. 测试错误处理函数:")
+        
+        # 使用OKX引擎测试错误处理
+        if 'okx_engine' in locals():
+            print("\n3.1 测试价格精度调整:")
+            test_price = 4200.001
+            error_msg = "Price decimal too long"
+            adjusted_price = okx_engine._adjust_precision_for_error(test_price, error_msg, 'price')
+            print(f"原始价格: {test_price}")
+            print(f"调整后价格: {adjusted_price}")
+            
+            print("\n3.2 测试数量精度调整:")
+            test_quantity = 0.0111
+            error_msg = "Quantity decimal too long"
+            adjusted_quantity = okx_engine._adjust_precision_for_error(test_quantity, error_msg, 'quantity')
+            print(f"原始数量: {test_quantity}")
+            print(f"调整后数量: {adjusted_quantity}")
+        
+        # 4. 测试init_all_thing函数
+        print("\n4. 测试init_all_thing函数:")
+        try:
+            engine, eth, btc = init_all_thing(exchange_type='okx', account=0)
+            print("✓ init_all_thing成功")
+            print(f"Engine类型: {type(engine).__name__}")
+            print(f"ETH客户端: {'✓' if eth else '✗'}")
+            print(f"BTC客户端: {'✓' if btc else '✗'}")
+        except Exception as e:
+            print(f"✗ init_all_thing失败: {e}")
+        
+        print("\n=== 所有测试完成 ===")
+        
+    except Exception as e:
+        print(f"测试过程中出现错误: {e}")
+        import traceback
+        traceback.print_exc()
+    
     exit()

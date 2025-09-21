@@ -114,13 +114,13 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     else:
         new_rate_place2order = rate_price2order
     if start_leverage == 0:
-        engine.okex_spot.close_all_positions(mode="limit", price_offset=0.0005)
+        engine.cex_driver.close_all_positions(mode="limit", price_offset=0.0005)
         return
     else:
         if start_leverage < 0:
             is_btc_failed = True
             start_leverage = abs(start_leverage)
-        leverage_times = start_leverage if start_leverage > len(new_rate_place2order) * 10 / float(engine.okex_spot.fetch_balance('USDT')) else 1
+        leverage_times = start_leverage if start_leverage > len(new_rate_place2order) * 10 / float(engine.cex_driver.fetch_balance('USDT')) else 1
     print(new_rate_place2order)
     sanction_line = 0.01
     min_coin_amount_to_trade = engine.min_amount_to_trade
@@ -154,10 +154,10 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                         leverage_times = 0.5
                 else:
                     pass
-                start_money = float(engine.okex_spot.fetch_balance('USDT'))  ##  * (1 - win_times * 1.88/100)
+                start_money = float(engine.cex_driver.fetch_balance('USDT'))  ##  * (1 - win_times * 1.88/100)
             else:
                 start_money = reset_start_money if reset_start_money > 0 else float(
-                    engine.okex_spot.fetch_balance('USDT'))
+                    engine.cex_driver.fetch_balance('USDT'))
                 reset_start_money = 0
             stop_with_leverage = math.sqrt(math.log(leverage_times if leverage_times > 1.5 else 1.5, 2))
             stop_rate = 1 + 0.01 * stop_with_leverage
@@ -171,7 +171,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
             max_leverage_times = leverage_times
             # 0. 开仓机制，不是直接计算仓位，而是通过对比当前仓位与预期仓位的差值，去进行对齐，避免突然中断导致的错误
             init_operate_position = start_money * leverage_times
-            target_money = float(engine.okex_spot.fetch_balance('USDT'))
+            target_money = float(engine.cex_driver.fetch_balance('USDT'))
             if (not just_kill_position) and is_win:
                 usdt_amounts = []
                 coins_to_deal = []
@@ -190,7 +190,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                         coins_to_deal.append(coin)
                 # try:
                 #     if len(focus_orders) > 0:
-                #         engine.okex_spot.revoke_orders(focus_orders)
+                #         engine.cex_driver.revoke_orders(focus_orders)
                 # except Exception as e:
                 #     print('撤销订单失败： ', e)
                 print(usdt_amounts, coins_to_deal, leverage_times, start_money)
@@ -199,12 +199,12 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                 engine.focus_on_orders(new_rate_place2order.keys(), focus_orders)
                 is_win = False
 
-            # coinPrices_for_openPosition = {k: engine.okex_spot.get_price_now(k) for k in new_rate_place2order.keys()}
+            # coinPrices_for_openPosition = {k: engine.cex_driver.get_price_now(k) for k in new_rate_place2order.keys()}
             # save_para(coinPrices_for_openPosition, 'coinPrices_for_openPosition.json')
             coinPrices_for_openPosition = load_para(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
             coinPrices_for_openPosition = {}
             if not coinPrices_for_openPosition:
-                coinPrices_for_openPosition = {k: engine.okex_spot.get_price_now(k) for k in
+                coinPrices_for_openPosition = {k: engine.cex_driver.get_price_now(k) for k in
                                                new_rate_place2order.keys()}
                 save_para(coinPrices_for_openPosition, os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
             #
@@ -258,7 +258,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                     #########################################################
 
                     # 1.1 这个部分是加仓机制，下跌达到一定程度之后进行补仓操作，补仓有最低补仓价值，补完之后拉长补仓亏损率，避免杠杆拉高导致的急速高频加仓
-                    now_money = float(engine.okex_spot.fetch_balance('USDT'))
+                    now_money = float(engine.cex_driver.fetch_balance('USDT'))
                     os.system(f'echo {now_money} > now_money.log')
 
                     if use_grid_with_index:
@@ -320,11 +320,11 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                                         leverage_times -= max_leverage_times * 0.25
                                     if leverage_times < 0.15:
                                         leverage_times = 0.15
-                                    jiaoyi_ava = engine.okex_spot.get_jiaoyi_asset()
+                                    jiaoyi_ava = engine.cex_driver.get_jiaoyi_asset()
                                     lirun = now_money - start_money
-                                    if engine.okex_spot.account_type == 'MAIN' and jiaoyi_ava > lirun * 0.33:
+                                    if engine.cex_driver.account_type == 'MAIN' and jiaoyi_ava > lirun * 0.33:
                                         keep_backup_money = lirun * 0.25
-                                        engine.okex_spot.transfer_money(keep_backup_money, 'j2z')
+                                        engine.cex_driver.transfer_money(keep_backup_money, 'j2z')
                                     print(f"\n让我们恭喜这位男士！赚到了{now_money - start_money}，他在财富自由的路上坚定地迈进了一步！！\n")
                                     print(number_to_ascii_art(round(now_money - start_money, 2)))
                                     break
@@ -351,14 +351,14 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
 
                                 target_money = target_money * add_position_rate
                                 # 1.1.1 这个部分是从资金账户转到交易账户，在不影响模型运行的情况下，适度减缓加仓压力，降低杠杆，同时也是一定程度上拉低止盈位置，
-                                zijin_amount = engine.okex_spot.get_zijin_asset()
-                                if zijin_amount and engine.okex_spot.account_type == 'MAIN':
+                                zijin_amount = engine.cex_driver.get_zijin_asset()
+                                if zijin_amount and engine.cex_driver.account_type == 'MAIN':
                                     if zijin_amount > round(now_money * 0.01 / 2, 3):
                                         save_life_money = now_money * 0.01 / 2
-                                        engine.okex_spot.transfer_money(
+                                        engine.cex_driver.transfer_money(
                                             round(save_life_money if save_life_money < 5 else 5, 3), 'z2j')
                                     else:
-                                        engine.okex_spot.transfer_money(zijin_amount, 'z2j')
+                                        engine.cex_driver.transfer_money(zijin_amount, 'z2j')
                                 # 这里需要考虑，如果加仓成功，是否要提高对应的止盈位，不过加了Sec 1.2之后我倾向于不用
                                 # stop_rate += 0.0025
                                 leverage_times += round(add_position_money / start_money, 4)
@@ -393,14 +393,14 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                                 print(f"在{now_money}, 减仓{add_position_money}刀！！感谢网格大师！")
                                 target_money = target_money * stop_rate
                                 # 1.2.1 这个部分是从交易账户转到资金账户，在不影响模型运行的情况下，适度加大压力，提高时也是一定程度上拉高止盈位置，
-                                jiaoyi_ava = engine.okex_spot.get_jiaoyi_asset()
-                                if jiaoyi_ava and engine.okex_spot.account_type == 'MAIN':
+                                jiaoyi_ava = engine.cex_driver.get_jiaoyi_asset()
+                                if jiaoyi_ava and engine.cex_driver.account_type == 'MAIN':
                                     if jiaoyi_ava > round(now_money * 0.01 / 2, 3):
                                         save_life_money = now_money * 0.01 / 2
-                                        engine.okex_spot.transfer_money(
+                                        engine.cex_driver.transfer_money(
                                             round(save_life_money if save_life_money < 5 else 5, 3), 'j2z')
                                     else:
-                                        engine.okex_spot.transfer_money(jiaoyi_ava, 'z2j')
+                                        engine.cex_driver.transfer_money(jiaoyi_ava, 'z2j')
                                 # stop_rate += 0.0025
                                 leverage_times -= round(add_position_money / start_money, 4)
                                 add_position_rate += add_position_rate_modify_after_add_position
@@ -412,12 +412,12 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                         win_times = 0
 
                     # 2. 每日固定的资产转移，关键时候救命的啊！平日里必须要存点钱的，现在就半天存一次吧，如果余额较多，那就存个2块钱
-                    if count > 0 and count % 1800 == 0 and engine.okex_spot.account_type == 'MAIN' and not just_kill_position:
+                    if count > 0 and count % 1800 == 0 and engine.cex_driver.account_type == 'MAIN' and not just_kill_position:
                         is_transfer = True
-                        jiaoyi_ava = engine.okex_spot.get_jiaoyi_asset()
+                        jiaoyi_ava = engine.cex_driver.get_jiaoyi_asset()
                         if jiaoyi_ava > now_money * 0.2:
                             if leverage_times < 5:
-                                engine.okex_spot.transfer_money(jiaoyi_ava if jiaoyi_ava < 0.1 else 0.1, 'j2z')
+                                engine.cex_driver.transfer_money(jiaoyi_ava if jiaoyi_ava < 0.1 else 0.1, 'j2z')
                                 time.sleep(1)
 
                     # 3. 这个部分是PART退出机制，如果达到止盈点，跳出循环，去减仓 并未进入下一轮循环, 没达到就播报进度
@@ -427,10 +427,10 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                         win_times += 1
                         just_kill_position = False
                         # 4.1 达成目标之后转出一部分到资金账户去，保留实力！这部分只进不出，确保交易资金上涨的同事的同时，还能为未来的风险增加储备
-                        jiaoyi_ava = engine.okex_spot.get_jiaoyi_asset()
-                        if engine.okex_spot.account_type == 'MAIN' and jiaoyi_ava > now_money * 0.2:
+                        jiaoyi_ava = engine.cex_driver.get_jiaoyi_asset()
+                        if engine.cex_driver.account_type == 'MAIN' and jiaoyi_ava > now_money * 0.2:
                             keep_backup_money = now_money * 0.01 / 2
-                            engine.okex_spot.transfer_money(round(keep_backup_money if keep_backup_money < 5 else 5, 3),
+                            engine.cex_driver.transfer_money(round(keep_backup_money if keep_backup_money < 5 else 5, 3),
                                                             'j2z')
                         print(f"\n\n让我们恭喜这位男士！赚到了{now_money - start_money}，他在财富自由的路上坚定地迈进了一步！！\n\n")
                         print(number_to_ascii_art(round(now_money - start_money, 2)))
@@ -498,13 +498,13 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                         coin_exceed_btc_increase_rates = {}
                         selected = {}  # 满足“超额+资金”条件的币都收进来
 
-                        btc_now_price = engine.okex_spot.get_price_now('btc')
+                        btc_now_price = engine.cex_driver.get_price_now('btc')
                         now_price_for_all_coins['btc'] = btc_now_price
                         target_pool = {'btc', 'eth', 'sol', 'doge', 'xrp'}  # 5 个候选
                         # target_pool = {'btc', 'eth', 'sol', 'doge', 'xrp'}  # 5 个候选
 
                         for coin_name in new_rate_place2order:  # 遍历你所有关注的币
-                            price = engine.okex_spot.get_price_now(coin_name)
+                            price = engine.cex_driver.get_price_now(coin_name)
                             time.sleep(0.1)
                             now_price_for_all_coins[coin_name] = price
 

@@ -1,13 +1,13 @@
 import random
 import psutil
-
-from okex import get_okexExchage
+import sys
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import time
 import warnings
 import os
+import json
 from datetime import datetime, timedelta
 import gc
 import matplotlib.pyplot as plt
@@ -71,11 +71,20 @@ def add_project_paths(project_name="ctos", subpackages=None):
     return project_root
 
 
+def get_current_file_path() -> str:
+    """返回当前文件的绝对路径"""
+    return os.path.abspath(__file__)
+
+def get_current_dir() -> str:
+    """返回当前文件所在的目录"""
+    return os.path.dirname(os.path.abspath(__file__))
+
+
 # 执行路径添加
 PROJECT_ROOT = add_project_paths()
-from ctos.criver.okx.util import BeijingTime, get_host_ip, rate_price2order, pad_dataframe_to_length_fast, get_current_dir
-
-
+print(PROJECT_ROOT)
+from ctos.drivers.okx.util import BeijingTime, get_host_ip, rate_price2order, pad_dataframe_to_length_fast
+from ctos.drivers.okx.driver import init_OkxClient as get_okexExchage
 # === 配置 ===
 COINS = list(rate_price2order.keys())
 # TIMEFRAMES = {
@@ -130,8 +139,8 @@ balance_file_path = get_current_dir() + '/' +'total_balance.json'
 
 
 
-SNAP_DIR = Path('hourly_snapshots')
-SNAP_DIR.mkdir(exist_ok=True)
+SNAP_DIR = Path(get_current_dir()) / 'hourly_snapshots'
+SNAP_DIR.mkdir(parents=True, exist_ok=True)
 
 def _snapshot_filename(ts: datetime) -> Path:
     """生成形如 2025-07-03_14.pkl.gz 的文件路径"""
@@ -187,10 +196,13 @@ def clock_worker(shared_ref):
 def log_asset():
     total_equity_usd = exchange.fetch_balance('USDT')
     
-    # 保存到文件
-    if os.path.exists():
-        with open(balance_file_path, 'r') as f:
-            data = json.load(f)
+    # 保存到文件（修复：使用 balance_file_path 检查存在性，并容错读取）
+    if os.path.exists(balance_file_path):
+        try:
+            with open(balance_file_path, 'r') as f:
+                data = json.load(f)
+        except Exception:
+            data = []
         data.append({'timestamp': time.time(), 'total_equity_usd': total_equity_usd})
     else:
         data = [{'timestamp': time.time(), 'total_equity_usd': total_equity_usd}]
@@ -243,8 +255,15 @@ def plot_asset_trend():
     plt.xticks(rotation=45)
     
     # 保存图像
-    plt.savefig('../trade_runtime_files/asset_trend.png')
-    os.system('scp ../trade_runtime_files/asset_trend.png root@66.187.4.10:/root/mysite/static/images/')
+    asset_dir = Path(get_current_dir()) / 'trade_runtime_files'
+    asset_dir.mkdir(parents=True, exist_ok=True)
+    local_asset = str(asset_dir / 'asset_trend.png')
+    plt.savefig(local_asset)
+    # 同步到远端（保留原有逻辑，只改本地路径）
+    if HOST_IP.find('66.187.4.10') != -1:
+        os.system(f'cp {local_asset} ~/mysite/static/images/')
+    else:
+        os.system(f'scp {local_asset} root@66.187.4.10:/root/mysite/static/images/')
     plt.close()
 
 
@@ -281,11 +300,14 @@ def generate_time_axis(time_gap, length):
 
 # @TODO 需要改进下，不然以后数据量大了简直绝望
 
-def store_coin_data_if_needed(df, coin, time_gap, base_path='data/coin_change_data'):
+def store_coin_data_if_needed(df, coin, time_gap, base_path=None):
     """
     存储每个币种的处理后的 DataFrame 到本地 CSV。
     如果 CSV 已存在，则合并并去重后写入；否则创建新文件。
     """
+    # 将默认路径改为当前脚本目录下的子目录（按要求使用 get_current_dir() + '/' + 形式）
+    if base_path is None:
+        base_path = get_current_dir() + '/' + 'data/coin_change_data'
 
     os.makedirs(base_path, exist_ok=True)
     file_path = os.path.join(base_path, f"{coin.upper()}_{time_gap}.csv")
@@ -418,7 +440,9 @@ def correlation_heatmap(coins, time_gap='5m', method='spearman',
 
     plt.title(f"{method.capitalize()} Corr (after BTC-β)  – {time_gap}", fontsize=max(8, int(240/n)))
     plt.tight_layout()
-    out = f'chart_for_group/heatmap_{time_gap}.png'
+    out_dir = Path(get_current_dir()) / 'chart_for_group'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = str(out_dir / f'heatmap_{time_gap}.png')
     plt.savefig(out, dpi=150)
     plt.close(); gc.collect()
     print(f"✅ 相关热图已保存 → {out}")
@@ -608,8 +632,9 @@ def draw_allcoin_trend(time_gap, coins):
     plt.tight_layout()
 
 
-    out = os.path.expanduser(
-        f'~/Quantify/okx/chart_for_group/allcoin_trend_{time_gap if time_gap.find("m") != -1 else time_gap.upper()}.png')
+    out_dir = Path(get_current_dir()) / 'chart_for_group'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = str(out_dir / f'allcoin_trend_{time_gap if ("m" in time_gap) else time_gap.upper()}.png')
     plt.tight_layout()
     plt.savefig(out, dpi=150)
     plt.close()
@@ -701,7 +726,9 @@ def multi_tf_ma_bBands_signal(df_1m, df_15m, df_1h, df_4h, df_1d,
     ax.legend(fontsize=8)
     plt.tight_layout()
 
-    out = f'chart_for_group/good_coins/{symbol.lower()}_multi_tf_signal_{int(time.time())}.png'
+    out_dir = Path(get_current_dir()) / 'chart_for_group' / 'good_coins'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = str(out_dir / f'{symbol.lower()}_multi_tf_signal_{int(time.time())}.png')
 
     plt.savefig(out, dpi=150)
     plt.close()
@@ -907,6 +934,7 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     #      'uni', 'hbar', 'ton', 'sui', 'avax', 'fil', 'ip', 'gala', 'sand']
     if len(good_group) == 0:
         try:
+            print(get_current_dir() + '/' + 'good_group_plot.txt')
             with open(get_current_dir() + '/' + 'good_group_plot.txt', 'r', encoding='utf8') as f:
                 data = f.readlines()
                 good_group = data[0].strip().split(',')
@@ -934,7 +962,7 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     
     market_idx_1 = market_strength_index(data_frame, lookback=30)
 
-    # ① ---------- 构造权重向量（归一化到 1） ------------------------------
+    # ① ---------- 构造权重向量（归一化到 1）------------------------------
     total = sum(all_rate)
     weights = {c: r / total for c, r in zip(good_group, all_rate)}  # {'btc':0.45, 'doge':0.30, …}
     # ② ---------- 拼接 good_group 的收益列 -------------------------------
@@ -1185,7 +1213,7 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
 
     eps = 0.05 * (stack_upper - stack_lower)
 
-    # ---------- 1. Bollinger 触碰点（绿三角） ------------------------------
+    # ---------- 1. Bollinger 触碰点（绿三角）------------------------------
     touch_upper = np.where(stack_profile >= stack_upper)[0]
     touch_lower = np.where(stack_profile <= stack_lower)[0]
 
@@ -1250,7 +1278,7 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     ax1.plot(date_range, lower_trend,
              label='lower bollinger', color='black', alpha=0.6)
     
-    # ---------- 2. 其它币（含缩放后 BTC） -------------------------------
+    # ---------- 2. 其它币（含缩放后 BTC）-------------------------------
     for coin, df in data_frames.items():
         scaled = (df['close'] / df['close'].iloc[0] - 1) * 100
 
@@ -1385,7 +1413,10 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     plt.ylabel('Daily Returns (%)', fontsize=16)
     # plt.legend()
     plt.grid(True)
-    plt.savefig(f'chart_for_group/comparison_chart_{prex}_{time_gap}.png')  # 保存图表
+    out_dir = Path(get_current_dir()) / 'chart_for_group'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = str(out_dir / f'comparison_chart_{prex}_{time_gap}.png')
+    plt.savefig(out, dpi=150)  # 保存图表
     # plt.show()
     plt.close('all')  # 关闭所有图形
     gc.collect()  # 强制垃圾回收
@@ -1420,9 +1451,11 @@ def get_good_bad_coin_group(length=5):
     best_performance_coins = sorted_coins[-length:]
     print("Coins with the worst average volatility:", worst_performance_coins)
     print("Coins with the best average volatility:", best_performance_coins)
-    with open('best_performance_coins.txt', 'w') as f:
+    local_bp = Path(get_current_dir()) / 'best_performance_coins.txt'
+    with open(str(local_bp), 'w') as f:
         f.write(','.join(best_performance_coins))
-    os.system(f'scp best_performance_coins.txt root@66.187.4.10:/root/Quantify/okx')
+    # 保持原有同步逻辑，但使用本地文件路径
+    os.system(f'scp {str(local_bp)} root@66.187.4.10:/root/Quantify/okx')
     return worst_performance_coins, best_performance_coins
 
 
@@ -1533,6 +1566,7 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------
     while True:
         try:
+        # if 1>0:
             now = time.time()
             for idx, gap in enumerate(['1m','5m','15m','1h','4h','1d']):
                 if now - last_run[gap] < update_interval[gap]:
@@ -1546,13 +1580,14 @@ if __name__ == '__main__':
                 good_group = list(set(['btc'] + best_performance_coins))
                 good_group = []
                 main1(COINS, prex=chart_name, time_gap=gap, good_group=good_group, all_rate= [1/len(good_group) for coinx in good_group] )
-                local = f'~/Quantify/okx/chart_for_group/comparison_chart_{chart_name}_{gap}.png'
-                remote= timegap_to_filename[gap]
+                out_dir = Path(get_current_dir()) / 'chart_for_group'
+                out_dir.mkdir(parents=True, exist_ok=True)
+                local = str(out_dir / f'comparison_chart_{chart_name}_{gap}.png')
+                remote = timegap_to_filename[gap]
                 if HOST_IP.find('66.187.4.10') != -1:
                     os.system(f'cp {local} ~/mysite/static/images/{remote}')
                 else:
                     os.system(f'scp {local} root@66.187.4.10:/root/mysite/static/images/{remote}')
-                    # os.system(f'scp {local} root@66.187.4.10:/root/Quantify/myproject/charts/static/images/{remote}')
 
                 last_run[gap] = now              # 更新时间戳
                 print(f"[{gap}] 更新完成，用时 {round(time.time()-now,2)} 秒")
