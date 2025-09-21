@@ -66,7 +66,7 @@ def init_OkxClient(symbol="ETH-USDT-SWAP", account=0, show=False):
     #     print("[OKX] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
     if symbol.find('-') == -1:
         symbol = f'{symbol.upper()}-USDT-SWAP'
-    return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None)
+    return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None, account_id=account)
 
 class OkxDriver(TradingSyscalls):
     """
@@ -79,7 +79,7 @@ class OkxDriver(TradingSyscalls):
     """
 
     def __init__(self, okx_client=None, mode="swap", default_quote="USDT",
-                 price_scale=1e-8, size_scale=1e-8):
+                 price_scale=1e-8, size_scale=1e-8, account_id=0):
         self.cex = 'OKX'
         self.quote_ccy = 'USDT'
         """

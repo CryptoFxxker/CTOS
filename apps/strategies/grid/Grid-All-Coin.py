@@ -7,11 +7,23 @@ import time
 from pathlib import Path
 
 
-# 将项目根目录加入 sys.path，确保可以导入 `ctos` 包
-_THIS_FILE = Path(__file__).resolve()
-_PROJECT_ROOT = _THIS_FILE.parents[3]
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
+# 确保项目根目录在sys.path中
+def _add_bpx_path():
+    """添加bpx包路径到sys.path，支持多种运行方式"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    bpx_path = os.path.join(current_dir, 'bpx')
+    if bpx_path not in sys.path:
+        sys.path.insert(0, bpx_path)
+    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
+    root_bpx_path = os.path.join(project_root, 'bpx')
+    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+        sys.path.insert(0, root_bpx_path)
+    if os.path.exists(project_root) and project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    return project_root
+# 执行路径添加
+_PROJECT_ROOT = _add_bpx_path()
+
 
 from ctos.drivers.backpack.util import align_decimal_places, round_dynamic, round_to_two_digits
 
@@ -135,11 +147,6 @@ def main():
                                                           size=qty, price=price_align)
                             if err is not None:
                                 print(f"\n[{sym}] 卖单失败:", err, '\n')
-                                if err['message'].find('Quantity decimal too long') != -1:
-                                    qty = str(qty)[:len(str(qty))-1]
-                                    oid, err = driver.place_order(sym, side="sell",
-                                                          order_type="limit",
-                                                          size=qty, price=price_align)
                             else:
                                 print(f"\n[{sym}] 卖出 {qty}, px={price_align}, id={oid}\n")
                                 data["init_price"] = price_now
@@ -156,11 +163,6 @@ def main():
                                                         size=qty, price=price_align)
                             if err is not None:
                                 print(f"\n[{sym}] 买单失败:", err, '\n')
-                            if err['message'].find('Quantity decimal too long') != -1:
-                                qty = str(qty)[:len(str(qty))-1]
-                                oid, err = driver.place_order(sym, side="buy",
-                                                        order_type="limit",
-                                                        size=qty, price=price_align)
                             else:
                                 print(f"\n[{sym}] 买入 {qty}, px={price_align}, id={oid}\n")
                                 data["init_price"] = price_now

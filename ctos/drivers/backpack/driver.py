@@ -29,9 +29,9 @@ def _add_bpx_path():
         sys.path.insert(0, root_bpx_path)
     if os.path.exists(project_root) and project_root not in sys.path:
         sys.path.insert(0, project_root)
-
+    return project_root
 # 执行路径添加
-_add_bpx_path()
+_PROJECT_ROOT = _add_bpx_path()
 
 # Import Backpack clients (robust to different execution contexts)
 try:
@@ -400,37 +400,109 @@ class BackpackDriver(TradingSyscalls):
         
         # 处理价格精度错误
         if value_type == 'price' and ('price decimal too long' in error_str or 'decimal too long' in error_str):
-            # 减少价格的小数位数
+            # 减少价格的小数位数，同时确保有效数字不超过7位
             if '.' in str(value):
                 decimal_places = len(str(value).split('.')[1])
                 new_places = max(0, decimal_places - 1)
-                return round(value, new_places)
+                adjusted_value = round(value, new_places)
+                
+                # 检查有效数字是否超过7位
+                if self._count_significant_digits(adjusted_value) > 7:
+                    # 如果有效数字超过7位，进一步减少精度
+                    adjusted_value = self._limit_significant_digits(adjusted_value, 7)
+                
+                return adjusted_value
             return value
             
         # 处理数量精度错误
         elif value_type == 'quantity' and ('quantity decimal too long' in error_str or 'decimal too long' in error_str):
-            # 减少数量的小数位数
+            # 减少数量的小数位数，同时确保有效数字不超过3位
             if '.' in str(value):
                 decimal_places = len(str(value).split('.')[1])
                 new_places = max(0, decimal_places - 1)
-                return round(value, new_places)
+                adjusted_value = round(value, new_places)
+                
+                # 检查有效数字是否超过3位
+                if self._count_significant_digits(adjusted_value) > 3:
+                    # 如果有效数字超过3位，进一步减少精度
+                    adjusted_value = self._limit_significant_digits(adjusted_value, 3)
+                
+                return adjusted_value
             return value
             
         # 处理数量过小错误
         elif value_type == 'quantity' and ('quantity is below the minimum' in error_str or 'below the minimum' in error_str):
-            # 增加数量到最小允许值
-            return max(value, 0.0001)  # 设置一个合理的最小值
+            # 增加数量到最小允许值，同时确保有效数字不超过3位
+            min_value = max(value, 0.0001)  # 设置一个合理的最小值
+            if self._count_significant_digits(min_value) > 3:
+                min_value = self._limit_significant_digits(min_value, 3)
+            return min_value
             
         # 处理解析错误（通常是由于精度问题）
         elif 'parse request payload error' in error_str or 'invalid decimal' in error_str:
             if value_type == 'price':
-                # 价格保留2位小数
-                return round(value, 2)
+                # 价格保留2位小数，确保有效数字不超过7位
+                adjusted_value = round(value, 2)
+                if self._count_significant_digits(adjusted_value) > 7:
+                    adjusted_value = self._limit_significant_digits(adjusted_value, 7)
+                return adjusted_value
             elif value_type == 'quantity':
-                # 数量保留4位小数
-                return round(value, 4)
+                # 数量保留4位小数，确保有效数字不超过3位
+                adjusted_value = round(value, 4)
+                if self._count_significant_digits(adjusted_value) > 3:
+                    adjusted_value = self._limit_significant_digits(adjusted_value, 3)
+                return adjusted_value
                 
         return value
+    
+    def _count_significant_digits(self, value):
+        """
+        计算数值的有效数字位数
+        :param value: 数值
+        :return: 有效数字位数
+        """
+        if value == 0:
+            return 0
+        
+        # 转换为字符串，去除科学计数法
+        str_value = f"{value:.10f}".rstrip('0').rstrip('.')
+        
+        # 移除小数点
+        str_value = str_value.replace('.', '')
+        
+        # 移除前导零
+        str_value = str_value.lstrip('0')
+        
+        return len(str_value)
+    
+    def _limit_significant_digits(self, value, max_digits):
+        """
+        限制数值的有效数字位数
+        :param value: 数值
+        :param max_digits: 最大有效数字位数
+        :return: 调整后的数值
+        """
+        if value == 0:
+            return 0
+        
+        # 计算当前有效数字位数
+        current_digits = self._count_significant_digits(value)
+        
+        if current_digits <= max_digits:
+            return value
+        
+        # 计算需要保留的小数位数
+        # 从整数部分开始计算
+        int_part = int(abs(value))
+        int_digits = len(str(int_part)) if int_part > 0 else 0
+        
+        if int_digits >= max_digits:
+            # 如果整数部分已经达到或超过最大位数，直接截断
+            return int(value)
+        else:
+            # 计算小数部分可以保留的位数
+            decimal_digits = max_digits - int_digits
+            return round(value, decimal_digits)
 
     def place_order(self, symbol, side, order_type, size, price=None, client_id=None, max_retries=3, **kwargs):
         """
@@ -1022,29 +1094,14 @@ class BackpackDriver(TradingSyscalls):
 
             elif mode == "limit":
                 if order_side == "SELL":
-                    price = mark_price * (1 - price_offset)
-                else:
                     price = mark_price * (1 + price_offset)
+                else:
+                    price = mark_price * (1 - price_offset)
                 self.place_order(symbol=sym, side=order_side, order_type="limit", size=size, price=price)
                 print(f"📤 限价平仓: {sym} {order_side} {size} @ {price}")
 
             else:
                 raise ValueError("mode 必须是 'market' 或 'limit'")
-
-if __name__ == "__main__":
-    bp = BackpackDriver()
-    print(bp.get_position())
-
-# last = x.fetch_balance()
-# now = time.time()
-# for i in range(10):  # 连续测 10 次
-#     balance = x.fetch_balance()
-#     print(f"[{now}] USDT balance = {balance}")
-    
-#     if balance != last:
-#         print(f" {time.time() - now} ⚡ 变化了！")
-#         break    
-#     time.sleep(60)  # 每 2 秒请求一次
 
 
 def test_error_handling():
@@ -1101,6 +1158,27 @@ def test_error_handling():
         assert adjusted_price == 4200.0, f"价格调整失败: {adjusted_price}"
         assert adjusted_quantity == 0.0, f"数量调整失败: {adjusted_quantity}"
         print("✓ 解析错误测试通过")
+        
+        # 测试有效数字限制
+        print("\n1.5 测试有效数字限制:")
+        
+        # 测试价格有效数字限制（不超过7位）
+        test_price = 1234567.89  # 9位有效数字
+        error_msg = "Price decimal too long"
+        adjusted_price = driver._adjust_precision_for_error(test_price, error_msg, 'price')
+        significant_digits = driver._count_significant_digits(adjusted_price)
+        print(f"价格有效数字测试: {test_price} -> {adjusted_price} (有效数字: {significant_digits})")
+        assert significant_digits <= 7, f"价格有效数字超过7位: {significant_digits}"
+        print("✓ 价格有效数字限制测试通过")
+        
+        # 测试数量有效数字限制（不超过3位）
+        test_quantity = 123.456  # 6位有效数字
+        error_msg = "Quantity decimal too long"
+        adjusted_quantity = driver._adjust_precision_for_error(test_quantity, error_msg, 'quantity')
+        significant_digits = driver._count_significant_digits(adjusted_quantity)
+        print(f"数量有效数字测试: {test_quantity} -> {adjusted_quantity} (有效数字: {significant_digits})")
+        assert significant_digits <= 3, f"数量有效数字超过3位: {significant_digits}"
+        print("✓ 数量有效数字限制测试通过")
         
         print("\n=== 错误处理函数测试完成 ===")
         
@@ -1287,6 +1365,83 @@ def test_error_type_detection():
         print(f"✗ 错误类型检测测试失败: {e}")
 
 
+def test_significant_digits():
+    """测试有效数字功能"""
+    print("\n=== 有效数字功能测试 ===")
+    
+    try:
+        driver = BackpackDriver()
+        
+        # 测试有效数字计算
+        print("\n1. 测试有效数字计算:")
+        test_cases = [
+            (0, 0),
+            (1, 1),
+            (12, 2),
+            (123, 3),
+            (1234, 4),
+            (0.1, 1),
+            (0.12, 2),
+            (0.123, 3),
+            (1.23, 3),
+            (12.34, 4),
+            (123.456, 6),
+            (1234.567, 7),
+            (0.001, 1),
+            (0.0001, 1),
+            (1.0000, 1),
+            (1.2000, 2),
+            (1.2300, 3)
+        ]
+        
+        for value, expected in test_cases:
+            actual = driver._count_significant_digits(value)
+            status = "✓" if actual == expected else "✗"
+            print(f"  {status} {value} -> {actual} (期望: {expected})")
+            if actual != expected:
+                print(f"    ❌ 有效数字计算错误: {value} 应该是 {expected} 位，实际是 {actual} 位")
+        
+        # 测试有效数字限制
+        print("\n2. 测试有效数字限制:")
+        
+        # 测试价格有效数字限制（7位）
+        price_cases = [
+            (1234567.89, 7),  # 9位 -> 7位
+            (123456.789, 6),  # 6位 -> 保持6位
+            (12345.6789, 5),  # 5位 -> 保持5位
+            (0.1234567, 7),   # 7位 -> 保持7位
+            (0.12345678, 7),  # 8位 -> 7位
+        ]
+        
+        for value, max_digits in price_cases:
+            limited = driver._limit_significant_digits(value, max_digits)
+            actual_digits = driver._count_significant_digits(limited)
+            status = "✓" if actual_digits <= max_digits else "✗"
+            print(f"  {status} 价格 {value} -> {limited} (有效数字: {actual_digits}, 限制: {max_digits})")
+        
+        # 测试数量有效数字限制（3位）
+        quantity_cases = [
+            (123.456, 3),     # 6位 -> 3位
+            (12.34, 3),       # 4位 -> 3位
+            (1.23, 3),        # 3位 -> 保持3位
+            (0.123, 3),       # 3位 -> 保持3位
+            (0.1234, 3),      # 4位 -> 3位
+        ]
+        
+        for value, max_digits in quantity_cases:
+            limited = driver._limit_significant_digits(value, max_digits)
+            actual_digits = driver._count_significant_digits(limited)
+            status = "✓" if actual_digits <= max_digits else "✗"
+            print(f"  {status} 数量 {value} -> {limited} (有效数字: {actual_digits}, 限制: {max_digits})")
+        
+        print("\n✓ 有效数字功能测试完成")
+        
+    except Exception as e:
+        print(f"✗ 有效数字功能测试失败: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 if __name__ == '__main__':
     # 运行错误处理测试
     success = test_error_handling()
@@ -1297,6 +1452,9 @@ if __name__ == '__main__':
         
         # 运行错误类型检测测试
         test_error_type_detection()
+        
+        # 运行有效数字功能测试
+        test_significant_digits()
         
         print("\n🎉 所有测试完成！")
         print("\n使用说明:")
@@ -1309,5 +1467,9 @@ if __name__ == '__main__':
         print("   - Quantity is below the minimum: 自动增加数量")
         print("   - Parse request payload error: 自动调整精度格式")
         print("   - 未知错误: 使用通用调整策略")
+        print("5. 有效数字限制:")
+        print("   - 价格有效数字不超过7位")
+        print("   - 数量有效数字不超过3位")
+        print("   - 自动检测和调整有效数字位数")
     else:
         print("\n❌ 测试失败，请检查配置")
