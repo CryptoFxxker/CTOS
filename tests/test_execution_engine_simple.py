@@ -51,9 +51,8 @@ def quick_test(exchange_type, coin, amount=10):
         soft_orders = engine.place_incremental_orders(
             usdt_amount=amount,
             coin=coin,
-            direction='sell',
-            price=price*1.01,
-            soft=True 
+            direction='buy',  # 改为买入
+            soft=True  # 使用限价单
         )
         end_time = time.time()
         
