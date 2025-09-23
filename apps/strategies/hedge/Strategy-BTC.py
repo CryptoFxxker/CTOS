@@ -32,7 +32,7 @@ except ImportError as import_error:
 import math
 
 import  psutil, time
-from ctos.core.kernel.runtime.ExecutionEngine import OkexExecutionEngine, init_OkxClient
+from ctos.core.kernel.runtime.ExecutionEngine import ExecutionEngine, init_OkxClient
 
 
 def set_leverage(increase_times, start_money, leverage_times):
@@ -72,7 +72,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     # @TODO 需要考虑机动择时开仓方案了，现在这个太手动了，而且要设置2.5个点的止损线
     strategy_name = btc_is_the_king.__name__.upper()  # 结果为 "BTC_IS_THE_KING"
     strategy_detail = "-".join(sys.argv[1:]) if len(sys.argv[1:]) > 1 else 'StrategyAdjustment'
-    engine = OkexExecutionEngine(account, strategy_name, strategy_detail)
+    engine = ExecutionEngine(account, strategy_name, strategy_detail)
     just_kill_position = False
     # just_kill_position = True
     reset_start_money = 0

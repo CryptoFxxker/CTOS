@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 import math
+import json
 import os
 import sys
 def _add_bpx_path():
@@ -23,10 +24,9 @@ def _add_bpx_path():
         sys.path.insert(0, root_bpx_path)
     if os.path.exists(project_root) and project_root not in sys.path:
         sys.path.insert(0, project_root)
-
+    return project_root
 # 执行路径添加
-_add_bpx_path()
-
+_PROJECT_ROOT = _add_bpx_path()
 try:
     # 优先：绝对导入（当项目以包方式安装/运行时）
     from ctos.drivers.okx.util import *
@@ -36,7 +36,6 @@ try:
     # Change the name below to match your class or factory if different.
 except Exception as e:
     print('Error from okex import ', e)
-    OkexSpot = object  # fallback for static analyzers / import-late patterns
 
 # Import syscall base
 try:
@@ -66,7 +65,7 @@ def init_OkxClient(symbol="ETH-USDT-SWAP", account=0, show=False):
     #     print("[OKX] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
     if symbol.find('-') == -1:
         symbol = f'{symbol.upper()}-USDT-SWAP'
-    return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None, account_id=account)
+    return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None)
 
 class OkxDriver(TradingSyscalls):
     """
@@ -100,6 +99,20 @@ class OkxDriver(TradingSyscalls):
         self.default_quote = default_quote or "USDT"
         self.price_scale = price_scale
         self.size_scale = size_scale
+        self.load_exchange_trade_info()
+
+    def save_exchange_trade_info(self):
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json', 'w') as f:
+            json.dump(self.exchange_trade_info, f)
+        # print('save_exchange_trade_info')
+
+    def load_exchange_trade_info(self):
+        if not os.path.exists(os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json'):
+            self.exchange_trade_info =  {}
+            return
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json', 'r') as f:
+            self.exchange_trade_info = json.load(f)
+            
 
     # -------------- helpers --------------
     def _norm_symbol(self, symbol):
@@ -155,8 +168,100 @@ class OkxDriver(TradingSyscalls):
         except Exception as e:
             return [], e
 
-    def exchange_limits(self):
-        return {"price_scale": self.price_scale, "size_scale": self.size_scale}
+    def exchange_limits(self, symbol=None, instType='SWAP'):
+        """
+        获取交易所限制信息，包括价格精度、数量精度、最小下单数量等
+        
+        :param symbol: 交易对符号，如 'DOGE-USDT-SWAP'，如果为None则返回全类型数据
+        :param instType: 产品类型，默认为 'SWAP'
+        :return: dict 包含限制信息的字典
+        """
+        if symbol:
+            symbol, _, _ = self._norm_symbol(symbol)
+            if symbol in self.exchange_trade_info:
+                return self.exchange_trade_info[symbol], None
+        if not hasattr(self.okx, 'get_exchange_info'):
+            return {"error": "okx client lacks get_exchange_info method"}
+        
+        try:
+            # 调用 get_exchange_info 获取数据
+            success, error = self.okx.get_exchange_info(instType=instType, symbol=symbol)
+            
+            if error:
+                return {"error": f"API调用失败: {error}"}
+            
+            if not success or success.get('code') != '0':
+                return {"error": f"API返回错误: {success.get('msg', '未知错误')}"}
+            
+            data_list = success.get('data', [])
+            if not data_list:
+                return {"error": "未获取到数据"}
+            
+            # 如果指定了symbol，返回单一币种信息
+            if symbol:
+                if len(data_list) == 1:
+                    item = data_list[0]
+                    limits = self._extract_limits_from_item(item)
+                    if limits and 'error' not in limits:
+                        self.exchange_trade_info[symbol] = limits
+                        self.save_exchange_trade_info()
+                    return limits, None
+                else:
+                    return None, {"error": f"未找到指定交易对 {symbol} 的信息"}
+            
+            # 如果没有指定symbol，返回全类型数据数组
+            result = []
+            for item in data_list:
+                limits = self._extract_limits_from_item(item)
+                if limits and 'error' in limits:
+                    continue
+                ticker_symbol = item.get('instId', '')
+                if instType.upper() in ticker_symbol.upper():
+                    if limits and 'error' not in limits:
+                        result.append(limits)
+                        self.exchange_trade_info[ticker_symbol] = limits
+            self.save_exchange_trade_info()
+            return result, None
+            
+        except Exception as e:
+            return None, {"error": f"处理数据时发生异常: {str(e)}"}
+    
+    def _extract_limits_from_item(self, item):
+        """
+        从单个数据项中提取限制信息
+        
+        :param item: 单个交易对数据项
+        :return: dict 包含限制信息的字典
+        """
+        try:
+            # 提取基本字段
+            tick_sz = item.get('tickSz', '0')
+            lot_sz = item.get('lotSz', '0') 
+            min_sz = item.get('minSz', '0')
+            ct_val = item.get('ctVal', '0')
+            lever = item.get('lever', '0')
+            
+            # 转换为浮点数
+            tick_sz_float = float(tick_sz) if tick_sz and tick_sz != '0' else 0.0
+            lot_sz_float = float(lot_sz) if lot_sz and lot_sz != '0' else 0.0
+            min_sz_float = float(min_sz) if min_sz and min_sz != '0' else 0.0
+            ct_val_float = float(ct_val) if ct_val and ct_val != '0' else 0.0
+            lever_float = float(lever) if lever and lever != '0' else 0.0
+            
+            return {
+                'symbol': item.get('instId', ''),
+                'instType': item.get('instType', ''),
+                'price_precision': tick_sz_float,  # 下单价格精度
+                'size_precision': lot_sz_float,    # 下单数量精度
+                'min_order_size': min_sz_float,    # 最小下单数量
+                'contract_value': ct_val_float,    # 合约面值（仅适用于交割/永续/期权）
+                'max_leverage': lever_float,       # 最大杠杆倍数（不适用于币币、期权）
+                'state': item.get('state', ''),    # 交易对状态
+                'raw': item  # 原始数据
+            }
+        except Exception as e:
+            print(f"{item.get('instId', '')},解析数据项时发生异常: {str(e)}")
+            return {"error": f"解析数据项时发生异常: {str(e)}"}
 
     def fees(self, symbol='ETH-USDT-SWAP', instType='SWAP', keep_origin=False):
         """
@@ -549,7 +654,7 @@ class OkxDriver(TradingSyscalls):
                             'liquidationPrice': liq,
                             'ts': ts,
                             'fee': fee,
-                            'breakEvenPrice':pos.get('bePx')
+                            'breakEvenPrice': d.get('bePx')
                         })
 
                 if symbol and isinstance(unified, list):

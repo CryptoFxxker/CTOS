@@ -1,5 +1,22 @@
 import logging, json, time, sys, threading, atexit, queue, os
 from logging.handlers import RotatingFileHandler
+# 确保项目根目录在sys.path中
+def _add_bpx_path():
+    """添加bpx包路径到sys.path，支持多种运行方式"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    bpx_path = os.path.join(current_dir, 'bpx')
+    if bpx_path not in sys.path:
+        sys.path.insert(0, bpx_path)
+    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
+    root_bpx_path = os.path.join(project_root, 'bpx')
+    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+        sys.path.insert(0, root_bpx_path)
+    if os.path.exists(project_root) and project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    return project_root
+# 执行路径添加
+_PROJECT_ROOT = _add_bpx_path()
+
 
 class SystemMonitor:
     # ---------- 参数 ----------
@@ -10,11 +27,20 @@ class SystemMonitor:
 
     def __init__(self, execution_engine, strategy_name='Classical'):
         self.execution_engine = execution_engine
-
+        
+        # 获取交易所名称
+        cex_name = getattr(execution_engine.cex_driver, 'cex', 'UNKNOWN')
+        # 创建logging目录
+        log_dir = os.path.join(_PROJECT_ROOT, 'ctos', 'core', 'io', 'logging')
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # 生成带交易所名称的文件名
+        base_name = f"{cex_name}_{strategy_name}"
+        
         # 监控日志：滚动文件
         self.logger = logging.getLogger("SystemMonitor-" + strategy_name)
         self.logger.setLevel(logging.INFO)
-        log_file = f"{strategy_name}_system_monitor.log"
+        log_file = os.path.join(log_dir, f"{base_name}_system_monitor.log")
         rh = RotatingFileHandler(
             log_file,
             maxBytes=self.LOG_MAX_MB * 1024 * 1024,
@@ -27,7 +53,8 @@ class SystemMonitor:
             self.logger.addHandler(rh)
 
         # ---------- 操作日志：队列 + 后台 flush ----------
-        self.op_file = open(f"{strategy_name}_operation_log.json", "a", buffering=1)
+        op_file_path = os.path.join(log_dir, f"{base_name}_operation_log.log")
+        self.op_file = open(op_file_path, "a", buffering=1)
         self.q   = queue.Queue()
         self._stop = threading.Event()
         self.worker = threading.Thread(target=self._flush_loop, daemon=True)
@@ -92,7 +119,7 @@ class SystemMonitor:
         并记录当前价格，如果异常，则记录错误。
         """
         try:
-            price = self.execution_engine.get_price_now(symbol)
+            price = self.execution_engine.cex_driver.get_price_now(symbol)
             if price is not None:
                 msg = f"API Status OK. {symbol} 当前价格：{price}"
                 self.logger.info(msg)
@@ -113,7 +140,7 @@ class SystemMonitor:
         如果与上一次记录的价格相比变化超过 threshold（百分比），则记录报警信息。
         """
         try:
-            price = self.execution_engine.get_price_now(symbol)
+            price = self.execution_engine.cex_driver.get_price_now(symbol)
             if price is None:
                 self.logger.error(f"monitor_market: 无法获取 {symbol} 当前价格")
                 return
@@ -222,6 +249,6 @@ class SystemMonitor:
 
 
 if __name__ == '__main__':
-    # from ExecutionEngine import OkexExecutionEngine
+    # from ExecutionEngine import ExecutionEngine
     pass
 

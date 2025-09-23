@@ -112,14 +112,14 @@ class OkexSpot:
             return None, result
         return result, None
 
-    def get_exchange_info(self, instType='SPOT'):
+    def get_exchange_info(self, instType='SPOT', symbol=None):
         """Obtain trading rules and trading pair information."""
         uri = "/api/v5/public/instruments"
-        if self.symbol.find('SWAP') != -1:
+        if symbol and symbol.find('SWAP') != -1:
             instType = 'SWAP'
-        if self.symbol == 'ETH-BTC':
-            instType = 'MARGIN'
-        params = {"instType": instType, "instId": self.symbol}
+        params = {"instType": instType}
+        if symbol:
+            params["instId"] = symbol
         success, error = self.request(method="GET", uri=uri, params=params)
         return success, error
 
@@ -374,7 +374,7 @@ class OkexSpot:
             return None, error
         return success["data"][0]["ordId"], error
 
-    def place_order(self, price, quantity, order_type='limit', tdMode='cross', side=None, symbol=None):
+    def place_order(self, price, quantity, order_type='limit', tdMode='cross', side=None, symbol=None, ccy=None):
         """
        Open buy order.
        :param price:order price
@@ -390,8 +390,8 @@ class OkexSpot:
             data = {"instId": symbol, "tdMode": tdMode, "side": side if side else 'buy', }
         if symbol.find('SWAP') != -1:
             quantity = quantity
-        if symbol == 'ETH-BTC':
-            data['ccy'] = 'ETH'
+        if ccy:
+            data['ccy'] = ccy
         if order_type.upper() == "POST_ONLY":
             data["ordType"] = "post_only"
             data["px"] = price

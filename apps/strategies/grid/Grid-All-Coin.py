@@ -26,6 +26,7 @@ _PROJECT_ROOT = _add_bpx_path()
 
 
 from ctos.drivers.backpack.util import align_decimal_places, round_dynamic, round_to_two_digits
+from ctos.core.runtime.ExecutionEngine import ExecutionEngine
 
 def pick_exchange(from_arg: str | None = None):
     ex = (from_arg or os.getenv('GRID_EX') or '').strip().lower()
@@ -122,6 +123,7 @@ def main():
         while True:
             for sym, data in positions.items():
                 try:
+                    time.sleep(1.68)
                     pos, err = driver.get_position(symbol=sym, keep_origin=False)
                     if err or not pos:
                         continue
@@ -174,7 +176,6 @@ def main():
                     print(f"[{sym}] 循环异常:", e)
                     break
 
-            time.sleep(30)
 
     except KeyboardInterrupt:
         print("手动退出。")

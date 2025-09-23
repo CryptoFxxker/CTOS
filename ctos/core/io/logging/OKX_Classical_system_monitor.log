@@ -1,0 +1,55 @@
+2025-09-23 12:20:52,368 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:20:54,607 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH-USDT-SWAP', 'action': 'buy', 'price': 4188.66, 'sizes': [0.02]}
+2025-09-23 12:20:57,305 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:20:59,397 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU-USDT-SWAP', 'action': 'buy', 'price': 0.029977, 'sizes': [0]}
+2025-09-23 12:21:02,267 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:21:04,385 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC-USDT-SWAP', 'action': 'buy', 'price': 112858.4, 'sizes': [0.01]}
+2025-09-23 12:21:07,089 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:21:09,529 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD-USDT-SWAP', 'action': 'buy', 'price': 1.3265, 'sizes': [8.0]}
+2025-09-23 12:21:12,490 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:21:15,297 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'buy', 'price': 4193.42, 'sizes': [0.0024]}
+2025-09-23 12:21:18,217 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:21:26,793 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029992, 'sizes': [0]}
+2025-09-23 12:21:29,713 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:21:32,714 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'buy', 'price': 112962.3, 'sizes': [0.0001]}
+2025-09-23 12:21:35,633 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:21:38,617 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3276, 'sizes': [8.0]}
+2025-09-23 12:42:01,611 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'NoneType'
+2025-09-23 12:42:01,611 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:09,384 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:11,488 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH-USDT-SWAP', 'action': 'sell', 'price': 4191.07, 'sizes': [0.02]}
+2025-09-23 12:42:14,192 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:16,293 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU-USDT-SWAP', 'action': 'sell', 'price': 0.029977, 'sizes': [3.0]}
+2025-09-23 12:42:18,998 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:28,450 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:30,599 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH-USDT-SWAP', 'action': 'sell', 'price': 4190.66, 'sizes': [0.02]}
+2025-09-23 12:42:33,637 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:35,890 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU-USDT-SWAP', 'action': 'sell', 'price': 0.029978, 'sizes': [3.0]}
+2025-09-23 12:42:38,600 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:40,696 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC-USDT-SWAP', 'action': 'sell', 'price': 112874.7, 'sizes': [0.01]}
+2025-09-23 12:42:43,559 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:42:45,649 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD-USDT-SWAP', 'action': 'sell', 'price': 1.3289, 'sizes': [8.0]}
+2025-09-23 12:42:48,618 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:42:51,413 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'sell', 'price': 4195.91, 'sizes': [0.0024]}
+2025-09-23 12:42:54,333 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:43:02,821 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.030006, 'sizes': [333.0]}
+2025-09-23 12:43:05,741 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:43:08,681 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'sell', 'price': 112985.8, 'sizes': [0.0001]}
+2025-09-23 12:43:11,601 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:43:14,434 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3297, 'sizes': [8.0]}
+2025-09-23 12:57:54,968 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:57:57,534 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH-USDT-SWAP', 'action': 'sell', 'price': 4190.37, 'sizes': [0.02]}
+2025-09-23 12:58:00,228 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:58:02,324 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU-USDT-SWAP', 'action': 'sell', 'price': 0.029939, 'sizes': [3.0]}
+2025-09-23 12:58:05,197 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:58:07,289 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC-USDT-SWAP', 'action': 'sell', 'price': 112850.1, 'sizes': [0.01]}
+2025-09-23 12:58:09,994 - INFO - ExecutionEngine initialized for okx account 0
+2025-09-23 12:58:12,075 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD-USDT-SWAP', 'action': 'sell', 'price': 1.3304, 'sizes': [8.0]}
+2025-09-23 12:58:15,049 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:58:18,033 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'sell', 'price': 4194.18, 'sizes': [0.0024]}
+2025-09-23 12:58:20,952 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:58:23,757 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.029981, 'sizes': [300.0]}
+2025-09-23 12:58:26,677 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:58:29,697 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'sell', 'price': 112980.9, 'sizes': [0.0001]}
+2025-09-23 12:58:32,617 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 12:58:35,409 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3325, 'sizes': [8.0]}

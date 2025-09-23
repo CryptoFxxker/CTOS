@@ -1,3 +1,4 @@
+from calendar import c
 import  pandas as pd
 import  numpy as np
 import json
@@ -6,6 +7,7 @@ import os
 import inspect
 import math
 from decimal import Decimal, getcontext
+import re
 
 try:
     import pyfiglet
@@ -547,9 +549,93 @@ def discover_min_trade_quantity(bp, symbol, start_usd=10, price_buffer=0.95, max
         return "错误", {"error": str(e)}
 
 
+def _reduce_significant_digits(val: float) -> float:
+    """真正减少有效数字"""
+    # 先转化成字符串
+    val_str = str(val)
+    if int(val) == val:
+        for x in range(len(val_str)):
+            if val_str[len(val_str)-1-x]=='0' or val_str[len(val_str)-1-x]=='.':
+                continue
+            else:
+                val_str[len(val_str)-1-x]='0'
+        return int(val_str[:len(val_str)-x])
+    # 检查是否有结尾是一长串999或者000001这种模式，有的话想法子消掉得到clean_str
+    clean_str = val_str
+    
+    # 使用正则表达式匹配结尾的重复模式
+    import re
+    
+    # 匹配结尾的重复9模式 (如999, 9999, 99999等)
+    if re.search(r'9{3,}$', clean_str):
+        # 找到重复9的开始位置，替换为0并进位
+        match = re.search(r'9+$', clean_str)
+        if match:
+            pos = match.start()
+            # 将重复的9替换为0
+            clean_str = clean_str[:pos] + '0' * (len(clean_str) - pos)
+            # 尝试进位
+            try:
+                clean_str = str(float(clean_str) + 10 ** (len(clean_str) - pos - 1))
+            except:
+                pass
+    
+    # 匹配结尾的000001模式 (如000001, 0000001等)
+    elif re.search(r'0+1$', clean_str):
+        # 找到000001模式，直接去掉最后的1
+        clean_str = re.sub(r'0+1$', '0' * len(re.search(r'0+1$', clean_str).group()), clean_str)
+    
+    # 去掉clean_str所有的0和.
+    clean_str_no_zeros = clean_str.replace('0', '').replace('.', '')
+    
+    # 找到最后一个有效数字
+    if not clean_str_no_zeros:
+        return val
+    
+    last_significant_digit = clean_str_no_zeros[-1]
+    
+    # 对clean_str倒序检索最后一个有效数字的索引
+    last_digit_index = clean_str.rfind(last_significant_digit)
+    
+    # 将其换成0
+    if last_digit_index != -1:
+        clean_str = clean_str[:last_digit_index] + '0' + clean_str[last_digit_index + 1:]
+    
+    # 返回置换之后的float str
+    try:
+        return float(clean_str)
+    except:
+        return val
 # # 测试
 # print(round_to_two_digits(554))       # 550
 # print(round_to_two_digits(0.000145))  # 0.00014
 # print(round_to_two_digits(5.55))      # 5.5
 # print(round_to_two_digits(98765))     # 99000
 # print(round_to_two_digits(0.00987))   # 0.0099
+
+
+
+def round_like(ref: float, x: float ) -> float:
+    
+    """按 ref 的小数位数对齐 x"""
+    # 处理科学计数法
+    if 'e' in str(ref).lower():
+        # 对于科学计数法，直接计算小数位数
+        ref_str = f"{ref:.10f}".rstrip('0')
+        if '.' in ref_str:
+            decimals = len(ref_str.split('.')[1])
+        else:
+            decimals = 0
+    else:
+        s = str(ref)
+        if "." in s:
+            decimals = len(s.split(".")[1].rstrip("0"))  # 计算 ref 的小数位
+        else:
+            decimals = 0
+            # 计算整数部分末尾的0的个数
+            for i in range(len(s)):
+                if s[i] == '0':
+                    decimals -= 1
+                else:
+                    break
+    return round(x, decimals)

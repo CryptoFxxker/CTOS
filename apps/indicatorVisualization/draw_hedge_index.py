@@ -33,7 +33,10 @@ import gzip, pickle, copy
 from pathlib import Path
 
 
-
+SERVER_IP = os.getenv('HOST_IP', '')
+if not SERVER_IP:
+    SERVER_IP = input('请输入服务器IP: ')
+    
 def add_project_paths(project_name="ctos", subpackages=None):
     """
     自动查找项目根目录，并将其及常见子包路径添加到 sys.path。
@@ -260,10 +263,10 @@ def plot_asset_trend():
     local_asset = str(asset_dir / 'asset_trend.png')
     plt.savefig(local_asset)
     # 同步到远端（保留原有逻辑，只改本地路径）
-    if HOST_IP.find('66.187.4.10') != -1:
+    if HOST_IP.find(SERVER_IP) != -1:
         os.system(f'cp {local_asset} ~/mysite/static/images/')
     else:
-        os.system(f'scp {local_asset} root@66.187.4.10:/root/mysite/static/images/')
+        os.system(f'scp {local_asset} root@{SERVER_IP}:/root/mysite/static/images/')
     plt.close()
 
 
@@ -1455,7 +1458,7 @@ def get_good_bad_coin_group(length=5):
     with open(str(local_bp), 'w') as f:
         f.write(','.join(best_performance_coins))
     # 保持原有同步逻辑，但使用本地文件路径
-    os.system(f'scp {str(local_bp)} root@66.187.4.10:/root/Quantify/okx')
+    os.system(f'scp {str(local_bp)} root@{SERVER_IP}:/root/Quantify/okx')
     return worst_performance_coins, best_performance_coins
 
 
@@ -1584,10 +1587,10 @@ if __name__ == '__main__':
                 out_dir.mkdir(parents=True, exist_ok=True)
                 local = str(out_dir / f'comparison_chart_{chart_name}_{gap}.png')
                 remote = timegap_to_filename[gap]
-                if HOST_IP.find('66.187.4.10') != -1:
+                if HOST_IP.find(SERVER_IP) != -1:
                     os.system(f'cp {local} ~/mysite/static/images/{remote}')
                 else:
-                    os.system(f'scp {local} root@66.187.4.10:/root/mysite/static/images/{remote}')
+                    os.system(f'scp {local} root@{SERVER_IP}:/root/mysite/static/images/{remote}')
 
                 last_run[gap] = now              # 更新时间戳
                 print(f"[{gap}] 更新完成，用时 {round(time.time()-now,2)} 秒")

@@ -432,3 +432,29 @@ def get_current_file_path() -> str:
 def get_current_dir() -> str:
     """返回当前文件所在的目录"""
     return os.path.dirname(os.path.abspath(__file__))
+
+def round_like(ref: float, x: float ) -> float:
+    """按 ref 的小数位数对齐 x"""
+    if int(ref) == ref:
+        ref=int(ref)
+    # 处理科学计数法
+    if 'e' in str(ref).lower():
+        # 对于科学计数法，直接计算小数位数
+        ref_str = f"{ref:.10f}".rstrip('0')
+        if '.' in ref_str:
+            decimals = len(ref_str.split('.')[1])
+        else:
+            decimals = 0
+    else:
+        s = str(ref)
+        if "." in s:
+            decimals = len(s.split(".")[1].rstrip("0"))  # 计算 ref 的小数位
+        else:
+            decimals = 0
+            # 计算整数部分末尾的0的个数
+            for i in range(len(s)):
+                if s[len(s)-1-i] == '0':
+                    decimals -= 1
+                else:
+                    break
+    return round(x, decimals)

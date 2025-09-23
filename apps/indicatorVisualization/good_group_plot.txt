@@ -1,5 +1,8 @@
-btc,sol,eth,doge,xrp,bnb,trx
-2,1.5,1.5,1.5,1.5,1,1
+btc,sol,eth,doge,bnb,trx
+5,1.5,4,1.5,1,1
+
+btc,sol,eth,doge,bnb,trx
+15,1,1,1,1,1
 
 btc,xaut,trx,bnb
 47,1,1,1

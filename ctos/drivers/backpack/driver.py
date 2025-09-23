@@ -8,9 +8,10 @@ from ast import main
 import os
 import time
 from datetime import datetime, timezone
-
+from decimal import Decimal, ROUND_DOWN
 import sys
-import os
+import json
+
 
 # 动态添加bpx包路径到sys.path
 def _add_bpx_path():
@@ -38,11 +39,13 @@ try:
     # When imported as part of the package
     from .bpx.account import Account  # type: ignore
     from .bpx.public import Public    # type: ignore
+    from ctos.drivers.backpack.util import _reduce_significant_digits    # type: ignore
 except Exception:
     try:
         # When the full package is available in sys.path
         from ctos.drivers.backpack.bpx.account import Account  # type: ignore
         from ctos.drivers.backpack.bpx.public import Public    # type: ignore
+        from ctos.drivers.backpack.util import _reduce_significant_digits    # type: ignore
     except Exception as e:
         # As a last resort, add the local folder so `bpx` can be found when running this file directly
         backpack_dir = os.path.dirname(__file__)
@@ -118,7 +121,20 @@ class BackpackDriver(TradingSyscalls):
         self.mode = (mode or "perp").lower()
         self.default_quote = default_quote or "USDC"
         self.symbol = 'ETH_USDC_PERP'
+        self.load_exchange_trade_info()
 
+
+    def save_exchange_trade_info(self):
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json', 'w') as f:
+            json.dump(self.exchange_trade_info, f)
+
+    def load_exchange_trade_info(self):
+        if not os.path.exists(os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json'):
+            return {}
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json', 'r') as f:
+            self.exchange_trade_info = json.load(f)
+            # print('load_exchange_trade_info', os.path.dirname(os.path.abspath(__file__)) + '/exchange_trade_info.json')
+            # print('load_exchange_trade_info', self.exchange_trade_info)
     # -------------- helpers --------------
     def _norm_symbol(self, symbol):
         """
@@ -210,9 +226,157 @@ class BackpackDriver(TradingSyscalls):
         except Exception as e:
             return None, e
 
-    def exchange_limits(self):
-        # Unknown from Backpack; return empty or basic defaults
-        return {}
+    def exchange_limits(self, symbol=None, instType='PERP'):
+        """
+        获取交易所限制信息，包括价格精度、数量精度、最小下单数量等
+        
+        :param symbol: 交易对符号，如 'WLD_USDC_PERP'，如果为None则返回全类型数据
+        :param instType: 产品类型，默认为 'PERP'
+        :return: dict 包含限制信息的字典
+        """
+        if symbol:
+            symbol, _, _ = self._norm_symbol(symbol)
+            # print('symbol', symbol, self.exchange_trade_info)
+            if symbol in self.exchange_trade_info:
+                return self.exchange_trade_info[symbol], None
+        try:
+            # 如果指定了symbol，获取单个ticker
+            if symbol:
+                if not hasattr(self.public, 'get_ticker'):
+                    return {"error": "backpack client lacks get_ticker method"}
+                
+                ticker_data = self.public.get_ticker(symbol)
+                if not ticker_data or not isinstance(ticker_data, dict):
+                    return {"error": f"未获取到交易对 {symbol} 的数据"}
+                
+                limits = self._extract_limits_from_ticker(ticker_data)
+                if limits and 'error' not in limits:
+                    self.exchange_trade_info[symbol] = limits
+                    self.save_exchange_trade_info()
+                return limits, None
+            
+            # 如果没有指定symbol，获取所有tickers
+            if not hasattr(self.public, 'get_tickers'):
+                return {"error": "backpack client lacks get_tickers method"}
+            
+            tickers_data = self.public.get_tickers()
+            if not tickers_data or not isinstance(tickers_data, list):
+                return {"error": "未获取到tickers数据"}
+            
+            # 过滤指定类型的数据
+            result = []
+            for ticker in tickers_data:
+                if not isinstance(ticker, dict):
+                    continue
+                
+                ticker_symbol = ticker.get('symbol', '')
+                if instType.upper() in ticker_symbol.upper():
+                    limits = self._extract_limits_from_ticker(ticker)
+                    if limits and 'error' not in limits:
+                        result.append(limits)
+                        self.exchange_trade_info[ticker_symbol] = limits
+            
+            self.save_exchange_trade_info()
+            return result, None
+            
+        except Exception as e:
+            return None, {"error": f"处理数据时发生异常: {str(e)}"}
+    
+    def _extract_limits_from_ticker(self, ticker_data):
+        """
+        从ticker数据中提取限制信息
+        
+        :param ticker_data: ticker数据字典
+        :return: dict 包含限制信息的字典
+        """
+        try:
+            symbol = ticker_data.get('symbol', '')
+            last_price = ticker_data.get('lastPrice', '0')
+            volume = ticker_data.get('volume', '0')
+            
+            # 推测价格精度：基于priceChange的小数位数
+            price_precision = self._infer_price_precision(last_price)
+            
+            # 推测数量精度：基于volume的最后一位有效数字位置
+            size_precision = self._infer_size_precision(volume, last_price)
+            
+            # 推测最小下单数量：基于数量精度和价格
+            min_order_size = size_precision
+            
+            return {
+                'symbol': symbol,
+                'instType': 'PERP',  # Backpack主要是永续合约
+                'price_precision': price_precision,  # 下单价格精度
+                'size_precision': size_precision,    # 下单数量精度
+                'min_order_size': min_order_size,    # 最小下单数量
+                'contract_value': 1.0,               # 合约面值固定为1
+                'max_leverage': 10.0,                # 最大杠杆倍数固定为10
+                'state': 'live',                     # 交易对状态
+                'raw': ticker_data                   # 原始数据
+            }
+        except Exception as e:
+            return {"error": f"解析ticker数据时发生异常: {str(e)}"}
+    
+    def _infer_price_precision(self, price_change_str):
+        """
+        基于priceChange字符串推测价格精度
+        
+        :param price_change_str: 价格变化值字符串
+        :return: float 价格精度
+        """
+        if not price_change_str or price_change_str == '0':
+            return 0.01  # 默认精度
+        
+        # 直接检查字符串中是否有小数点
+        if '.' in price_change_str:
+            # 找到最后一个点的位置，计算小数位数
+            decimal_places = len(price_change_str.split('.')[1])
+            return 10 ** (-decimal_places)
+        else:
+            # 没有小数点，精度为1
+            return 1.0
+    
+    def _infer_size_precision(self, volume_str, last_price_str):
+        """
+        基于volume字符串推测数量精度
+        
+        :param volume_str: 交易量字符串
+        :return: float 数量精度
+        """
+        if not volume_str or volume_str == '0':
+            return 1.0  # 默认精度
+        
+        # 直接检查字符串中是否有小数点
+        if '.' in volume_str:
+            decimal_places = len(volume_str.split('.')[1])
+            return 10 ** (-decimal_places)
+        else:
+                # 没有小数点，精度为1
+            if not last_price_str or last_price_str == '0':
+                return None
+            try:
+                last_price = float(last_price_str)
+
+                # 计算 1/lastPrice，然后向上取整到更高一位
+                ratio = 1.0 / last_price
+                
+                # 向上取整到更高一位
+                if ratio < 1:
+                    min_size = 1.0
+                elif ratio < 10:
+                    min_size = 10.0
+                elif ratio < 100:
+                    min_size = 100.0
+                elif ratio < 1000:
+                    min_size = 1000.0
+                else:
+                    min_size = 10000.0
+                # 确保最小下单数量不小于数量精度
+                return min_size
+                
+            except (ValueError, ZeroDivisionError) as e:
+                print(f"解析最小下单数量时发生异常: {str(e)}")
+                return None
 
     def fees(self, symbol='ETH_USDC_PERP', instType='PERP', keep_origin=False, limit=3, offset=0):
         """
@@ -384,127 +548,42 @@ class BackpackDriver(TradingSyscalls):
             # 退化为列表
             return records, None
 
-    # -------------- trading --------------
+
+    def _count_significant_digits(self, value):
+        """统计有效数字个数"""
+        s = f"{value:.12g}"
+        if '.' in s:
+            s = s.rstrip('0').rstrip('.')
+        return len(s.replace('.', '').lstrip('0'))
+
+
     def _adjust_precision_for_error(self, value, error_msg, value_type='price'):
         """
-        根据错误信息调整数值精度
-        :param value: 需要调整的数值
-        :param error_msg: 错误信息
-        :param value_type: 'price' 或 'quantity'
-        :return: 调整后的数值
+        针对错误信息调整浮点数精度或数量。
+        - decimal too long / invalid decimal → 减少有效数字
+        - below the minimum → 翻倍
+        - parse error → 减少有效数字
+        - 其他未知错误 → 通用减少有效数字
         """
-        if not error_msg:
-            return value
-            
-        error_str = str(error_msg).lower()
-        
-        # 处理价格精度错误
-        if value_type == 'price' and ('price decimal too long' in error_str or 'decimal too long' in error_str):
-            # 减少价格的小数位数，同时确保有效数字不超过7位
-            if '.' in str(value):
-                decimal_places = len(str(value).split('.')[1])
-                new_places = max(0, decimal_places - 1)
-                adjusted_value = round(value, new_places)
-                
-                # 检查有效数字是否超过7位
-                if self._count_significant_digits(adjusted_value) > 7:
-                    # 如果有效数字超过7位，进一步减少精度
-                    adjusted_value = self._limit_significant_digits(adjusted_value, 7)
-                
-                return adjusted_value
-            return value
-            
-        # 处理数量精度错误
-        elif value_type == 'quantity' and ('quantity decimal too long' in error_str or 'decimal too long' in error_str):
-            # 减少数量的小数位数，同时确保有效数字不超过3位
-            if '.' in str(value):
-                decimal_places = len(str(value).split('.')[1])
-                new_places = max(0, decimal_places - 1)
-                adjusted_value = round(value, new_places)
-                
-                # 检查有效数字是否超过3位
-                if self._count_significant_digits(adjusted_value) > 3:
-                    # 如果有效数字超过3位，进一步减少精度
-                    adjusted_value = self._limit_significant_digits(adjusted_value, 3)
-                
-                return adjusted_value
-            return value
-            
-        # 处理数量过小错误
-        elif value_type == 'quantity' and ('quantity is below the minimum' in error_str or 'below the minimum' in error_str):
-            # 增加数量到最小允许值，同时确保有效数字不超过3位
-            min_value = max(value, 0.0001)  # 设置一个合理的最小值
-            if self._count_significant_digits(min_value) > 3:
-                min_value = self._limit_significant_digits(min_value, 3)
-            return min_value
-            
-        # 处理解析错误（通常是由于精度问题）
-        elif 'parse request payload error' in error_str or 'invalid decimal' in error_str:
-            if value_type == 'price':
-                # 价格保留2位小数，确保有效数字不超过7位
-                adjusted_value = round(value, 2)
-                if self._count_significant_digits(adjusted_value) > 7:
-                    adjusted_value = self._limit_significant_digits(adjusted_value, 7)
-                return adjusted_value
-            elif value_type == 'quantity':
-                # 数量保留4位小数，确保有效数字不超过3位
-                adjusted_value = round(value, 4)
-                if self._count_significant_digits(adjusted_value) > 3:
-                    adjusted_value = self._limit_significant_digits(adjusted_value, 3)
-                return adjusted_value
-                
-        return value
-    
-    def _count_significant_digits(self, value):
-        """
-        计算数值的有效数字位数
-        :param value: 数值
-        :return: 有效数字位数
-        """
-        if value == 0:
-            return 0
-        
-        # 转换为字符串，去除科学计数法
-        str_value = f"{value:.10f}".rstrip('0').rstrip('.')
-        
-        # 移除小数点
-        str_value = str_value.replace('.', '')
-        
-        # 移除前导零
-        str_value = str_value.lstrip('0')
-        
-        return len(str_value)
-    
-    def _limit_significant_digits(self, value, max_digits):
-        """
-        限制数值的有效数字位数
-        :param value: 数值
-        :param max_digits: 最大有效数字位数
-        :return: 调整后的数值
-        """
-        if value == 0:
-            return 0
-        
-        # 计算当前有效数字位数
-        current_digits = self._count_significant_digits(value)
-        
-        if current_digits <= max_digits:
-            return value
-        
-        # 计算需要保留的小数位数
-        # 从整数部分开始计算
-        int_part = int(abs(value))
-        int_digits = len(str(int_part)) if int_part > 0 else 0
-        
-        if int_digits >= max_digits:
-            # 如果整数部分已经达到或超过最大位数，直接截断
-            return int(value)
-        else:
-            # 计算小数部分可以保留的位数
-            decimal_digits = max_digits - int_digits
-            return round(value, decimal_digits)
+        d = Decimal(str(value))
 
-    def place_order(self, symbol, side, order_type, size, price=None, client_id=None, max_retries=3, **kwargs):
+        err_lower = error_msg.lower()
+
+        if "decimal too long" in err_lower or "invalid decimal" in err_lower:
+            return _reduce_significant_digits(value)
+
+        elif "below the minimum" in err_lower:
+            # 翻倍，直到达到合理大小（这里只做一次，剩下靠重试逻辑）
+            return float(d * 2)
+
+        elif "parse request payload error" in err_lower:
+            return _reduce_significant_digits(value)
+
+        else:
+            # 默认兜底，减少有效数字
+            return _reduce_significant_digits(value)
+
+    def place_order(self, symbol, side, order_type, size, price=None, client_id=None, max_retries=4, **kwargs):
         """
         下单函数，带错误处理和重试机制
         
@@ -572,6 +651,10 @@ class BackpackDriver(TradingSyscalls):
                         # 根据错误类型进行相应的调整
                         error_lower = error_msg.lower()
                         
+                        # 记录调整前的参数
+                        original_price = price
+                        original_size = size
+                        
                         # 判断错误类型并调整参数
                         if 'price decimal too long' in error_lower:
                             # 价格精度过高，减少小数位
@@ -579,25 +662,29 @@ class BackpackDriver(TradingSyscalls):
                                 new_price = self._adjust_precision_for_error(price, error_msg, 'price')
                                 if new_price != price:
                                     price = new_price
-                                    print(f"调整价格精度: {original_price} -> {price}")
+                                    print(f"🔧 调整价格精度: {original_price} -> {price} (有效数字: {self._count_significant_digits(price)})")
+                                else:
+                                    print(f"⚠ 价格调整后无变化: {price}")
                                     
                         elif 'quantity decimal too long' in error_lower:
                             # 数量精度过高，减少小数位
                             new_size = self._adjust_precision_for_error(size, error_msg, 'quantity')
                             if new_size != size:
                                 size = new_size
-                                print(f"调整数量精度: {original_size} -> {size}")
+                                print(f"🔧 调整数量精度: {original_size} -> {size} (有效数字: {self._count_significant_digits(size)})")
+                            else:
+                                print(f"⚠ 数量调整后无变化: {size}")
                                 
                         elif 'quantity is below the minimum' in error_lower:
                             # 数量过小，增加数量
                             new_size = self._adjust_precision_for_error(size, error_msg, 'quantity')
                             if new_size != size:
                                 size = new_size
-                                print(f"增加数量: {original_size} -> {size}")
+                                print(f"🔧 增加数量: {original_size} -> {size} (有效数字: {self._count_significant_digits(size)})")
                             else:
                                 # 如果调整函数没有处理，手动增加数量
                                 size = max(size * 1.1, 0.001)
-                                print(f"手动增加数量: {original_size} -> {size}")
+                                print(f"🔧 手动增加数量: {original_size} -> {size} (有效数字: {self._count_significant_digits(size)})")
                                 
                         elif 'parse request payload error' in error_lower or 'invalid decimal' in error_lower:
                             # 解析错误，同时调整价格和数量精度
@@ -605,24 +692,24 @@ class BackpackDriver(TradingSyscalls):
                                 new_price = self._adjust_precision_for_error(price, error_msg, 'price')
                                 if new_price != price:
                                     price = new_price
-                                    print(f"调整价格精度: {original_price} -> {price}")
+                                    print(f"🔧 调整价格精度: {original_price} -> {price} (有效数字: {self._count_significant_digits(price)})")
                             
                             new_size = self._adjust_precision_for_error(size, error_msg, 'quantity')
                             if new_size != size:
                                 size = new_size
-                                print(f"调整数量精度: {original_size} -> {size}")
+                                print(f"🔧 调整数量精度: {original_size} -> {size} (有效数字: {self._count_significant_digits(size)})")
                                 
                         else:
                             # 未知错误类型，尝试通用调整策略
-                            print(f"未知错误类型，尝试通用调整: {error_msg}")
+                            print(f"⚠ 未知错误类型，尝试通用调整: {error_msg}")
                             if order_type.lower() == 'limit' and price is not None:
                                 # 尝试减少价格精度
                                 price = round(price, 2)
-                                print(f"通用调整价格精度: {original_price} -> {price}")
+                                print(f"🔧 通用调整价格精度: {original_price} -> {price} (有效数字: {self._count_significant_digits(price)})")
                             
                             # 尝试减少数量精度
                             size = round(size, 4)
-                            print(f"通用调整数量精度: {original_size} -> {size}")
+                            print(f"🔧 通用调整数量精度: {original_size} -> {size} (有效数字: {self._count_significant_digits(size)})")
                         
                         # 等待一段时间后重试
                         import time
@@ -1143,7 +1230,7 @@ def test_error_handling():
         adjusted_quantity = driver._adjust_precision_for_error(test_quantity, error_msg, 'quantity')
         print(f"原始数量: {test_quantity}")
         print(f"调整后数量: {adjusted_quantity}")
-        assert adjusted_quantity == 0.0001, f"数量调整失败: {adjusted_quantity}"
+        assert adjusted_quantity == 0.00002, f"数量调整失败: {adjusted_quantity}"
         print("✓ 数量过小错误测试通过")
         
         # 测试解析错误
@@ -1195,7 +1282,7 @@ def test_error_handling():
                 
                 # 测试下单（使用很小的金额，避免实际成交）
                 print("\n2.1 测试下单（限价单）:")
-                test_price = current_price * 0.9  # 低于市价，避免成交
+                test_price = current_price * 0.97  # 低于市价3%，避免成交
                 test_size = 0.0001  # 很小的数量
                 
                 print(f"测试下单: ETH_USDC_PERP buy limit {test_size}@{test_price}")
@@ -1222,6 +1309,73 @@ def test_error_handling():
                     
             else:
                 print("✗ 无法获取当前价格，请检查API配置")
+                
+            # 测试PENGU和LTC
+            print("\n2.2 测试PENGU下单:")
+            try:
+                pengu_price = driver.get_price_now('PENGU_USDC_PERP')
+                if pengu_price:
+                    print(f"当前PENGU价格: {pengu_price}")
+                    # 下单价格离当前价格约3个点
+                    test_price_pengu = pengu_price * 0.97  # 低于市价3%
+                    test_size_pengu = 0.1  # 测试数量
+                    
+                    print(f"测试下单: PENGU_USDC_PERP buy limit {test_size_pengu}@{test_price_pengu}")
+                    order_id_pengu, error_pengu = driver.place_order(
+                        'PENGU_USDC_PERP', 
+                        'buy', 
+                        'limit', 
+                        test_size_pengu, 
+                        test_price_pengu,
+                        max_retries=2
+                    )
+                    
+                    if order_id_pengu:
+                        print(f"✓ PENGU下单成功，订单ID: {order_id_pengu}")
+                        try:
+                            cancel_result_pengu = driver.revoke_order(order_id_pengu, 'PENGU_USDC_PERP')
+                            print(f"✓ PENGU订单撤销: {'成功' if cancel_result_pengu else '失败'}")
+                        except Exception as cancel_error:
+                            print(f"⚠ PENGU订单撤销失败: {cancel_error}")
+                    else:
+                        print(f"✗ PENGU下单失败: {error_pengu}")
+                else:
+                    print("✗ 无法获取PENGU当前价格")
+            except Exception as e:
+                print(f"✗ PENGU测试失败: {e}")
+                
+            print("\n2.3 测试LTC下单:")
+            try:
+                ltc_price = driver.get_price_now('LTC_USDC_PERP')
+                if ltc_price:
+                    print(f"当前LTC价格: {ltc_price}")
+                    # 下单价格离当前价格约3个点
+                    test_price_ltc = ltc_price * 0.97  # 低于市价3%
+                    test_size_ltc = 0.1  # 测试数量
+                    
+                    print(f"测试下单: LTC_USDC_PERP buy limit {test_size_ltc}@{test_price_ltc}")
+                    order_id_ltc, error_ltc = driver.place_order(
+                        'LTC_USDC_PERP', 
+                        'buy', 
+                        'limit', 
+                        test_size_ltc, 
+                        test_price_ltc,
+                        max_retries=2
+                    )
+                    
+                    if order_id_ltc:
+                        print(f"✓ LTC下单成功，订单ID: {order_id_ltc}")
+                        try:
+                            cancel_result_ltc = driver.revoke_order(order_id_ltc, 'LTC_USDC_PERP')
+                            print(f"✓ LTC订单撤销: {'成功' if cancel_result_ltc else '失败'}")
+                        except Exception as cancel_error:
+                            print(f"⚠ LTC订单撤销失败: {cancel_error}")
+                    else:
+                        print(f"✗ LTC下单失败: {error_ltc}")
+                else:
+                    print("✗ 无法获取LTC当前价格")
+            except Exception as e:
+                print(f"✗ LTC测试失败: {e}")
                 
         except Exception as api_error:
             print(f"⚠ API测试失败: {api_error}")
