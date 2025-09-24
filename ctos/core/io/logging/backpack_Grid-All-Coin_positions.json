@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-24T05:26:12.722331",
+  "timestamp": "2025-09-24T05:28:37.965895",
   "exchange": "backpack",
   "positions": {
     "ETH_USDC_PERP": {
@@ -66,7 +66,7 @@
       "pnlUnrealized": -0.980262
     },
     "HBAR_USDC_PERP": {
-      "init_price": 0.2194173,
+      "init_price": 0.22166692,
       "avg_cost": 0.23463777586638374,
       "size": 3136.0,
       "side": "short",
@@ -143,7 +143,7 @@
       "pnlUnrealized": 0.354468
     },
     "DOT_USDC_PERP": {
-      "init_price": 3.96769028,
+      "init_price": 4.00931304,
       "avg_cost": 4.176571649851815,
       "size": 190.2,
       "side": "short",
