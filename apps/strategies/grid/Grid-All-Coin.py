@@ -173,7 +173,7 @@ def print_position(sym, pos, init_price, start_ts):
         f"涨跌幅={change_pct:+.2f}%"
     )
     output = header + line + '===='
-    if len(output) < 180:
+    if len(output) < 160:
         output += ' ' * (180 - len(output))
     print('\r' + output, end='')
 
@@ -229,7 +229,8 @@ def main():
         show_help()
         return
     
-    exch, engine = pick_exchange(arg_ex, acount_id)
+    default_strategy = os.path.splitext(os.path.basename(__file__))[0].upper()
+    exch, engine = pick_exchange(arg_ex, acount_id, strategy=default_strategy, strategy_detail="COMMON")
     print(f"使用交易所: {exch}")
     
     if force_refresh:

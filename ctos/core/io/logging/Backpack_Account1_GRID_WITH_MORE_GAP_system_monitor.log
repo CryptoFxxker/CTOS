@@ -1,0 +1,54 @@
+2025-09-24 22:42:59,205 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 22:42:59,206 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 22:42:59,206 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 22:43:00,122 - INFO - OP StrategyExit | {'reason': 'No GridPositions found'}
+2025-09-24 22:45:24,669 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 22:45:24,670 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 22:45:24,670 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 22:47:12,163 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 106.57602620124817}
+2025-09-24 22:51:40,697 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 22:51:40,698 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 22:51:40,698 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 22:51:51,765 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 11.065391302108765}
+2025-09-24 22:53:44,246 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 22:53:44,246 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 22:53:44,247 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 22:58:14,568 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 270.319993019104}
+2025-09-24 23:01:55,049 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:01:55,050 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:01:55,050 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:02:12,997 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:02:12,998 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:02:12,998 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:02:52,249 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 39.24960422515869}
+2025-09-24 23:04:14,094 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:04:14,094 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:04:14,095 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:04:44,806 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 30.70975613594055}
+2025-09-24 23:07:57,413 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:07:57,414 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:07:57,414 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:08:44,267 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 46.851266860961914}
+2025-09-24 23:11:36,653 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:11:36,654 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:11:36,654 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:11:56,298 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 19.642625331878662}
+2025-09-24 23:12:42,441 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:12:42,442 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:12:42,442 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:14:31,578 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 109.13487005233765}
+2025-09-24 23:18:02,753 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:18:02,753 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:18:02,754 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:19:07,889 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 65.13388633728027}
+2025-09-24 23:19:39,949 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:19:39,950 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:19:39,950 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:20:44,000 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 64.04873037338257}
+2025-09-24 23:20:47,901 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:20:47,901 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:20:47,902 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-24 23:21:37,460 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 49.55749773979187}
+2025-09-24 23:22:10,314 - WARNING - Failed to fetch initial balance: float() argument must be a string or a real number, not 'dict'
+2025-09-24 23:22:10,314 - INFO - ExecutionEngine initialized for backpack account 1
+2025-09-24 23:22:10,314 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}

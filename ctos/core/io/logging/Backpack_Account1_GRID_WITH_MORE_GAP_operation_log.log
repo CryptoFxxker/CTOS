@@ -1,0 +1,26 @@
+{"ts": "2025-09-24 22:42:59", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 22:43:00", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "No GridPositions found"}}
+{"ts": "2025-09-24 22:45:24", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 22:47:12", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 106.57602620124817}}
+{"ts": "2025-09-24 22:51:40", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 22:51:51", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 11.065391302108765}}
+{"ts": "2025-09-24 22:53:44", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 22:58:14", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 270.319993019104}}
+{"ts": "2025-09-24 23:01:55", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:02:12", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:02:52", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 39.24960422515869}}
+{"ts": "2025-09-24 23:04:14", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:04:44", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 30.70975613594055}}
+{"ts": "2025-09-24 23:07:57", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:08:44", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 46.851266860961914}}
+{"ts": "2025-09-24 23:11:36", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:11:56", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 19.642625331878662}}
+{"ts": "2025-09-24 23:12:42", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:14:31", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 109.13487005233765}}
+{"ts": "2025-09-24 23:18:02", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:19:07", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 65.13388633728027}}
+{"ts": "2025-09-24 23:19:39", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:20:44", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 64.04873037338257}}
+{"ts": "2025-09-24 23:20:47", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-24 23:21:37", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 49.55749773979187}}
+{"ts": "2025-09-24 23:22:10", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}

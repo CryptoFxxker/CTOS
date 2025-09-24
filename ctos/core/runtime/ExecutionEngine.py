@@ -37,7 +37,7 @@ from ctos.core.runtime.SystemMonitor import SystemMonitor
 from ctos.core.runtime.AccountManager import AccountManager, ExchangeType, get_account_manager
 import threading
 
-def pick_exchange(cex, account):
+def pick_exchange(cex, account, strategy='NONAME', strategy_detail='COMMON'):
     ex = cex if cex else ''
     if ex not in ('okx', 'bp'):
         ex = input("选择交易所 exchange [okx/bp] (默认 okx): ").strip()
@@ -51,15 +51,13 @@ def pick_exchange(cex, account):
     # 创建ExecutionEngine实例
     # INSERT_YOUR_CODE
     # 增加对strategy和strategy_detail参数的交互式输入，允许回车使用默认值
-    strategy = input("请输入策略名称 strategy (默认 GRID_EXE_TEST): ").strip()
-    if not strategy:
-        strategy = 'GRID_EXE_TEST'
-    strategy_detail = input("请输入策略详情 strategy_detail (默认 COMMON): ").strip()
-    if not strategy_detail:
-        strategy_detail = "COMMON"
+    strategy_input = input(f"请输入策略名称 strategy (默认 {strategy if strategy else 'GRID_EXE_TEST'}): ").strip()
+    if strategy_input:
+        strategy = strategy_input
+    strategy_detail_input = input(f"请输入策略详情 strategy_detail (默认 {strategy_detail if strategy_detail else 'COMMON'}): ").strip()
+    if strategy_detail_input:
+        strategy_detail = strategy_detail_input
     engine = ExecutionEngine(account=account, strategy=strategy, strategy_detail=strategy_detail, exchange_type=ex)
-    return ex, engine
-    engine = ExecutionEngine(account=account, strategy='Grid-All-Coin', exchange_type=ex)
     return ex, engine
 
 class ExecutionEngine:

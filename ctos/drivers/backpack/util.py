@@ -554,12 +554,16 @@ def _reduce_significant_digits(val: float) -> float:
     # 先转化成字符串
     val_str = str(val)
     if int(val) == val:
-        for x in range(len(val_str)):
-            if val_str[len(val_str)-1-x]=='0' or val_str[len(val_str)-1-x]=='.':
-                continue
-            else:
-                val_str[len(val_str)-1-x]='0'
-        return int(val_str[:len(val_str)-x])
+        if val % 10 != 0:
+            return val // 10 * 10
+        if val % 100 == 0:
+            return val // 100 * 100
+        if val % 1000 == 0:
+            return val // 1000 * 1000
+        if val % 10000 == 0:
+            return val // 10000 * 10000
+        if val % 100000 == 0:
+            return val // 100000 * 100000
     # 检查是否有结尾是一长串999或者000001这种模式，有的话想法子消掉得到clean_str
     clean_str = val_str
     

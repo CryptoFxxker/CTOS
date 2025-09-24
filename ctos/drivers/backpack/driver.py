@@ -821,7 +821,6 @@ class BackpackDriver(TradingSyscalls):
             except Exception as e:
                 if attempt < max_retries:
                     print(f"⚠ 下单异常 (第{attempt + 1}次): {str(e)}")
-                    import time
                     time.sleep(0.5)
                 else:
                     print(f"✗ 下单异常最终失败: {str(e)}")
