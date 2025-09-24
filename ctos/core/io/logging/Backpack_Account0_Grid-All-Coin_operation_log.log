@@ -1,0 +1,193 @@
+{"ts": "2025-09-23 14:46:05", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-23 15:02:47", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 1001.0480389595032}}
+{"ts": "2025-09-23 15:02:52", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-23 15:03:14", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 46.995, "sizes": 0.19, "order_id": "10084284458"}}
+{"ts": "2025-09-23 15:04:01", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 12.3948, "sizes": 0.7, "order_id": "10084427125"}}
+{"ts": "2025-09-23 15:11:54", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "AVAX_USDC_PERP", "action": "sell", "price": 35.535, "sizes": 0.25, "order_id": "10085708123"}}
+{"ts": "2025-09-23 15:11:58", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 12.1746, "sizes": 0.7, "order_id": "10085718522"}}
+{"ts": "2025-09-23 15:12:35", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3597, "sizes": 7.0, "order_id": "10085824313"}}
+{"ts": "2025-09-23 15:12:40", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 47.447, "sizes": 0.19, "order_id": "10085839109"}}
+{"ts": "2025-09-23 15:16:00", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "AVAX_USDC_PERP", "action": "sell", "price": 36.082, "sizes": 0.25, "order_id": "10086425227"}}
+{"ts": "2025-09-23 15:17:23", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 12.0185, "sizes": 0.7, "order_id": "10086650318"}}
+{"ts": "2025-09-23 15:20:03", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.1506, "sizes": 0.7, "order_id": "10087061080"}}
+{"ts": "2025-09-23 15:21:59", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.3458, "sizes": 7.0, "order_id": "10087360874"}}
+{"ts": "2025-09-23 15:25:13", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "sell", "price": 0.030114, "sizes": 300.0, "order_id": "10087880217"}}
+{"ts": "2025-09-23 15:26:01", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3624, "sizes": 7.0, "order_id": "10088017453"}}
+{"ts": "2025-09-23 15:39:59", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 12.0321, "sizes": 0.7, "order_id": "10090312632"}}
+{"ts": "2025-09-23 15:51:28", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "action": "sell", "price": 1026.18, "sizes": 0.009, "order_id": "10092068857"}}
+{"ts": "2025-09-23 16:08:09", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.3432, "sizes": 7.0, "order_id": "10094597808"}}
+{"ts": "2025-09-23 16:18:11", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.1497, "sizes": 0.7, "order_id": "10096221004"}}
+{"ts": "2025-09-23 16:20:05", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3579, "sizes": 7.0, "order_id": "10096518988"}}
+{"ts": "2025-09-23 16:20:54", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "sell", "price": 0.4413, "sizes": 20.1, "order_id": "10096645331"}}
+{"ts": "2025-09-23 16:37:16", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.3432, "sizes": 7.0, "order_id": "10099196785"}}
+{"ts": "2025-09-23 16:44:35", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 12.0534, "sizes": 0.7, "order_id": "10100418151"}}
+{"ts": "2025-09-23 16:51:45", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3563, "sizes": 7.0, "order_id": "10101515794"}}
+{"ts": "2025-09-23 16:51:57", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "sell", "price": 0.4775, "sizes": 18.6, "order_id": "10101549279"}}
+{"ts": "2025-09-23 16:52:07", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "sell", "price": 1.4978, "sizes": 6.0, "order_id": "10101582811"}}
+{"ts": "2025-09-23 16:52:43", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "sell", "price": 0.6886, "sizes": 10.0, "order_id": "10101715838"}}
+{"ts": "2025-09-23 16:53:06", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SUI_USDC_PERP", "action": "sell", "price": 3.4202, "sizes": 2.6, "order_id": "10101799576"}}
+{"ts": "2025-09-23 16:53:34", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ADA_USDC_PERP", "action": "sell", "price": 0.8296, "sizes": 10.0, "order_id": "10101894655"}}
+{"ts": "2025-09-23 16:53:49", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "sell", "price": 0.030469, "sizes": 300.0, "order_id": "10101943670"}}
+{"ts": "2025-09-23 16:54:01", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.1726, "sizes": 0.7, "order_id": "10101991976"}}
+{"ts": "2025-09-23 16:59:19", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.9665, "sizes": 0.7, "order_id": "10102879582"}}
+{"ts": "2025-09-23 17:04:27", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.030157, "sizes": 300.0, "order_id": "10103737125"}}
+{"ts": "2025-09-23 17:10:01", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 7629.449399471283}}
+{"ts": "2025-09-24 01:10:05", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-24 01:11:18", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "buy", "price": 0.6816, "sizes": 10.0, "order_id": "10104834178"}}
+{"ts": "2025-09-24 01:13:49", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.8755, "sizes": 0.7, "order_id": "10105217004"}}
+{"ts": "2025-09-24 01:17:04", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 46.942, "sizes": 0.19, "order_id": "10105702468"}}
+{"ts": "2025-09-24 01:30:26", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "buy", "price": 1.482, "sizes": 6.0, "order_id": "10107846674"}}
+{"ts": "2025-09-24 01:30:31", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ADA_USDC_PERP", "action": "buy", "price": 0.8194, "sizes": 10.0, "order_id": "10107859482"}}
+{"ts": "2025-09-24 01:35:21", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SUI_USDC_PERP", "action": "buy", "price": 3.3854, "sizes": 2.62, "order_id": "10108689222"}}
+{"ts": "2025-09-24 01:35:28", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.3402, "sizes": 7.0, "order_id": "10108718782"}}
+{"ts": "2025-09-24 01:35:41", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "buy", "price": 0.4727, "sizes": 18.8, "order_id": "10108756030"}}
+{"ts": "2025-09-24 01:36:19", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "buy", "price": 0.4364, "sizes": 20.3, "order_id": "10108875164"}}
+{"ts": "2025-09-24 01:36:27", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "buy", "price": 0.6729, "sizes": 10.0, "order_id": "10108898107"}}
+{"ts": "2025-09-24 01:37:29", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.029776, "sizes": 300.0, "order_id": "10109074364"}}
+{"ts": "2025-09-24 01:39:59", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "buy", "price": 0.931, "sizes": 9.5, "order_id": "10109503733"}}
+{"ts": "2025-09-24 01:40:43", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "OP_USDC_PERP", "action": "buy", "price": 0.6943, "sizes": 10.0, "order_id": "10109642505"}}
+{"ts": "2025-09-24 01:41:53", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LINK_USDC_PERP", "error": "\u8ba2\u5355\u91d1\u989d\u8fc7\u5c0f\uff0c\u65e0\u6cd5\u4e0b\u5355"}}
+{"ts": "2025-09-24 01:43:40", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "AAVE_USDC_PERP", "action": "buy", "price": 275.84, "sizes": 0.03, "order_id": "10110196411"}}
+{"ts": "2025-09-24 01:44:34", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LINK_USDC_PERP", "error": "\u8ba2\u5355\u91d1\u989d\u8fc7\u5c0f\uff0c\u65e0\u6cd5\u4e0b\u5355"}}
+{"ts": "2025-09-24 01:44:41", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ETH_USDC_PERP", "action": "buy", "price": 4142.22, "sizes": 0.0021, "order_id": "10110377052"}}
+{"ts": "2025-09-24 01:45:56", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LINK_USDC_PERP", "error": "\u8ba2\u5355\u91d1\u989d\u8fc7\u5c0f\uff0c\u65e0\u6cd5\u4e0b\u5355"}}
+{"ts": "2025-09-24 01:46:56", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "DOT_USDC_PERP", "action": "buy", "price": 3.985, "sizes": 2.2, "order_id": "10110777479"}}
+{"ts": "2025-09-24 01:47:00", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SOL_USDC_PERP", "action": "buy", "price": 216.43, "sizes": 0.04, "order_id": "10110790363"}}
+{"ts": "2025-09-24 01:51:12", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 2466.6161530017853}}
+{"ts": "2025-09-24 01:51:16", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-24 01:54:37", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "action": "buy", "price": 1014.96, "sizes": 0.009, "order_id": "10111948369"}}
+{"ts": "2025-09-24 01:56:31", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LINK_USDC_PERP", "action": "buy", "price": 21.694, "sizes": 1.0, "order_id": "10112200718"}}
+{"ts": "2025-09-24 01:56:35", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "UNI_USDC_PERP", "action": "buy", "price": 8.075, "sizes": 1.1, "order_id": "10112209375"}}
+{"ts": "2025-09-24 02:11:03", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 1187.3459706306458}}
+{"ts": "2025-09-24 02:11:06", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-24 02:14:05", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 46.417, "sizes": 0.19, "order_id": "10114734922"}}
+{"ts": "2025-09-24 02:20:36", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.3181, "sizes": 7.0, "order_id": "10115604171"}}
+{"ts": "2025-09-24 02:21:23", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.6495, "sizes": 0.8, "order_id": "10115722814"}}
+{"ts": "2025-09-24 02:21:54", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SUI_USDC_PERP", "action": "buy", "price": 3.3446, "sizes": 2.66, "order_id": "10115793657"}}
+{"ts": "2025-09-24 02:44:07", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "APT_USDC_PERP", "action": "buy", "price": 4.269, "sizes": 2.1, "order_id": "10119030050"}}
+{"ts": "2025-09-24 02:44:24", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 45.887, "sizes": 0.19, "order_id": "10119078082"}}
+{"ts": "2025-09-24 02:44:42", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "buy", "price": 1.4653, "sizes": 6.0, "order_id": "10119119317"}}
+{"ts": "2025-09-24 02:46:06", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ADA_USDC_PERP", "action": "buy", "price": 0.8104, "sizes": 10.0, "order_id": "10119321320"}}
+{"ts": "2025-09-24 02:46:21", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.029467, "sizes": 300.0, "order_id": "10119357491"}}
+{"ts": "2025-09-24 02:48:02", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TRUMP_USDC_PERP", "action": "buy", "price": 7.578, "sizes": 1.17, "order_id": "10119624600"}}
+{"ts": "2025-09-24 02:50:35", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "buy", "price": 0.4313, "sizes": 20.6, "order_id": "10120020763"}}
+{"ts": "2025-09-24 02:51:16", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HBAR_USDC_PERP", "action": "buy", "price": 0.21943, "sizes": 40.0, "order_id": "10120134586"}}
+{"ts": "2025-09-24 02:51:21", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "buy", "price": 0.4668, "sizes": 19.0, "order_id": "10120149228"}}
+{"ts": "2025-09-24 02:53:52", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 45.288, "sizes": 0.2, "order_id": "10120552180"}}
+{"ts": "2025-09-24 03:02:48", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.5104, "sizes": 0.8, "order_id": "10121934543"}}
+{"ts": "2025-09-24 03:06:48", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "sell", "price": 0.4339, "sizes": 20.5, "order_id": "10122574091"}}
+{"ts": "2025-09-24 03:11:52", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "sell", "price": 0.029666, "sizes": 300.0, "order_id": "10123338554"}}
+{"ts": "2025-09-24 03:13:59", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.731, "sizes": 0.19, "order_id": "10123637182"}}
+{"ts": "2025-09-24 03:36:14", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 45.26, "sizes": 0.2, "order_id": "10126840956"}}
+{"ts": "2025-09-24 03:36:48", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.029403, "sizes": 300.0, "order_id": "10126926784"}}
+{"ts": "2025-09-24 03:49:45", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "buy", "price": 0.9199, "sizes": 9.7, "order_id": "10128907024"}}
+{"ts": "2025-09-24 03:50:06", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.3866, "sizes": 0.8, "order_id": "10128972604"}}
+{"ts": "2025-09-24 03:50:15", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "buy", "price": 0.6655, "sizes": 10.0, "order_id": "10129003119"}}
+{"ts": "2025-09-24 03:50:44", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.2953, "sizes": 7.0, "order_id": "10129077250"}}
+{"ts": "2025-09-24 03:52:06", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 44.723, "sizes": 0.2, "order_id": "10129307352"}}
+{"ts": "2025-09-24 04:03:17", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 11.5019, "sizes": 0.8, "order_id": "10131113766"}}
+{"ts": "2025-09-24 04:06:29", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3097, "sizes": 7.0, "order_id": "10131611324"}}
+{"ts": "2025-09-24 04:07:53", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.207, "sizes": 0.2, "order_id": "10131820530"}}
+{"ts": "2025-09-24 04:22:53", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SOL_USDC_PERP", "action": "buy", "price": 213.7, "sizes": 0.04, "order_id": "10134016066"}}
+{"ts": "2025-09-24 04:23:06", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "XLM_USDC_PERP", "action": "buy", "price": 0.36491, "sizes": 20.0, "order_id": "10134046408"}}
+{"ts": "2025-09-24 04:36:06", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "buy", "price": 0.4308, "sizes": 20.6, "order_id": "10135904148"}}
+{"ts": "2025-09-24 04:58:25", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "sell", "price": 0.6717, "sizes": 10.0, "order_id": "10139098698"}}
+{"ts": "2025-09-24 04:59:40", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "sell", "price": 0.4348, "sizes": 20.4, "order_id": "10139272827"}}
+{"ts": "2025-09-24 05:20:34", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 11.6312, "sizes": 0.8, "order_id": "10142058789"}}
+{"ts": "2025-09-24 05:25:49", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 11.7829, "sizes": 0.8, "order_id": "10142751398"}}
+{"ts": "2025-09-24 05:30:38", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "sell", "price": 1.48, "sizes": 6.0, "order_id": "10143353906"}}
+{"ts": "2025-09-24 05:34:03", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "APT_USDC_PERP", "action": "sell", "price": 4.312, "sizes": 2.1, "order_id": "10143803621"}}
+{"ts": "2025-09-24 05:42:35", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "sell", "price": 0.9291, "sizes": 9.6, "order_id": "10144864659"}}
+{"ts": "2025-09-24 05:45:32", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 11.9182, "sizes": 0.7, "order_id": "10145211167"}}
+{"ts": "2025-09-24 05:53:13", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "sell", "price": 0.029731, "sizes": 300.0, "order_id": "10146134232"}}
+{"ts": "2025-09-24 05:55:18", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3238, "sizes": 7.0, "order_id": "10146368311"}}
+{"ts": "2025-09-24 06:10:26", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.0892, "sizes": 0.7, "order_id": "10148321184"}}
+{"ts": "2025-09-24 06:11:57", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TRUMP_USDC_PERP", "action": "sell", "price": 7.651, "sizes": 1.16, "order_id": "10148516172"}}
+{"ts": "2025-09-24 06:30:05", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.9513, "sizes": 0.7, "order_id": "10150832040"}}
+{"ts": "2025-09-24 06:39:16", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.0692, "sizes": 0.7, "order_id": "10151888616"}}
+{"ts": "2025-09-24 06:56:16", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.9277, "sizes": 0.7, "order_id": "10154001254"}}
+{"ts": "2025-09-24 07:02:21", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "XRP_USDC_PERP", "action": "buy", "price": 2.8342, "sizes": 3.1332, "order_id": "10154769592"}}
+{"ts": "2025-09-24 07:03:15", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "OP_USDC_PERP", "action": "buy", "price": 0.6867, "sizes": 10.0, "order_id": "10154883383"}}
+{"ts": "2025-09-24 07:20:25", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.3141, "sizes": 7.0, "order_id": "10157166933"}}
+{"ts": "2025-09-24 07:21:49", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 44.738, "sizes": 0.2, "order_id": "10157358612"}}
+{"ts": "2025-09-24 07:23:40", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.029431, "sizes": 300.0, "order_id": "10157616692"}}
+{"ts": "2025-09-24 07:24:52", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "buy", "price": 0.9189, "sizes": 9.7, "order_id": "10157793244"}}
+{"ts": "2025-09-24 07:28:41", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "buy", "price": 1.4628, "sizes": 6.0, "order_id": "10158322500"}}
+{"ts": "2025-09-24 08:07:03", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.0637, "sizes": 0.7, "order_id": "10163466023"}}
+{"ts": "2025-09-24 08:21:01", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "sell", "price": 1.4781, "sizes": 6.0, "order_id": "10165556734"}}
+{"ts": "2025-09-24 08:21:18", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "sell", "price": 0.02981, "sizes": 300.0, "order_id": "10165601088"}}
+{"ts": "2025-09-24 08:22:30", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "sell", "price": 0.9291, "sizes": 9.6, "order_id": "10165796907"}}
+{"ts": "2025-09-24 08:27:21", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.164, "sizes": 0.2, "order_id": "10166514974"}}
+{"ts": "2025-09-24 08:29:23", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.9323, "sizes": 0.7, "order_id": "10166797203"}}
+{"ts": "2025-09-24 09:02:12", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "buy", "price": 0.6652, "sizes": 10.0, "order_id": "10171482956"}}
+{"ts": "2025-09-24 09:02:42", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 44.683, "sizes": 0.2, "order_id": "10171564643"}}
+{"ts": "2025-09-24 09:09:15", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.133, "sizes": 0.2, "order_id": "10172571805"}}
+{"ts": "2025-09-24 09:15:20", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "sell", "price": 0.6696, "sizes": 10.0, "order_id": "10173349398"}}
+{"ts": "2025-09-24 09:16:56", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "OP_USDC_PERP", "action": "sell", "price": 0.6931, "sizes": 10.0, "order_id": "10173588299"}}
+{"ts": "2025-09-24 09:36:51", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HBAR_USDC_PERP", "action": "sell", "price": 0.22186, "sizes": 40.0, "order_id": "10176268376"}}
+{"ts": "2025-09-24 09:38:27", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "action": "sell", "price": 1025.34, "sizes": 0.009, "order_id": "10176494724"}}
+{"ts": "2025-09-24 09:39:05", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "UNI_USDC_PERP", "action": "sell", "price": 8.144, "sizes": 1.1, "order_id": "10176584178"}}
+{"ts": "2025-09-24 09:43:31", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "sell", "price": 0.4738, "sizes": 18.7, "order_id": "10177200555"}}
+{"ts": "2025-09-24 09:56:24", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LTC_USDC_PERP", "action": "sell", "price": 107.53, "sizes": 0.1, "order_id": "10178826971"}}
+{"ts": "2025-09-24 09:57:50", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.565, "sizes": 0.19, "order_id": "10178992680"}}
+{"ts": "2025-09-24 10:15:02", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "buy", "price": 0.4684, "sizes": 19.0, "order_id": "10181273490"}}
+{"ts": "2025-09-24 10:17:34", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 45.015, "sizes": 0.2, "order_id": "10181685637"}}
+{"ts": "2025-09-24 10:24:51", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 12.0616, "sizes": 0.7, "order_id": "10182784618"}}
+{"ts": "2025-09-24 10:39:17", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.9144, "sizes": 0.7, "order_id": "10184833548"}}
+{"ts": "2025-09-24 10:39:56", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.491, "sizes": 0.2, "order_id": "10184918250"}}
+{"ts": "2025-09-24 11:08:46", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.2971, "sizes": 7.0, "order_id": "10189433218"}}
+{"ts": "2025-09-24 11:08:50", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 44.96, "sizes": 0.2, "order_id": "10189443974"}}
+{"ts": "2025-09-24 11:17:43", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "UNI_USDC_PERP", "action": "buy", "price": 8.071, "sizes": 1.1, "order_id": "10190676657"}}
+{"ts": "2025-09-24 11:19:40", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "buy", "price": 1.4598, "sizes": 6.0, "order_id": "10190983081"}}
+{"ts": "2025-09-24 11:21:08", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "buy", "price": 0.9182, "sizes": 9.7, "order_id": "10191193663"}}
+{"ts": "2025-09-24 11:21:42", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LINK_USDC_PERP", "action": "buy", "price": 21.415, "sizes": 0.4, "order_id": "10191283942"}}
+{"ts": "2025-09-24 11:23:58", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.029465, "sizes": 300.0, "order_id": "10191667389"}}
+{"ts": "2025-09-24 11:24:36", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "DOGE_USDC_PERP", "action": "buy", "price": 0.23577, "sizes": 37.7, "order_id": "10191787290"}}
+{"ts": "2025-09-24 11:24:44", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LTC_USDC_PERP", "action": "buy", "price": 106.35, "sizes": 0.1, "order_id": "10191807561"}}
+{"ts": "2025-09-24 11:24:53", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "AAVE_USDC_PERP", "action": "buy", "price": 272.22, "sizes": 0.03, "order_id": "10191831361"}}
+{"ts": "2025-09-24 11:28:07", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SOL_USDC_PERP", "action": "buy", "price": 210.9, "sizes": 0.04, "order_id": "10192333813"}}
+{"ts": "2025-09-24 11:28:43", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SUI_USDC_PERP", "action": "buy", "price": 3.2926, "sizes": 2.7, "order_id": "10192458698"}}
+{"ts": "2025-09-24 11:28:51", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "buy", "price": 1.2796, "sizes": 7.0, "order_id": "10192478238"}}
+{"ts": "2025-09-24 11:28:56", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 44.482, "sizes": 0.2, "order_id": "10192493516"}}
+{"ts": "2025-09-24 11:29:03", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HBAR_USDC_PERP", "action": "buy", "price": 0.21975, "sizes": 40.0, "order_id": "10192513485"}}
+{"ts": "2025-09-24 11:29:07", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "buy", "price": 0.4621, "sizes": 19.2, "order_id": "10192527703"}}
+{"ts": "2025-09-24 11:29:20", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ADA_USDC_PERP", "action": "buy", "price": 0.8023, "sizes": 10.0, "order_id": "10192579437"}}
+{"ts": "2025-09-24 11:29:25", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "action": "buy", "price": 1012.16, "sizes": 0.009, "order_id": "10192596569"}}
+{"ts": "2025-09-24 11:29:51", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "buy", "price": 0.4278, "sizes": 20.8, "order_id": "10192715613"}}
+{"ts": "2025-09-24 11:29:58", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "buy", "price": 0.6593, "sizes": 10.0, "order_id": "10192741431"}}
+{"ts": "2025-09-24 11:30:13", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "APT_USDC_PERP", "action": "buy", "price": 4.267, "sizes": 2.1, "order_id": "10192803314"}}
+{"ts": "2025-09-24 11:30:18", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "OP_USDC_PERP", "action": "buy", "price": 0.6844, "sizes": 10.0, "order_id": "10192821035"}}
+{"ts": "2025-09-24 11:44:16", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SOL_USDC_PERP", "action": "buy", "price": 209.07, "sizes": 0.04, "order_id": "10195394025"}}
+{"ts": "2025-09-24 11:47:16", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "UNI_USDC_PERP", "action": "buy", "price": 7.963, "sizes": 1.1, "order_id": "10195888489"}}
+{"ts": "2025-09-24 11:50:33", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "buy", "price": 1.4426, "sizes": 6.0, "order_id": "10196434711"}}
+{"ts": "2025-09-24 11:52:26", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "XLM_USDC_PERP", "action": "buy", "price": 0.36072, "sizes": 20.0, "order_id": "10196738044"}}
+{"ts": "2025-09-24 11:57:38", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "buy", "price": 11.777, "sizes": 0.8, "order_id": "10197576087"}}
+{"ts": "2025-09-24 11:58:48", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.029078, "sizes": 300.0, "order_id": "10197763181"}}
+{"ts": "2025-09-24 12:01:27", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "buy", "price": 0.028723, "sizes": 300.0, "order_id": "10198186522"}}
+{"ts": "2025-09-24 12:01:32", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "DOT_USDC_PERP", "action": "buy", "price": 3.927, "sizes": 2.3, "order_id": "10198201989"}}
+{"ts": "2025-09-24 12:01:52", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TRUMP_USDC_PERP", "action": "buy", "price": 7.57, "sizes": 1.17, "order_id": "10198263732"}}
+{"ts": "2025-09-24 12:03:01", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "IP_USDC_PERP", "action": "sell", "price": 11.8699, "sizes": 0.7, "order_id": "10198481572"}}
+{"ts": "2025-09-24 12:03:50", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TON_USDC_PERP", "action": "buy", "price": 2.7991, "sizes": 3.2, "order_id": "10198646694"}}
+{"ts": "2025-09-24 12:04:05", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ONDO_USDC_PERP", "action": "buy", "price": 0.9095, "sizes": 9.8, "order_id": "10198709965"}}
+{"ts": "2025-09-24 12:05:10", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "JUP_USDC_PERP", "action": "buy", "price": 0.4561, "sizes": 19.5, "order_id": "10198924921"}}
+{"ts": "2025-09-24 12:05:15", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 35649.3819539547}}
+{"ts": "2025-09-24 17:56:06", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-24 17:59:46", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 220.27860116958618}}
+{"ts": "2025-09-24 17:59:51", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-24 18:00:04", "op": "StrategyExit", "src": "Grid-All-Coin", "det": {"reason": "Manual interrupt", "uptime": 12.933907747268677}}
+{"ts": "2025-09-24 18:02:03", "op": "StrategyStart", "src": "Grid-All-Coin", "det": {"exchange": "backpack", "strategy": "Grid-All-Coin", "version": "2.0", "force_refresh": false}}
+{"ts": "2025-09-24 18:07:40", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 44.834, "sizes": 0.2, "order_id": "10249975369"}}
+{"ts": "2025-09-24 18:09:53", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TRUMP_USDC_PERP", "action": "sell", "price": 7.722, "sizes": 1.15, "order_id": "10250285597"}}
+{"ts": "2025-09-24 18:26:03", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "buy", "price": 44.427, "sizes": 0.2, "order_id": "10252319347"}}
+{"ts": "2025-09-24 19:06:25", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "CRV_USDC_PERP", "action": "sell", "price": 0.6961, "sizes": 10.0, "order_id": "10257231044"}}
+{"ts": "2025-09-24 19:08:02", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "OP_USDC_PERP", "action": "sell", "price": 0.7061, "sizes": 10.0, "order_id": "10257438960"}}
+{"ts": "2025-09-24 19:10:07", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "PENGU_USDC_PERP", "action": "sell", "price": 0.030425, "sizes": 300.0, "order_id": "10257720498"}}
+{"ts": "2025-09-24 19:13:00", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "ARB_USDC_PERP", "action": "sell", "price": 0.4428, "sizes": 20.1, "order_id": "10258118666"}}
+{"ts": "2025-09-24 19:13:12", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "LINK_USDC_PERP", "action": "sell", "price": 21.857, "sizes": 0.4, "order_id": "10258159272"}}
+{"ts": "2025-09-24 19:13:38", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 44.927, "sizes": 0.2, "order_id": "10258236534"}}
+{"ts": "2025-09-24 19:13:56", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "TIA_USDC_PERP", "action": "sell", "price": 1.4912, "sizes": 6.0, "order_id": "10258281164"}}
+{"ts": "2025-09-24 19:21:58", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "action": "buy", "price": 1019.68, "sizes": 0.009, "order_id": "10259382542"}}
+{"ts": "2025-09-24 19:33:29", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.373, "sizes": 0.2, "order_id": "10260860052"}}
+{"ts": "2025-09-24 19:50:23", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "SUI_USDC_PERP", "action": "sell", "price": 3.4028, "sizes": 2.61, "order_id": "10263104337"}}
+{"ts": "2025-09-24 19:50:33", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "HYPE_USDC_PERP", "action": "sell", "price": 45.84, "sizes": 0.19, "order_id": "10263128573"}}
+{"ts": "2025-09-24 19:59:41", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "WLD_USDC_PERP", "action": "sell", "price": 1.3464, "sizes": 7.0, "order_id": "10264264207"}}

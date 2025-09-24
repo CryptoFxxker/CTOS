@@ -34,19 +34,19 @@ PROJECT_ROOT = add_project_paths()
 print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
 
 
-from ctos.drivers.backpack.util import align_decimal_places, round_dynamic, round_to_two_digits, fuzzy_exchange_input
-from ctos.core.runtime.ExecutionEngine import ExecutionEngine
+from ctos.drivers.backpack.util import align_decimal_places, round_dynamic, round_to_two_digits
+from ctos.core.runtime.ExecutionEngine import pick_exchange
 
-def get_positions_storage_path(exchange: str) -> str:
+def get_positions_storage_path(exchange: str, account: int) -> str:
     """获取positions存储文件路径"""
     logging_dir = os.path.join(PROJECT_ROOT, 'ctos', 'core', 'io', 'logging')
     os.makedirs(logging_dir, exist_ok=True)
-    return os.path.join(logging_dir, f'{exchange}_Grid-All-Coin_positions.json')
+    return os.path.join(logging_dir, f'{exchange}_Account{account}_Grid-All-Coin_positions.json')
 
-def save_positions(positions: dict, exchange: str) -> None:
+def save_positions(positions: dict, exchange: str, account: int) -> None:
     """保存positions到本地文件"""
     try:
-        storage_path = get_positions_storage_path(exchange)
+        storage_path = get_positions_storage_path(exchange, account)
         data = {
             'timestamp': datetime.now().isoformat(),
             'exchange': exchange,
@@ -58,14 +58,14 @@ def save_positions(positions: dict, exchange: str) -> None:
     except Exception as e:
         print(f"\r ✗ 保存持仓数据失败: {e}", end='')
 
-def load_positions(exchange: str) -> tuple[dict, bool]:
+def load_positions(exchange: str, account: int) -> tuple[dict, bool]:
     """
     从本地文件加载positions
     返回: (positions_dict, is_valid)
     如果文件不存在或超过1小时，返回空字典和False
     """
     try:
-        storage_path = get_positions_storage_path(exchange)
+        storage_path = get_positions_storage_path(exchange, account)
         if not os.path.exists(storage_path):
             return {}, False
         
@@ -94,15 +94,7 @@ def load_positions(exchange: str) -> tuple[dict, bool]:
         print(f"✗ 加载持仓数据失败: {e}")
         return {}, False
 
-def pick_exchange(from_arg: str | None = None):
-    ex = (from_arg or os.getenv('GRID_EX') or '').strip().lower()
-    if ex not in ('okx', 'backpack'):
-        user_input = input("选择交易所 exchange [okx/bp] (默认 okx): ").strip()
-        ex = fuzzy_exchange_input(user_input)
-    
-    # 创建ExecutionEngine实例
-    engine = ExecutionEngine(account=0, strategy='Grid-All-Coin', exchange_type=ex)
-    return ex, engine
+
 
 def get_all_positions(engine, exchange: str, use_cache: bool = True):
     """
@@ -111,7 +103,7 @@ def get_all_positions(engine, exchange: str, use_cache: bool = True):
     """
     # 尝试从本地加载
     if use_cache:
-        cached_positions, is_valid = load_positions(exchange)
+        cached_positions, is_valid = load_positions(exchange, engine.account)
         if is_valid and cached_positions:
             return cached_positions
     # 从API获取最新持仓
@@ -142,7 +134,7 @@ def get_all_positions(engine, exchange: str, use_cache: bool = True):
         
         # 保存到本地
         if positions:
-            save_positions(positions, exchange)
+            save_positions(positions, exchange, engine.account)
             
     except Exception as e:
         print("get_all_positions 异常:", e)
@@ -221,7 +213,7 @@ def main():
     force_refresh = False
     arg_ex = None
     show_help_flag = False
-    
+    acount_id = 0
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             if arg in ['--refresh', '-r', '--force']:
@@ -230,12 +222,14 @@ def main():
                 show_help_flag = True
             elif arg in ['okx', 'bp', 'ok', 'backpack']:
                 arg_ex = arg
+            elif arg in ['01234']:
+                acount_id = int(arg)
     
     if show_help_flag:
         show_help()
         return
     
-    exch, engine = pick_exchange(arg_ex)
+    exch, engine = pick_exchange(arg_ex, acount_id)
     print(f"使用交易所: {exch}")
     
     if force_refresh:
@@ -274,7 +268,7 @@ def main():
                     side = pos["side"]
                     init_price = data["init_price"]
                     print_position(sym, pos, init_price, start_ts)
-
+                
                     change_pct = (price_now - init_price) / init_price
                     # 涨幅 >= 1% → 卖出
                     if change_pct >= 0.01:
@@ -286,7 +280,7 @@ def main():
                             else:
                                 print(f"\n[{sym}] 卖出 {qty}, px={price_now}, id={oid}\n")
                                 data["init_price"] = price_now
-                                save_positions(positions, exch)
+                                save_positions(positions, exch, engine.account)
 
                     # 跌幅 >= 1.11% → 买入
                     elif change_pct <= -0.0111:
@@ -300,12 +294,12 @@ def main():
                                 print(f"\n[{sym}] 买入 {qty}, px={price_now}, id={oid}\n")
                                 data["init_price"] = price_now
                                 data["size"] += qty
-                                save_positions(positions, exch)
+                                save_positions(positions, exch, engine.account)
                 except Exception as e:
                     print(f"[{sym}] 循环异常:", e)
                     break
             if time.time() - start_ts % 1800 < sleep_time * len(positions):
-                save_positions(positions, exch)
+                save_positions(positions, exch, engine.account)
     except KeyboardInterrupt:
         print("手动退出。")
         engine.monitor.record_operation("StrategyExit", "Grid-All-Coin", {

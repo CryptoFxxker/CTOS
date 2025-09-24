@@ -266,7 +266,8 @@ class BackpackDriver(TradingSyscalls):
         elif self.mode != "perp" and full.endswith("_PERP"):
             # If spot mode but input is perp, strip suffix
             full = full.replace("_PERP", "")
-
+        if full in ['KSHIB_USDC_PERP', 'KPEPE_USDC_PERP', 'KBONK_USDC_PERP']:
+            full = full[0].lower() + full[1:]
         return full, base.lower(), quote.upper()
 
     def _timeframe_to_seconds(self, timeframe):
@@ -802,7 +803,7 @@ class BackpackDriver(TradingSyscalls):
                             print(f"⚠ 未知错误类型，尝试通用调整: {error_msg}")
                             if order_type.lower() == 'limit' and price is not None:
                                 # 尝试减少价格精度
-                                price = round(price, 2)
+                                price = round(float(price), 2)
                                 print(f"🔧 通用调整价格精度: {original_price} -> {price} (有效数字: {self._count_significant_digits(price)})")
                             
                             # 尝试减少数量精度
@@ -918,7 +919,7 @@ class BackpackDriver(TradingSyscalls):
         raise NotImplementedError("Account.cancel_order unavailable")
 
 
-    def get_order_status(self,  order_id=None, symbol='ETH_USDC_PERP', market_type=None, window=None, keep_origin=True):
+    def get_order_status(self,  order_id=None, symbol='ETH_USDC_PERP', market_type=None, window=None, keep_origin=False):
         full, _, _ = self._norm_symbol(symbol)
         if not hasattr(self.account, "get_open_order"):
             raise NotImplementedError("Account.get_open_order unavailable")
@@ -1182,6 +1183,7 @@ class BackpackDriver(TradingSyscalls):
                 lev = _f(pos.get('leverage'))
                 fee = _f(pos.get('cumulativeFundingPayment'))
                 liq = _f(pos.get('estLiquidationPrice'))
+                quantityUSD = _f(pos.get('netExposureNotional'))
                 # Backpack 未提供时间戳，置空
                 ts = None
                 return {
@@ -1189,10 +1191,11 @@ class BackpackDriver(TradingSyscalls):
                     'positionId': pos.get('positionId') or pos.get('posId'),
                     'side': side,
                     'quantity': abs(qty),
+                    'quantityUSD': abs(quantityUSD),
                     'entryPrice': entry,
                     'markPrice': mark,
-                    'pnlUnrealized': upl,
-                    'pnlRealized': realized,
+                    'pnlUnrealized': realized,
+                    'pnlRealized': upl,
                     'leverage': lev,
                     'liquidationPrice': liq,
                     'ts': ts,

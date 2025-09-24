@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-24T05:28:37.965895",
+  "timestamp": "2025-09-24T11:59:41.975833",
   "exchange": "backpack",
   "positions": {
     "ETH_USDC_PERP": {
@@ -10,14 +10,14 @@
       "pnlUnrealized": -0.090063
     },
     "APT_USDC_PERP": {
-      "init_price": 4.26388138,
+      "init_price": 4.30662681,
       "avg_cost": 4.40226510557294,
       "size": 178.2,
       "side": "short",
       "pnlUnrealized": -0.129324
     },
     "OP_USDC_PERP": {
-      "init_price": 0.69190557,
+      "init_price": 0.70646836,
       "avg_cost": 0.7528531496536864,
       "size": 1013.0,
       "side": "short",
@@ -31,7 +31,7 @@
       "pnlUnrealized": -2.032761
     },
     "SUI_USDC_PERP": {
-      "init_price": 3.33372253,
+      "init_price": 3.40358854,
       "avg_cost": 3.5397600757886316,
       "size": 210.59999999999997,
       "side": "short",
@@ -45,35 +45,35 @@
       "pnlUnrealized": 0.174234
     },
     "WLD_USDC_PERP": {
-      "init_price": 1.30273927,
+      "init_price": 1.34747793,
       "avg_cost": 1.4872441871330886,
       "size": 545.6,
       "side": "short",
       "pnlUnrealized": 1.06313
     },
     "HYPE_USDC_PERP": {
-      "init_price": 44.13577532,
+      "init_price": 45.83372164,
       "avg_cost": 52.14189412647751,
-      "size": 15.089999999999991,
+      "size": 15.889999999999988,
       "side": "short",
       "pnlUnrealized": 0.92706
     },
     "AAVE_USDC_PERP": {
-      "init_price": 272.3682442,
+      "init_price": 277.90979138,
       "avg_cost": 296.9939675248371,
       "size": 2.6879999999999997,
       "side": "short",
       "pnlUnrealized": -0.980262
     },
     "HBAR_USDC_PERP": {
-      "init_price": 0.22166692,
+      "init_price": 0.22393675,
       "avg_cost": 0.23463777586638374,
       "size": 3136.0,
       "side": "short",
       "pnlUnrealized": 0.155733
     },
     "JUP_USDC_PERP": {
-      "init_price": 0.46072637,
+      "init_price": 0.47541337,
       "avg_cost": 0.5092916192254574,
       "size": 1592.0,
       "side": "short",
@@ -94,28 +94,28 @@
       "pnlUnrealized": 0.05998
     },
     "TIA_USDC_PERP": {
-      "init_price": 1.46103532,
+      "init_price": 1.49137138,
       "avg_cost": 1.6821143414785347,
       "size": 454.70000000000005,
       "side": "short",
       "pnlUnrealized": 0.199232
     },
     "ADA_USDC_PERP": {
-      "init_price": 0.80986157,
+      "init_price": 0.81835134,
       "avg_cost": 0.8661418867928771,
       "size": 876.0,
       "side": "short",
       "pnlUnrealized": -0.069504
     },
     "BNB_USDC_PERP": {
-      "init_price": 1007.75324014,
+      "init_price": 1019.28870117,
       "avg_cost": 953.9377089687337,
-      "size": 2.9925,
+      "size": 3.0012000000000003,
       "side": "long",
       "pnlUnrealized": -0.270286
     },
     "ONDO_USDC_PERP": {
-      "init_price": 0.92628454,
+      "init_price": 0.93567442,
       "avg_cost": 1.0183392013325334,
       "size": 767.2,
       "side": "short",
@@ -136,14 +136,14 @@
       "pnlUnrealized": -0.079859
     },
     "PENGU_USDC_PERP": {
-      "init_price": 0.0294621,
+      "init_price": 0.03051799,
       "avg_cost": 0.033183441594387755,
       "size": 24220.0,
       "side": "short",
       "pnlUnrealized": 0.354468
     },
     "DOT_USDC_PERP": {
-      "init_price": 4.00931304,
+      "init_price": 4.04999108,
       "avg_cost": 4.176571649851815,
       "size": 190.2,
       "side": "short",
@@ -164,49 +164,49 @@
       "pnlUnrealized": -0.378887
     },
     "IP_USDC_PERP": {
-      "init_price": 11.71956027,
+      "init_price": 12.93037303,
       "avg_cost": 12.556519904561005,
       "size": 239.75000000000006,
       "side": "short",
       "pnlUnrealized": 2.487446
     },
     "ARB_USDC_PERP": {
-      "init_price": 0.4330019,
+      "init_price": 0.44313621,
       "avg_cost": 0.48519939771769216,
       "size": 1604.0,
       "side": "short",
       "pnlUnrealized": -0.077189
     },
     "XLM_USDC_PERP": {
-      "init_price": 0.36431187,
+      "init_price": 0.36807708,
       "avg_cost": 0.37995256204297767,
       "size": 1957.0,
       "side": "short",
       "pnlUnrealized": 0.151361
     },
     "CRV_USDC_PERP": {
-      "init_price": 0.67456062,
+      "init_price": 0.696402,
       "avg_cost": 0.7472223340569194,
       "size": 1101.0,
       "side": "short",
       "pnlUnrealized": -0.119246
     },
     "TRUMP_USDC_PERP": {
-      "init_price": 7.64744272,
+      "init_price": 7.72463311,
       "avg_cost": 8.4043613717143,
       "size": 74.5,
       "side": "short",
       "pnlUnrealized": 0.024264
     },
     "LINK_USDC_PERP": {
-      "init_price": 21.41934403,
+      "init_price": 21.88796782,
       "avg_cost": 23.27014336890244,
       "size": 33.239999999999995,
       "side": "short",
       "pnlUnrealized": -0.365135
     },
     "UNI_USDC_PERP": {
-      "init_price": 8.03883583,
+      "init_price": 8.12330123,
       "avg_cost": 9.05349735072257,
       "size": 78.99999999999999,
       "side": "short",

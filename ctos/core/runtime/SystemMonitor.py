@@ -3,6 +3,8 @@ from logging.handlers import RotatingFileHandler
 # 确保项目根目录在sys.path中
 import os
 import sys
+from datetime import datetime, timedelta
+
 def add_project_paths(project_name="ctos"):
     """
     自动查找项目根目录，并将其及常见子包路径添加到 sys.path。
@@ -43,23 +45,38 @@ class SystemMonitor:
         # 获取交易所名称
         cex_name = getattr(execution_engine.cex_driver, 'cex', 'UNKNOWN')
         # 创建logging目录
-        log_dir = os.path.join(PROJECT_ROOT, 'ctos', 'core', 'io', 'logging')
+        log_dir = os.path.join(PROJECT_ROOT, 'core', 'io', 'logging')
         os.makedirs(log_dir, exist_ok=True)
         
         # 生成带交易所名称的文件名
-        base_name = f"{cex_name}_{strategy_name}"
-        
-        # 监控日志：滚动文件
+        base_name = f"{cex_name}_Account{execution_engine.account}_{strategy_name}"
+
+        # 监控日志：滚动文件，记录时间改为北京时间
+
+        class BeijingTimeFormatter(logging.Formatter):
+            def formatTime(self, record, datefmt=None):
+                # 获取UTC时间戳，转为北京时间
+                dt = datetime.fromtimestamp(record.created) + timedelta(hours=8)
+                if datefmt:
+                    s = dt.strftime(datefmt)
+                else:
+                    s = dt.strftime("%Y-%m-%d %H:%M:%S")
+                # 加上毫秒
+                s = f"{s},{int(record.msecs):03d}"
+                return s
+
         self.logger = logging.getLogger("SystemMonitor-" + strategy_name)
         self.logger.setLevel(logging.INFO)
         log_file = os.path.join(log_dir, f"{base_name}_system_monitor.log")
+        print('log_file path: ', log_file)
         rh = RotatingFileHandler(
             log_file,
             maxBytes=self.LOG_MAX_MB * 1024 * 1024,
             backupCount=self.LOG_BACKUP,
             encoding="utf8"
         )
-        rh.setFormatter(logging.Formatter(
+        # 使用自定义Formatter，时间为北京时间
+        rh.setFormatter(BeijingTimeFormatter(
             '%(asctime)s - %(levelname)s - %(message)s'))
         if not any(isinstance(h, RotatingFileHandler) for h in self.logger.handlers):
             self.logger.addHandler(rh)
@@ -67,6 +84,7 @@ class SystemMonitor:
         # ---------- 操作日志：队列 + 后台 flush ----------
         op_file_path = os.path.join(log_dir, f"{base_name}_operation_log.log")
         self.op_file = open(op_file_path, "a", buffering=1)
+        print('op_file_path path: ', op_file_path)
         self.q   = queue.Queue()
         self._stop = threading.Event()
         self.worker = threading.Thread(target=self._flush_loop, daemon=True)
@@ -125,12 +143,13 @@ class SystemMonitor:
 
 
 
-    def check_api_status(self, symbol="ETH-USDT-SWAP"):
+    def check_api_status(self, symbol="ETH"):
         """
         调用执行引擎的 get_price_now 接口检查 API 状态，
         并记录当前价格，如果异常，则记录错误。
         """
         try:
+            symbol = self.execution_engine._norm_symbol(symbol)
             price = self.execution_engine.cex_driver.get_price_now(symbol)
             if price is not None:
                 msg = f"API Status OK. {symbol} 当前价格：{price}"
@@ -173,82 +192,460 @@ class SystemMonitor:
             self.logger.error(f"Error in monitor_market: {e}")
             self.record_operation("Market Monitor Exception", "MarketMonitor", {"symbol": symbol, "error": str(e)})
 
-    def monitor_positions(self, symbols=['eth', 'btc'],
-                          tolerance_threshold=5, pos_change_pct_thresh=50, upl_change_thresh=500):
+    def monitor_positions(self, symbols=None, tolerance_threshold=20, 
+                         pos_change_pct_thresh=10, upl_change_thresh=100,
+                         price_change_thresh=5, auto_correct=True):
         """
-        监控多个币种的仓位：
-          1. 对每个币种，通过 get_positions 获取当前仓位信息；
-          2. 若与上次记录相比，持仓数量或未实现收益变化超过预设阈值（例如持仓数量变化超过 10% 或未实现收益变化超过 500），则发出异常波动警告；
-          3. 同时，根据 tolerance_threshold、杠杆、最新标记价格及持仓数量计算风险，
-             如果绝对未实现收益 (upl) 超过 loss_limit，则视为风险超出容忍值并记录警告。
-          4. 更新 self.last_positions 保存最新监控数据。
+        增强的仓位监控系统：
+        1. 获取全部仓位信息并建立备份
+        2. 监控仓位异常变化并自动纠正
+        3. 监控价格异常波动
+        4. 维护下单记录和预期仓位
+        5. 生成详细的异常报告
+        Args:
+            symbols: 要监控的币种列表，None表示监控所有仓位
+            tolerance_threshold: 风险容忍阈值
+            pos_change_pct_thresh: 仓位变化百分比阈值
+            upl_change_thresh: 未实现收益变化阈值
+            price_change_thresh: 价格变化百分比阈值
+            auto_correct: 是否自动纠正异常仓位
         """
-        # 初始化上次仓位记录字典
+
+        # 初始化监控数据
         if not hasattr(self, "last_positions"):
             self.last_positions = {}
-
-        for coin in symbols:
-            symbol = f'{coin.upper()}-USDT-SWAP'
+        if not hasattr(self, "order_expectations"):
+            self.order_expectations = {}  # 记录下单预期
+        if not hasattr(self, "position_backup"):
+            self.position_backup = {}
+        
+        # 获取交易所和账户信息
+        exchange = self.execution_engine.exchange_type
+        account_id = self.execution_engine.account
+        
+        # 1. 获取全部仓位信息
+        try:
+            all_positions, err = self.execution_engine.cex_driver.get_position(symbol=None, keep_origin=False)
+            if err:
+                self.logger.error(f"获取全部仓位失败: {err}")
+                return
+            
+            if not all_positions:
+                self.logger.info("当前无持仓")
+                return
+                
+        except Exception as e:
+            self.logger.error(f"获取仓位信息异常: {e}")
+            return
+        
+        # 2. 加载或创建仓位备份
+        backup_file = self._get_position_backup_path(exchange, account_id)
+        self._load_position_backup(backup_file)
+        
+        # 3. 保存当前仓位备份
+        self._save_position_backup(backup_file, all_positions)
+        
+        # 4. 处理每个仓位
+        for pos in all_positions:
             try:
-                # 获取当前仓位信息
-                pos_info = self.execution_engine.cex_driver.get_positions(symbol, show=False)
-                if not pos_info:
-                    self.logger.error(f"monitor_positions: 获取 {symbol} 持仓信息失败")
-                    continue
-
-                # 提取关键字段（请根据实际字段名称做相应调整）
-                current_pos = float(pos_info.get("持仓数量", 0))
-                current_upl = float(pos_info.get("未实现收益", 0))
-                lever = float(pos_info.get("杠杆倍数", 1))
-                mark_px = float(pos_info.get("最新标记价格", 0))
-
-                # 异常波动检测：比较当前与上一次监控结果
-                if symbol in self.last_positions:
-                    last_record = self.last_positions[symbol]
-                    last_pos = last_record.get("持仓数量", current_pos)
-                    last_upl = last_record.get("未实现收益", current_upl)
-                    pos_change_pct = abs(current_pos - last_pos) / (last_pos if last_pos != 0 else 1) * 100
-                    upl_change = current_upl - last_upl
-                    if pos_change_pct > pos_change_pct_thresh or abs(upl_change) > upl_change_thresh:
-                        alert_msg = (f"{symbol} 仓位异常变动：持仓数量从 {last_pos} 变为 {current_pos} "
-                                     f"(变化 {pos_change_pct:.2f}%)，未实现收益从 {last_upl} 变为 {current_upl} "
-                                     f"(变化 {upl_change:.2f})")
-                        self.logger.warning(alert_msg)
-                        self.record_operation("Position Alert", "PositionMonitor", {
-                            "symbol": symbol,
-                            "last_持仓数量": last_pos,
-                            "current_持仓数量": current_pos,
-                            "last_未实现收益": last_upl,
-                            "current_未实现收益": current_upl
-                        })
-
-                # 保存当前监控数据
-                self.last_positions[symbol] = {"持仓数量": current_pos, "未实现收益": current_upl}
-
-                # 基于 tolerance_threshold 检查风险
-                risk_factor = tolerance_threshold * lever
-                if risk_factor <= 100:
-                    loss_limit = tolerance_threshold * 0.01 * mark_px * current_pos
-                    if abs(current_upl) > loss_limit:
-                        risk_msg = (f"{symbol} 风险超出容忍度：未实现收益 {current_upl} 超过损失限额 {loss_limit:.2f}")
-                        self.logger.warning(risk_msg)
-                        self.record_operation("Risk Alert", "PositionMonitor", {
-                            "symbol": symbol,
-                            "未实现收益": current_upl,
-                            "损失限额": loss_limit
-                        })
-                        # 此处可补充自动止损操作，如调用 self.execution_engine.place_order("stop", ...)
-                    else:
-                        self.logger.info(f"{symbol} 持仓风险在容忍范围内。")
-                else:
-                    err_msg = (f"{symbol} 风险管理错误：tolerance_threshold * 杠杆 = {risk_factor} 超过允许上限")
-                    self.logger.error(err_msg)
-                    self.record_operation("Risk Alert", "PositionMonitor",
-                                          {"symbol": symbol, "risk_factor": risk_factor})
+                self._process_position(pos, symbols, tolerance_threshold, 
+                                     pos_change_pct_thresh, upl_change_thresh,
+                                     price_change_thresh, auto_correct)
             except Exception as e:
-                self.logger.error(f"Error in monitor_positions for {symbol}: {e}")
-                self.record_operation("Position Monitor Exception", "PositionMonitor",
-                                      {"symbol": symbol, "error": str(e)})
+                self.logger.error(f"处理仓位异常 {pos.get('symbol', 'unknown')}: {e}")
+                self._record_anomaly("Position Processing Error", {
+                    "symbol": pos.get('symbol', 'unknown'),
+                    "error": str(e)
+                })
+    
+    def _get_position_backup_path(self, exchange, account_id):
+        """获取仓位备份文件路径"""
+        import os
+        logging_dir = os.path.join(os.path.dirname(__file__), '../io/logging')
+        os.makedirs(logging_dir, exist_ok=True)
+        return os.path.join(logging_dir, f'{exchange}_account{account_id}_position_backup.json')
+    
+    def _load_position_backup(self, backup_file):
+        """加载仓位备份"""
+        if not os.path.exists(backup_file):
+            return
+        try:
+            with open(backup_file, 'r', encoding='utf-8') as f:
+                backup_data = json.load(f)
+            
+            # 检查时间戳
+            backup_time = datetime.fromisoformat(backup_data.get('timestamp', ''))
+            if datetime.now() - backup_time < timedelta(minutes=10):
+                self.position_backup = backup_data.get('positions', {})
+                self.logger.info(f"加载仓位备份成功 (时间: {backup_time.strftime('%Y-%m-%d %H:%M:%S')})")
+            else:
+                self.logger.info("仓位备份已过期，将重新建立")
+                
+        except Exception as e:
+            self.logger.warning(f"加载仓位备份失败: {e}")
+    
+    def _save_position_backup(self, backup_file, positions):
+        """保存仓位备份"""
+        try:
+            backup_data = {
+                'timestamp': datetime.now().isoformat(),
+                'exchange': self.execution_engine.exchange_type,
+                'account_id': self.execution_engine.account,
+                'positions': {pos.get('symbol'): pos for pos in positions}
+            }
+            with open(backup_file, 'w', encoding='utf-8') as f:
+                json.dump(backup_data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            self.logger.error(f"保存仓位备份失败: {e}")
+    
+    def _process_position(self, pos, symbols, tolerance_threshold, 
+                         pos_change_pct_thresh, upl_change_thresh,
+                         price_change_thresh, auto_correct):
+        """处理单个仓位"""
+        symbol = pos.get('symbol', '')
+        
+        # 如果指定了symbols，只处理指定的币种
+        if symbols:
+            coin = symbol.split('-')[0].lower() if '-' in symbol else symbol.lower()
+            if coin not in [s.lower() for s in symbols]:
+                return
+        
+        # 提取仓位信息
+        current_qty = float(pos.get('quantity', 0))
+        current_upl = float(pos.get('pnlUnrealized', 0))
+        current_realized = float(pos.get('pnlRealized', 0))
+        mark_price = float(pos.get('markPrice', 0))
+        entry_price = float(pos.get('entryPrice', 0))
+        side = pos.get('side', '')
+        leverage = float(pos.get('leverage', 1))
+        quantity_usd = float(pos.get('quantityUSD', 0))
+        
+
+        # 检查仓位是否为空
+        if current_qty == 0:
+            return
+        
+        # 1. 检查价格异常波动
+        self._check_price_anomaly(symbol, mark_price, price_change_thresh)
+        
+        # 2. 检查仓位异常变化
+        self._check_position_anomaly(symbol, pos, pos_change_pct_thresh, 
+                                   upl_change_thresh, auto_correct)
+        
+        # 3. 检查风险指标
+        self._check_risk_metrics(symbol, pos, tolerance_threshold)
+        
+        # 4. 更新监控数据
+        from datetime import datetime
+        self.last_positions[symbol] = {
+            'quantity': current_qty,
+            'pnlUnrealized': current_upl,
+            'pnlRealized': current_realized,
+            'markPrice': mark_price,
+            'entryPrice': entry_price,
+            'side': side,
+            'leverage': leverage,
+            'quantityUSD': quantity_usd, 
+            'timestamp': datetime.now().isoformat()
+        }
+    
+    def _check_price_anomaly(self, symbol, current_price, threshold):
+        """检查价格异常波动"""
+        if symbol in self.last_positions:
+            last_price = self.last_positions[symbol].get('markPrice', current_price)
+            if last_price > 0:
+                price_change_pct = abs(current_price - last_price) / last_price * 100
+                if price_change_pct > threshold:
+                    self._record_anomaly("Price Anomaly", {
+                        "symbol": symbol,
+                        "last_price": last_price,
+                        "current_price": current_price,
+                        "change_pct": price_change_pct,
+                        "threshold": threshold
+                    })
+                    self.logger.warning(f"{symbol} 价格异常波动: {last_price:.4f} -> {current_price:.4f} ({price_change_pct:.2f}%)")
+    
+    def _check_position_anomaly(self, symbol, pos, pos_change_pct_thresh, 
+                               upl_change_thresh, auto_correct):
+        """检查仓位异常变化"""
+        # 获取仓位金额，根据side添加正负号
+        current_qty_usd = float(pos.get('quantityUSD', 0))
+        side = pos.get('side', '')
+        if side == 'short':
+            current_qty_usd = -current_qty_usd  # 空头仓位为负值
+        
+        current_upl = float(pos.get('pnlUnrealized', 0))
+        
+        if symbol in self.last_positions:
+            last_data = self.last_positions[symbol]
+            if last_data.get('side', '') :
+                last_qty_usd = last_data.get('quantityUSD', current_qty_usd) if last_data.get('side', '') == 'long' else -last_data.get('quantityUSD', current_qty_usd)
+            last_upl = last_data.get('pnlUnrealized', current_upl)
+            
+            # 检查仓位金额变化
+            if last_qty_usd != 0:
+                qty_change_pct = abs(current_qty_usd - last_qty_usd) / abs(last_qty_usd) * 100
+                if qty_change_pct > pos_change_pct_thresh:
+                    self._record_anomaly("Position Value Anomaly", {
+                        "symbol": symbol,
+                        "last_quantity_usd": last_qty_usd,
+                        "current_quantity_usd": current_qty_usd,
+                        "change_pct": qty_change_pct,
+                        "threshold": pos_change_pct_thresh,
+                        "side": side
+                    })
+                    if auto_correct:
+                        self._auto_correct_position_usd(symbol, last_qty_usd, current_qty_usd)
+            
+            # 检查未实现收益变化
+            upl_change = abs(current_upl - last_upl)
+            if upl_change > upl_change_thresh:
+                self._record_anomaly("PnL Anomaly", {
+                    "symbol": symbol,
+                    "last_upl": last_upl,
+                    "current_upl": current_upl,
+                    "change": upl_change,
+                    "threshold": upl_change_thresh
+                })
+                self.logger.warning(f"{symbol} 未实现收益异常变化: {last_upl:.2f} -> {current_upl:.2f} (变化: {upl_change:.2f})")
+    
+    def _auto_correct_position_usd(self, symbol, expected_qty_usd, actual_qty_usd):
+        """基于USD金额自动纠正异常仓位"""
+        try:
+            diff_usd = expected_qty_usd - actual_qty_usd
+            if abs(diff_usd) < 20:  # 忽略微小差异（1美元以下）
+                return
+            
+            side = 'buy' if diff_usd > 0 else 'sell'
+            abs_diff_usd = abs(diff_usd)
+            self.logger.warning(f"自动纠正仓位 {symbol}: 预期金额 ${expected_qty_usd:.2f}, 实际金额 ${actual_qty_usd:.2f}, 差异 ${diff_usd:.2f}")
+            
+            # 使用ExecutionEngine下单纠正，直接使用USD金额
+            result, err = self.execution_engine.place_incremental_orders(
+                abs_diff_usd,
+                symbol.split('-')[0],
+                side,
+                soft=False, # 妈的，有超出预计的变化？给爷死！ 直接打回去！去你妈的，煞笔人类不要干涉代码操作！
+            )
+            
+            if result:
+                self._record_anomaly("Auto Correction USD", {
+                    "symbol": symbol,
+                    "expected_quantity_usd": expected_qty_usd,
+                    "actual_quantity_usd": actual_qty_usd,
+                    "correction_diff_usd": diff_usd,
+                    "correction_side": side,
+                    "order_result": result
+                })
+                self.logger.info(f"仓位纠正订单已提交: {symbol} {side} ${abs_diff_usd:.2f}")
+            else:
+                self.logger.error(f"仓位纠正订单提交失败: {symbol}")
+                
+        except Exception as e:
+            self.logger.error(f"自动纠正仓位失败 {symbol}: {e}")
+            self._record_anomaly("Auto Correction Failed", {
+                            "symbol": symbol,
+                "error": str(e)
+            })
+    
+    def _check_risk_metrics(self, symbol, pos, tolerance_threshold):
+        """检查风险指标"""
+        current_qty = float(pos.get('quantity', 0))
+        current_upl = float(pos.get('pnlUnrealized', 0))
+        mark_price = float(pos.get('markPrice', 0))
+        leverage = float(pos.get('leverage', 1))
+        quantity_usd = float(pos.get('quantityUSD', 0))
+        side = pos.get('side', '')
+        
+        # 根据side添加正负号到quantityUSD
+        if side == 'short':
+            quantity_usd = -quantity_usd  # 空头仓位为负值
+        
+        # 计算风险指标
+        risk_metrics = {
+            "symbol": symbol,
+            "quantity": current_qty,
+            "pnl_unrealized": current_upl,
+            "mark_price": mark_price,
+            "leverage": leverage,
+            "quantity_usd": quantity_usd,  # 带正负号的仓位金额
+            "side": side,
+            "risk_ratio": abs(current_upl) / abs(quantity_usd) if quantity_usd != 0 else 0
+        }
+        
+        # 检查风险阈值
+        if risk_metrics["risk_ratio"] > tolerance_threshold / 100:
+            self._record_anomaly("Risk Threshold Exceeded", risk_metrics)
+            self.logger.warning(f"{symbol} 风险比例过高: {risk_metrics['risk_ratio']:.2%} (仓位金额: ${quantity_usd:.2f})")
+        
+
+        # 检查仓位价值风险
+        if abs(quantity_usd) > self.execution_engine.cex_driver.fetch_balance('USDT') * 0.5:  # 大仓位警告
+            self._record_anomaly("Large Position Warning", risk_metrics)
+            self.logger.warning(f"{symbol} 大仓位警告: ${quantity_usd:.2f}")
+    
+    def _record_anomaly(self, anomaly_type, data):
+        """记录异常信息"""
+        import os
+        import json
+        from datetime import datetime
+        
+        try:
+            # 创建异常记录文件
+            logging_dir = os.path.join(os.path.dirname(__file__), '../io/logging')
+            os.makedirs(logging_dir, exist_ok=True)
+            
+            exchange = self.execution_engine.exchange_type
+            account_id = self.execution_engine.account
+            anomaly_file = os.path.join(logging_dir, f'{exchange}_account{account_id}_anomaly_report.json')
+            
+            # 读取现有记录
+            anomalies = []
+            if os.path.exists(anomaly_file):
+                with open(anomaly_file, 'r', encoding='utf-8') as f:
+                    anomalies = json.load(f)
+            
+            # 添加新记录
+            anomaly_record = {
+                'timestamp': datetime.now().isoformat(),
+                'type': anomaly_type,
+                'data': data,
+                'exchange': exchange,
+                'account_id': account_id
+            }
+            anomalies.append(anomaly_record)
+            
+            # 保存记录（保留最近1000条）
+            if len(anomalies) > 1000:
+                anomalies = anomalies[-1000:]
+            
+            with open(anomaly_file, 'w', encoding='utf-8') as f:
+                json.dump(anomalies, f, ensure_ascii=False, indent=2)
+            
+            # 记录到操作日志
+            self.record_operation("Anomaly Detected", "PositionMonitor", {
+                "anomaly_type": anomaly_type,
+                "data": data
+            })
+            
+        except Exception as e:
+            self.logger.error(f"记录异常信息失败: {e}")
+    
+    def get_anomaly_summary(self, hours=24):
+        """获取异常汇总报告"""
+        import os
+        import json
+        from datetime import datetime, timedelta
+        
+        try:
+            logging_dir = os.path.join(os.path.dirname(__file__), '../io/logging')
+            exchange = self.execution_engine.exchange_type
+            account_id = self.execution_engine.account
+            anomaly_file = os.path.join(logging_dir, f'{exchange}_account{account_id}_anomaly_report.json')
+            
+            if not os.path.exists(anomaly_file):
+                return {"message": "无异常记录"}
+            
+            with open(anomaly_file, 'r', encoding='utf-8') as f:
+                anomalies = json.load(f)
+            
+            # 筛选时间范围内的异常
+            cutoff_time = datetime.now() - timedelta(hours=hours)
+            recent_anomalies = [
+                a for a in anomalies 
+                if datetime.fromisoformat(a['timestamp']) > cutoff_time
+            ]
+            
+            # 统计异常类型
+            anomaly_counts = {}
+            for anomaly in recent_anomalies:
+                anomaly_type = anomaly['type']
+                anomaly_counts[anomaly_type] = anomaly_counts.get(anomaly_type, 0) + 1
+            
+            return {
+                "time_range_hours": hours,
+                "total_anomalies": len(recent_anomalies),
+                "anomaly_types": anomaly_counts,
+                "recent_anomalies": recent_anomalies[-10:]  # 最近10条
+            }
+            
+        except Exception as e:
+            self.logger.error(f"获取异常汇总失败: {e}")
+            return {"error": str(e)}
+    
+    def start_position_monitoring(self, symbols=None, interval_minutes=1, **kwargs):
+        """启动仓位监控定时任务"""
+        import threading
+        import time
+        
+        def monitoring_loop():
+            while True:
+                try:
+                    self.logger.info("开始执行仓位监控...")
+                    self.monitor_positions(symbols=symbols, **kwargs)
+                    self.logger.info("仓位监控完成")
+                except Exception as e:
+                    self.logger.error(f"仓位监控异常: {e}")
+                
+                # 等待下次监控
+                time.sleep(interval_minutes * 60)
+        
+        # 启动监控线程
+        monitor_thread = threading.Thread(target=monitoring_loop, daemon=True)
+        monitor_thread.start()
+        self.logger.info(f"仓位监控已启动，监控间隔: {interval_minutes}分钟")
+        return monitor_thread
+    
+    def stop_position_monitoring(self):
+        """停止仓位监控（通过设置标志位）"""
+        if hasattr(self, 'monitoring_active'):
+            self.monitoring_active = False
+            self.logger.info("仓位监控已停止")
+    
+    def get_position_summary(self):
+        """获取当前仓位汇总"""
+        try:
+            all_positions, err = self.execution_engine.cex_driver.get_position(symbol=None, keep_origin=False)
+            if err:
+                return {"error": f"获取仓位失败: {err}"}
+            
+            if not all_positions:
+                return {"message": "当前无持仓"}
+            
+            summary = {
+                "total_positions": len(all_positions),
+                "total_quantity_usd": 0,
+                "total_pnl_unrealized": 0,
+                "total_pnl_realized": 0,
+                "positions": []
+            }
+            
+            for pos in all_positions:
+                qty_usd = float(pos.get('quantityUSD', 0))
+                pnl_unrealized = float(pos.get('pnlUnrealized', 0))
+                pnl_realized = float(pos.get('pnlRealized', 0))
+                
+                summary["total_quantity_usd"] += qty_usd
+                summary["total_pnl_unrealized"] += pnl_unrealized
+                summary["total_pnl_realized"] += pnl_realized
+                
+                summary["positions"].append({
+                    "symbol": pos.get('symbol'),
+                    "side": pos.get('side'),
+                    "quantity": float(pos.get('quantity', 0)),
+                    "quantity_usd": qty_usd,
+                    "pnl_unrealized": pnl_unrealized,
+                    "pnl_realized": pnl_realized,
+                    "mark_price": float(pos.get('markPrice', 0)),
+                    "entry_price": float(pos.get('entryPrice', 0)),
+                    "leverage": float(pos.get('leverage', 1))
+                })
+            
+            return summary
+            
+        except Exception as e:
+            self.logger.error(f"获取仓位汇总失败: {e}")
+            return {"error": str(e)}
 
 
     def handle_error(self, error_msg, context=""):

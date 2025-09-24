@@ -1,0 +1,20 @@
+accounts:
+  okx:
+    main:
+      api_key: "your_api_key"
+      api_secret: "your_api_secret"
+      passphrase: "your_passphrase"
+    sub1:
+      api_key: "sub_account_api_key"
+      api_secret: "sub_account_api_secret"
+      passphrase: "sub_account_passphrase"
+  backpack:
+    main:
+      public_key: "your_public_key"
+      secret_key: "your_secret_key"
+    arb_bot:
+      public_key: "bot_public_key"
+      secret_key: "bot_secret_key"
+
+# 如果要使用此文件，请删除本行提示，并根据实际情况到对应交易所申请API后填写到本文件，然后将文件名中的 example_ 去掉即可。
+# To use this file, please delete this line, fill in your API credentials from the corresponding exchange, and then remove 'example_' from the filename.

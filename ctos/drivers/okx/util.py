@@ -458,3 +458,30 @@ def round_like(ref: float, x: float ) -> float:
                 else:
                     break
     return round(x, decimals)
+
+
+def fuzzy_exchange_input(user_input: str) -> str:
+    """
+    模糊输入处理函数，支持多种输入方式
+    支持: okx, ok, o, ox, okex, okx交易所
+    支持: bp, backpack, b, back
+    """
+    if not user_input:
+        return 'okx'
+    
+    user_input = user_input.strip().lower()
+    
+    # OKX相关匹配
+    okx_patterns = ['okx', 'ok', 'o', 'ox', 'okex', 'okx交易所', '欧易']
+    for pattern in okx_patterns:
+        if pattern in user_input:
+            return 'okx'
+    
+    # Backpack相关匹配
+    bp_patterns = ['bp', 'backpack', 'b', 'back', 'bp交易所', '背包']
+    for pattern in bp_patterns:
+        if pattern in user_input:
+            return 'backpack'
+    
+    # 默认返回okx
+    return 'okx'

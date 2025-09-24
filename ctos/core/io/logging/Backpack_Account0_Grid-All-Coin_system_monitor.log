@@ -1,0 +1,201 @@
+2025-09-23 14:46:05,553 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 14:46:05,554 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-23 15:02:47,531 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 1001.0480389595032}
+2025-09-23 15:02:52,061 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 15:02:52,062 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-23 15:03:14,861 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 46.995, 'sizes': 0.19, 'order_id': '10084284458'}
+2025-09-23 15:04:01,174 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 12.3948, 'sizes': 0.7, 'order_id': '10084427125'}
+2025-09-23 15:11:54,259 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AVAX_USDC_PERP', 'action': 'sell', 'price': 35.535, 'sizes': 0.25, 'order_id': '10085708123'}
+2025-09-23 15:11:58,971 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 12.1746, 'sizes': 0.7, 'order_id': '10085718522'}
+2025-09-23 15:12:35,239 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3597, 'sizes': 7.0, 'order_id': '10085824313'}
+2025-09-23 15:12:40,079 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 47.447, 'sizes': 0.19, 'order_id': '10085839109'}
+2025-09-23 15:16:00,206 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AVAX_USDC_PERP', 'action': 'sell', 'price': 36.082, 'sizes': 0.25, 'order_id': '10086425227'}
+2025-09-23 15:17:23,861 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 12.0185, 'sizes': 0.7, 'order_id': '10086650318'}
+2025-09-23 15:20:03,065 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.1506, 'sizes': 0.7, 'order_id': '10087061080'}
+2025-09-23 15:21:59,477 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3458, 'sizes': 7.0, 'order_id': '10087360874'}
+2025-09-23 15:25:13,917 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.030114, 'sizes': 300.0, 'order_id': '10087880217'}
+2025-09-23 15:26:01,325 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3624, 'sizes': 7.0, 'order_id': '10088017453'}
+2025-09-23 15:39:59,069 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 12.0321, 'sizes': 0.7, 'order_id': '10090312632'}
+2025-09-23 15:51:28,362 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'sell', 'price': 1026.18, 'sizes': 0.009, 'order_id': '10092068857'}
+2025-09-23 16:08:09,641 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3432, 'sizes': 7.0, 'order_id': '10094597808'}
+2025-09-23 16:18:11,421 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.1497, 'sizes': 0.7, 'order_id': '10096221004'}
+2025-09-23 16:20:05,846 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3579, 'sizes': 7.0, 'order_id': '10096518988'}
+2025-09-23 16:20:54,837 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4413, 'sizes': 20.1, 'order_id': '10096645331'}
+2025-09-23 16:37:16,105 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3432, 'sizes': 7.0, 'order_id': '10099196785'}
+2025-09-23 16:44:35,105 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 12.0534, 'sizes': 0.7, 'order_id': '10100418151'}
+2025-09-23 16:51:45,238 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3563, 'sizes': 7.0, 'order_id': '10101515794'}
+2025-09-23 16:51:57,757 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'sell', 'price': 0.4775, 'sizes': 18.6, 'order_id': '10101549279'}
+2025-09-23 16:52:07,645 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.4978, 'sizes': 6.0, 'order_id': '10101582811'}
+2025-09-23 16:52:43,340 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.6886, 'sizes': 10.0, 'order_id': '10101715838'}
+2025-09-23 16:53:06,221 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'sell', 'price': 3.4202, 'sizes': 2.6, 'order_id': '10101799576'}
+2025-09-23 16:53:34,085 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'sell', 'price': 0.8296, 'sizes': 10.0, 'order_id': '10101894655'}
+2025-09-23 16:53:49,197 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.030469, 'sizes': 300.0, 'order_id': '10101943670'}
+2025-09-23 16:54:01,816 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.1726, 'sizes': 0.7, 'order_id': '10101991976'}
+2025-09-23 16:59:19,806 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.9665, 'sizes': 0.7, 'order_id': '10102879582'}
+2025-09-23 17:04:27,181 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.030157, 'sizes': 300.0, 'order_id': '10103737125'}
+2025-09-23 17:10:01,513 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 7629.449399471283}
+2025-09-23 17:10:05,497 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 17:10:05,498 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-23 17:11:18,033 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'buy', 'price': 0.6816, 'sizes': 10.0, 'order_id': '10104834178'}
+2025-09-23 17:13:49,141 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.8755, 'sizes': 0.7, 'order_id': '10105217004'}
+2025-09-23 17:17:04,337 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 46.942, 'sizes': 0.19, 'order_id': '10105702468'}
+2025-09-23 17:30:26,902 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'buy', 'price': 1.482, 'sizes': 6.0, 'order_id': '10107846674'}
+2025-09-23 17:30:31,509 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'buy', 'price': 0.8194, 'sizes': 10.0, 'order_id': '10107859482'}
+2025-09-23 17:35:21,325 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'buy', 'price': 3.3854, 'sizes': 2.62, 'order_id': '10108689222'}
+2025-09-23 17:35:28,993 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3402, 'sizes': 7.0, 'order_id': '10108718782'}
+2025-09-23 17:35:41,465 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'buy', 'price': 0.4727, 'sizes': 18.8, 'order_id': '10108756030'}
+2025-09-23 17:36:19,925 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'buy', 'price': 0.4364, 'sizes': 20.3, 'order_id': '10108875164'}
+2025-09-23 17:36:27,341 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'buy', 'price': 0.6729, 'sizes': 10.0, 'order_id': '10108898107'}
+2025-09-23 17:37:29,465 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029776, 'sizes': 300.0, 'order_id': '10109074364'}
+2025-09-23 17:39:59,798 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'buy', 'price': 0.931, 'sizes': 9.5, 'order_id': '10109503733'}
+2025-09-23 17:40:43,617 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'buy', 'price': 0.6943, 'sizes': 10.0, 'order_id': '10109642505'}
+2025-09-23 17:41:53,109 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-23 17:43:40,689 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AAVE_USDC_PERP', 'action': 'buy', 'price': 275.84, 'sizes': 0.03, 'order_id': '10110196411'}
+2025-09-23 17:44:34,169 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-23 17:44:41,385 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'buy', 'price': 4142.22, 'sizes': 0.0021, 'order_id': '10110377052'}
+2025-09-23 17:45:56,245 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-23 17:46:56,234 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOT_USDC_PERP', 'action': 'buy', 'price': 3.985, 'sizes': 2.2, 'order_id': '10110777479'}
+2025-09-23 17:47:00,669 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 216.43, 'sizes': 0.04, 'order_id': '10110790363'}
+2025-09-23 17:51:12,115 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 2466.6161530017853}
+2025-09-23 17:51:16,057 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 17:51:16,058 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-23 17:54:37,305 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'buy', 'price': 1014.96, 'sizes': 0.009, 'order_id': '10111948369'}
+2025-09-23 17:56:31,429 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'action': 'buy', 'price': 21.694, 'sizes': 1.0, 'order_id': '10112200718'}
+2025-09-23 17:56:35,897 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'buy', 'price': 8.075, 'sizes': 1.1, 'order_id': '10112209375'}
+2025-09-23 18:11:03,405 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 1187.3459706306458}
+2025-09-23 18:11:06,465 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-23 18:11:06,465 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-23 18:14:05,497 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 46.417, 'sizes': 0.19, 'order_id': '10114734922'}
+2025-09-23 18:20:36,489 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3181, 'sizes': 7.0, 'order_id': '10115604171'}
+2025-09-23 18:21:23,149 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.6495, 'sizes': 0.8, 'order_id': '10115722814'}
+2025-09-23 18:21:54,317 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'buy', 'price': 3.3446, 'sizes': 2.66, 'order_id': '10115793657'}
+2025-09-23 18:44:07,461 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'buy', 'price': 4.269, 'sizes': 2.1, 'order_id': '10119030050'}
+2025-09-23 18:44:24,949 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 45.887, 'sizes': 0.19, 'order_id': '10119078082'}
+2025-09-23 18:44:42,430 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'buy', 'price': 1.4653, 'sizes': 6.0, 'order_id': '10119119317'}
+2025-09-23 18:46:06,341 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'buy', 'price': 0.8104, 'sizes': 10.0, 'order_id': '10119321320'}
+2025-09-23 18:46:21,273 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029467, 'sizes': 300.0, 'order_id': '10119357491'}
+2025-09-23 18:48:02,925 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'buy', 'price': 7.578, 'sizes': 1.17, 'order_id': '10119624600'}
+2025-09-23 18:50:35,253 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'buy', 'price': 0.4313, 'sizes': 20.6, 'order_id': '10120020763'}
+2025-09-23 18:51:16,537 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'buy', 'price': 0.21943, 'sizes': 40.0, 'order_id': '10120134586'}
+2025-09-23 18:51:21,449 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'buy', 'price': 0.4668, 'sizes': 19.0, 'order_id': '10120149228'}
+2025-09-23 18:53:52,649 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 45.288, 'sizes': 0.2, 'order_id': '10120552180'}
+2025-09-23 19:02:48,733 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.5104, 'sizes': 0.8, 'order_id': '10121934543'}
+2025-09-23 19:06:48,957 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4339, 'sizes': 20.5, 'order_id': '10122574091'}
+2025-09-23 19:11:52,145 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.029666, 'sizes': 300.0, 'order_id': '10123338554'}
+2025-09-23 19:13:59,129 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.731, 'sizes': 0.19, 'order_id': '10123637182'}
+2025-09-23 19:36:14,885 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 45.26, 'sizes': 0.2, 'order_id': '10126840956'}
+2025-09-23 19:36:48,317 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029403, 'sizes': 300.0, 'order_id': '10126926784'}
+2025-09-23 19:49:45,886 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'buy', 'price': 0.9199, 'sizes': 9.7, 'order_id': '10128907024'}
+2025-09-23 19:50:06,001 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.3866, 'sizes': 0.8, 'order_id': '10128972604'}
+2025-09-23 19:50:15,693 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'buy', 'price': 0.6655, 'sizes': 10.0, 'order_id': '10129003119'}
+2025-09-23 19:50:44,129 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.2953, 'sizes': 7.0, 'order_id': '10129077250'}
+2025-09-23 19:52:06,913 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 44.723, 'sizes': 0.2, 'order_id': '10129307352'}
+2025-09-23 20:03:17,497 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 11.5019, 'sizes': 0.8, 'order_id': '10131113766'}
+2025-09-23 20:06:29,841 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3097, 'sizes': 7.0, 'order_id': '10131611324'}
+2025-09-23 20:07:53,365 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.207, 'sizes': 0.2, 'order_id': '10131820530'}
+2025-09-23 20:22:53,777 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 213.7, 'sizes': 0.04, 'order_id': '10134016066'}
+2025-09-23 20:23:06,282 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XLM_USDC_PERP', 'action': 'buy', 'price': 0.36491, 'sizes': 20.0, 'order_id': '10134046408'}
+2025-09-23 20:36:06,689 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'buy', 'price': 0.4308, 'sizes': 20.6, 'order_id': '10135904148'}
+2025-09-23 20:58:25,353 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.6717, 'sizes': 10.0, 'order_id': '10139098698'}
+2025-09-23 20:59:40,129 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4348, 'sizes': 20.4, 'order_id': '10139272827'}
+2025-09-23 21:20:34,877 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 11.6312, 'sizes': 0.8, 'order_id': '10142058789'}
+2025-09-23 21:25:49,853 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 11.7829, 'sizes': 0.8, 'order_id': '10142751398'}
+2025-09-23 21:30:38,217 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.48, 'sizes': 6.0, 'order_id': '10143353906'}
+2025-09-23 21:34:03,733 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'sell', 'price': 4.312, 'sizes': 2.1, 'order_id': '10143803621'}
+2025-09-23 21:42:35,289 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'sell', 'price': 0.9291, 'sizes': 9.6, 'order_id': '10144864659'}
+2025-09-23 21:45:32,113 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 11.9182, 'sizes': 0.7, 'order_id': '10145211167'}
+2025-09-23 21:53:13,693 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.029731, 'sizes': 300.0, 'order_id': '10146134232'}
+2025-09-23 21:55:18,753 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3238, 'sizes': 7.0, 'order_id': '10146368311'}
+2025-09-23 22:10:26,773 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.0892, 'sizes': 0.7, 'order_id': '10148321184'}
+2025-09-23 22:11:57,177 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'sell', 'price': 7.651, 'sizes': 1.16, 'order_id': '10148516172'}
+2025-09-23 22:30:05,217 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.9513, 'sizes': 0.7, 'order_id': '10150832040'}
+2025-09-23 22:39:16,693 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.0692, 'sizes': 0.7, 'order_id': '10151888616'}
+2025-09-23 22:56:16,249 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.9277, 'sizes': 0.7, 'order_id': '10154001254'}
+2025-09-23 23:02:21,301 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XRP_USDC_PERP', 'action': 'buy', 'price': 2.8342, 'sizes': 3.1332, 'order_id': '10154769592'}
+2025-09-23 23:03:15,105 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'buy', 'price': 0.6867, 'sizes': 10.0, 'order_id': '10154883383'}
+2025-09-23 23:20:25,657 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.3141, 'sizes': 7.0, 'order_id': '10157166933'}
+2025-09-23 23:21:49,121 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 44.738, 'sizes': 0.2, 'order_id': '10157358612'}
+2025-09-23 23:23:40,149 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029431, 'sizes': 300.0, 'order_id': '10157616692'}
+2025-09-23 23:24:52,361 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'buy', 'price': 0.9189, 'sizes': 9.7, 'order_id': '10157793244'}
+2025-09-23 23:28:41,109 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'buy', 'price': 1.4628, 'sizes': 6.0, 'order_id': '10158322500'}
+2025-09-24 00:07:03,125 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.0637, 'sizes': 0.7, 'order_id': '10163466023'}
+2025-09-24 00:21:01,085 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.4781, 'sizes': 6.0, 'order_id': '10165556734'}
+2025-09-24 00:21:18,529 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.02981, 'sizes': 300.0, 'order_id': '10165601088'}
+2025-09-24 00:22:30,716 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'sell', 'price': 0.9291, 'sizes': 9.6, 'order_id': '10165796907'}
+2025-09-24 00:27:21,973 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.164, 'sizes': 0.2, 'order_id': '10166514974'}
+2025-09-24 00:29:23,689 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.9323, 'sizes': 0.7, 'order_id': '10166797203'}
+2025-09-24 01:02:12,313 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'buy', 'price': 0.6652, 'sizes': 10.0, 'order_id': '10171482956'}
+2025-09-24 01:02:42,809 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 44.683, 'sizes': 0.2, 'order_id': '10171564643'}
+2025-09-24 01:09:15,933 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.133, 'sizes': 0.2, 'order_id': '10172571805'}
+2025-09-24 01:15:20,798 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.6696, 'sizes': 10.0, 'order_id': '10173349398'}
+2025-09-24 01:16:56,505 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'sell', 'price': 0.6931, 'sizes': 10.0, 'order_id': '10173588299'}
+2025-09-24 01:36:51,129 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'sell', 'price': 0.22186, 'sizes': 40.0, 'order_id': '10176268376'}
+2025-09-24 01:38:27,081 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'sell', 'price': 1025.34, 'sizes': 0.009, 'order_id': '10176494724'}
+2025-09-24 01:39:05,762 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'sell', 'price': 8.144, 'sizes': 1.1, 'order_id': '10176584178'}
+2025-09-24 01:43:31,822 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'sell', 'price': 0.4738, 'sizes': 18.7, 'order_id': '10177200555'}
+2025-09-24 01:56:24,889 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LTC_USDC_PERP', 'action': 'sell', 'price': 107.53, 'sizes': 0.1, 'order_id': '10178826971'}
+2025-09-24 01:57:50,545 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.565, 'sizes': 0.19, 'order_id': '10178992680'}
+2025-09-24 02:15:02,521 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'buy', 'price': 0.4684, 'sizes': 19.0, 'order_id': '10181273490'}
+2025-09-24 02:17:34,161 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 45.015, 'sizes': 0.2, 'order_id': '10181685637'}
+2025-09-24 02:24:51,709 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 12.0616, 'sizes': 0.7, 'order_id': '10182784618'}
+2025-09-24 02:39:17,737 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.9144, 'sizes': 0.7, 'order_id': '10184833548'}
+2025-09-24 02:39:56,545 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.491, 'sizes': 0.2, 'order_id': '10184918250'}
+2025-09-24 03:08:46,049 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.2971, 'sizes': 7.0, 'order_id': '10189433218'}
+2025-09-24 03:08:50,614 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 44.96, 'sizes': 0.2, 'order_id': '10189443974'}
+2025-09-24 03:17:43,221 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'buy', 'price': 8.071, 'sizes': 1.1, 'order_id': '10190676657'}
+2025-09-24 03:19:40,130 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'buy', 'price': 1.4598, 'sizes': 6.0, 'order_id': '10190983081'}
+2025-09-24 03:21:08,593 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'buy', 'price': 0.9182, 'sizes': 9.7, 'order_id': '10191193663'}
+2025-09-24 03:21:42,126 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'action': 'buy', 'price': 21.415, 'sizes': 0.4, 'order_id': '10191283942'}
+2025-09-24 03:23:58,057 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029465, 'sizes': 300.0, 'order_id': '10191667389'}
+2025-09-24 03:24:36,717 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOGE_USDC_PERP', 'action': 'buy', 'price': 0.23577, 'sizes': 37.7, 'order_id': '10191787290'}
+2025-09-24 03:24:44,106 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LTC_USDC_PERP', 'action': 'buy', 'price': 106.35, 'sizes': 0.1, 'order_id': '10191807561'}
+2025-09-24 03:24:53,845 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AAVE_USDC_PERP', 'action': 'buy', 'price': 272.22, 'sizes': 0.03, 'order_id': '10191831361'}
+2025-09-24 03:28:07,129 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 210.9, 'sizes': 0.04, 'order_id': '10192333813'}
+2025-09-24 03:28:43,877 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'buy', 'price': 3.2926, 'sizes': 2.7, 'order_id': '10192458698'}
+2025-09-24 03:28:51,245 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.2796, 'sizes': 7.0, 'order_id': '10192478238'}
+2025-09-24 03:28:56,113 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 44.482, 'sizes': 0.2, 'order_id': '10192493516'}
+2025-09-24 03:29:03,389 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'buy', 'price': 0.21975, 'sizes': 40.0, 'order_id': '10192513485'}
+2025-09-24 03:29:07,907 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'buy', 'price': 0.4621, 'sizes': 19.2, 'order_id': '10192527703'}
+2025-09-24 03:29:20,910 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'buy', 'price': 0.8023, 'sizes': 10.0, 'order_id': '10192579437'}
+2025-09-24 03:29:25,489 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'buy', 'price': 1012.16, 'sizes': 0.009, 'order_id': '10192596569'}
+2025-09-24 03:29:51,053 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'buy', 'price': 0.4278, 'sizes': 20.8, 'order_id': '10192715613'}
+2025-09-24 03:29:58,341 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'buy', 'price': 0.6593, 'sizes': 10.0, 'order_id': '10192741431'}
+2025-09-24 03:30:13,509 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'buy', 'price': 4.267, 'sizes': 2.1, 'order_id': '10192803314'}
+2025-09-24 03:30:18,257 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'buy', 'price': 0.6844, 'sizes': 10.0, 'order_id': '10192821035'}
+2025-09-24 03:44:16,730 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 209.07, 'sizes': 0.04, 'order_id': '10195394025'}
+2025-09-24 03:47:16,989 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'buy', 'price': 7.963, 'sizes': 1.1, 'order_id': '10195888489'}
+2025-09-24 03:50:33,829 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'buy', 'price': 1.4426, 'sizes': 6.0, 'order_id': '10196434711'}
+2025-09-24 03:52:26,457 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XLM_USDC_PERP', 'action': 'buy', 'price': 0.36072, 'sizes': 20.0, 'order_id': '10196738044'}
+2025-09-24 03:57:38,513 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 11.777, 'sizes': 0.8, 'order_id': '10197576087'}
+2025-09-24 03:58:48,069 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.029078, 'sizes': 300.0, 'order_id': '10197763181'}
+2025-09-24 04:01:27,286 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'buy', 'price': 0.028723, 'sizes': 300.0, 'order_id': '10198186522'}
+2025-09-24 04:01:32,049 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOT_USDC_PERP', 'action': 'buy', 'price': 3.927, 'sizes': 2.3, 'order_id': '10198201989'}
+2025-09-24 04:01:52,089 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'buy', 'price': 7.57, 'sizes': 1.17, 'order_id': '10198263732'}
+2025-09-24 04:03:01,945 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 11.8699, 'sizes': 0.7, 'order_id': '10198481572'}
+2025-09-24 04:03:50,777 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TON_USDC_PERP', 'action': 'buy', 'price': 2.7991, 'sizes': 3.2, 'order_id': '10198646694'}
+2025-09-24 04:04:05,960 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'buy', 'price': 0.9095, 'sizes': 9.8, 'order_id': '10198709965'}
+2025-09-24 04:05:10,597 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'buy', 'price': 0.4561, 'sizes': 19.5, 'order_id': '10198924921'}
+2025-09-24 04:05:15,849 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 35649.3819539547}
+2025-09-24 09:56:06,584 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-24 09:56:06,585 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-24 09:59:46,865 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 220.27860116958618}
+%(asctime)s - %(levelname)s - %(message)s
+%(asctime)s - %(levelname)s - %(message)s
+%(asctime)s - %(levelname)s - %(message)s
+2025-09-24 18:02:03,485 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-24 18:02:03,485 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-All-Coin', 'version': '2.0', 'force_refresh': False}
+2025-09-24 18:07:40,369 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 44.834, 'sizes': 0.2, 'order_id': '10249975369'}
+2025-09-24 18:09:53,013 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'sell', 'price': 7.722, 'sizes': 1.15, 'order_id': '10250285597'}
+2025-09-24 18:26:03,805 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 44.427, 'sizes': 0.2, 'order_id': '10252319347'}
+2025-09-24 19:06:25,742 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.6961, 'sizes': 10.0, 'order_id': '10257231044'}
+2025-09-24 19:08:02,014 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'sell', 'price': 0.7061, 'sizes': 10.0, 'order_id': '10257438960'}
+2025-09-24 19:10:07,770 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.030425, 'sizes': 300.0, 'order_id': '10257720498'}
+2025-09-24 19:13:00,109 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4428, 'sizes': 20.1, 'order_id': '10258118666'}
+2025-09-24 19:13:12,462 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'action': 'sell', 'price': 21.857, 'sizes': 0.4, 'order_id': '10258159272'}
+2025-09-24 19:13:38,825 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 44.927, 'sizes': 0.2, 'order_id': '10258236534'}
+2025-09-24 19:13:56,581 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.4912, 'sizes': 6.0, 'order_id': '10258281164'}
+2025-09-24 19:21:58,633 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'buy', 'price': 1019.68, 'sizes': 0.009, 'order_id': '10259382542'}
+2025-09-24 19:33:29,501 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.373, 'sizes': 0.2, 'order_id': '10260860052'}
+2025-09-24 19:50:23,529 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'sell', 'price': 3.4028, 'sizes': 2.61, 'order_id': '10263104337'}
+2025-09-24 19:50:33,389 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 45.84, 'sizes': 0.19, 'order_id': '10263128573'}
+2025-09-24 19:59:41,975 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.3464, 'sizes': 7.0, 'order_id': '10264264207'}

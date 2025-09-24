@@ -35,8 +35,6 @@ def _add_bpx_path():
 PROJECT_ROOT = _add_bpx_path()
 print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
 
-_add_bpx_path()
-
 try:
     # 优先：绝对导入（当项目以包方式安装/运行时）
     from ctos.drivers.okx.util import *

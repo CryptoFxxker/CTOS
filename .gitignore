@@ -7,7 +7,7 @@ __pycache__/
 .env
 .ipynb_checkpoints/
 *.png
-*.log
+# *.log
 account.yaml
 # OS
 .DS_Store
@@ -16,3 +16,4 @@ account.yaml
 data/
 logs/
 tmp/
+chart_for_group/

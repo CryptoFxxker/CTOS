@@ -34,74 +34,232 @@
 
 ```
 ctos/
-├─ README.md
-├─ .gitignore
-├─ configs/
-│  ├─ ctos.yaml                 # 全局配置与开关
-│  └─ secrets.example.yaml      # API Key 模板（请勿提交真实密钥）
-├─ ctos/
-│  ├─ __init__.py
-│  ├─ core/
-│  │  ├─ kernel/
-│  │  │  ├─ syscalls.py         # 系统调用规范
-│  │  │  ├─ scheduler.py        # 策略进程调度
-│  │  │  └─ event_bus.py        # 事件总线（订单、成交、行情推送）
-│  │  ├─ runtime/
-│  │  │  ├─ strategy_manager.py # 策略管理：加载/运行/停止
-│  │  │  ├─ execution_engine.py # 执行引擎：派发 syscall，重试，幂等
-│  │  │  ├─ risk.py             # 风控：下单前检查、节流、Kill-switch
-│  │  │  └─ portfolio.py        # 账户与持仓、风险暴露、PnL
-│  │  └─ io/
-│  │     ├─ datafeed/           # 行情接入与归一化
-│  │     ├─ storage/            # Parquet/SQLite 适配
-│  │     └─ logging/            # 结构化日志
-│  └─ drivers/
-│     ├─ okx/
-│     │  ├─ __init__.py
-│     │  ├─ arch.yaml           # 功能、限制、符号规格
-│     │  ├─ rest.py             # REST 适配
-│     │  ├─ ws.py               # WebSocket 适配
-│     │  └─ signer.py           # 签名与认证
-│     ├─ binance/               # 同 okx
-│     └─ backpack/              # 同 okx
-├─ apps/
-│  ├─ strategies/
-│  │  └─ examples/
-│  │     └─ mean_reversion.py   # 示例策略，调用 syscalls
-│  └─ research/
-│     └─ notebooks/             # 研究用 Jupyter 笔记
-├─ tools/
-│  ├─ backtest/                 # 离线回测与重放
-│  └─ simulator/                # 延迟、滑点、费用模型
-├─ scripts/
-│  ├─ run_dev.sh                # 开发环境运行脚本（可选）
-│  └─ backtest.sh
-└─ tests/                       # 单元与集成测试
+├─ README.md                    # 项目说明文档
+├─ pyproject.toml              # Python项目配置
+├─ requirements.txt            # Python依赖包
+├─ environment.yml             # Conda环境配置
+├─ configs/                    # 配置管理目录
+│  ├─ account.yaml             # 账户配置文件（API密钥）
+│  ├─ account_reader.py        # 账户配置读取器
+│  ├─ config_reader.py         # 通用配置读取器
+│  └─ example_usage.py         # 配置使用示例
+├─ ctos/                       # 核心代码目录
+│  ├─ core/                    # 核心系统模块
+│  │  ├─ kernel/               # 系统内核
+│  │  │  ├─ syscalls.py        # 统一交易系统调用接口
+│  │  │  ├─ scheduler.py       # 策略调度器
+│  │  │  └─ event_bus.py       # 事件总线
+│  │  ├─ runtime/              # 运行时系统
+│  │  │  ├─ ExecutionEngine.py # 执行引擎（核心）
+│  │  │  ├─ SystemMonitor.py   # 系统监控器
+│  │  │  ├─ AccountManager.py  # 账户管理器
+│  │  │  ├─ RiskWatcher.py     # 风险监控器
+│  │  │  ├─ SignalGenerator.py # 信号生成器
+│  │  │  ├─ DataHandler.py     # 数据处理器
+│  │  │  └─ IndicatorCalculator.py # 指标计算器
+│  │  └─ io/                   # 输入输出模块
+│  │     ├─ logging/           # 日志系统
+│  │     ├─ datafeed/          # 数据源接入
+│  │     └─ storage/           # 数据存储
+│  └─ drivers/                 # 交易所驱动
+│     ├─ okx/                  # OKX交易所驱动
+│     │  ├─ driver.py          # OKX主驱动
+│     │  └─ util.py            # OKX工具函数
+│     ├─ backpack/             # Backpack交易所驱动
+│     │  ├─ driver.py          # Backpack主驱动
+│     │  └─ util.py            # Backpack工具函数
+│     └─ binance/              # Binance交易所驱动
+├─ apps/                       # 应用层
+│  ├─ strategies/              # 交易策略
+│  │  ├─ grid/                 # 网格策略
+│  │  │  └─ Grid-All-Coin.py   # 全币种网格策略
+│  │  ├─ hedge/                # 对冲策略
+│  │  ├─ rank/                 # 排名策略
+│  │  └─ examples/             # 示例策略
+│  ├─ indicatorVisualization/  # 指标可视化
+│  └─ website/                 # Web界面
+├─ tools/                      # 工具集
+├─ scripts/                    # 脚本文件
+└─ tests/                      # 测试文件
 ```
+
+### 🔥 核心文件说明
+
+#### 系统核心
+- **`ctos/core/runtime/ExecutionEngine.py`** - 执行引擎，系统核心，负责策略执行和系统调用
+- **`ctos/core/runtime/SystemMonitor.py`** - 系统监控器，负责仓位监控、异常检测和自动纠正
+- **`ctos/core/kernel/syscalls.py`** - 统一交易系统调用接口，屏蔽交易所差异
+
+#### 交易所驱动
+- **`ctos/drivers/okx/driver.py`** - OKX交易所驱动，支持动态账户映射
+- **`ctos/drivers/backpack/driver.py`** - Backpack交易所驱动，支持动态账户映射
+- **`ctos/drivers/binance/driver.py`** - Binance交易所驱动
+
+#### 配置管理
+- **`configs/account.yaml`** - 账户配置文件，存储各交易所API密钥
+- **`configs/account_reader.py`** - 账户配置读取器，支持动态账户管理
+
+#### 交易策略
+- **`apps/strategies/grid/Grid-All-Coin.py`** - 全币种网格策略，集成ExecutionEngine
+- **`apps/strategies/examples/`** - 示例策略集合
+
+#### 监控与日志
+- **`ctos/core/io/logging/`** - 日志目录，包含：
+  - `{exchange}_Account{id}_{strategy}_system_monitor.log` - 系统监控日志
+  - `{exchange}_Account{id}_{strategy}_operation_log.log` - 操作日志
+  - `{exchange}_account{id}_position_backup.json` - 仓位备份
+  - `{exchange}_account{id}_anomaly_report.json` - 异常报告
 
 ---
 
 ## 交易系统调用（统一接口）
 
-> 每个交易所的 driver 必须实现这些接口；策略只调用 syscall。
+> 每个交易所的 driver 必须实现这些接口；策略通过 ExecutionEngine 调用 syscall。
 
-功能概览（BackpackDriver）
-- 行情相关：
-  - `symbols()` → (list, error)：从公开市场接口获取并按模式（perp/spot）过滤交易对
-  - `get_price_now(symbol)`：获取最新成交价
-  - `get_orderbook(symbol, level)`：获取订单簿（bids/asks）
-  - `get_klines(symbol, timeframe, limit, start_time, end_time)`：按目标 DF 结构返回 K 线（自动按周期边界推导时间范围）
-  - `fees(symbol, limit, offset)`：获取资金费率（返回原始数据及 latest 快照）
-- 交易相关：
-  - `place_order(symbol, side, order_type, size, price=None, **kwargs)`：下单，兼容 `post_only`、`time_in_force` 等参数
-  - `revoke_order(order_id, symbol)`：撤单（Backpack 撤单需带 symbol）
-  - `amend_order(order_id, symbol, ...)`：通过“查单→撤单→下单”实现改单，支持改价/改量/TIF/post_only 等
-  - `get_open_orders(symbol=None, market_type='PERP')`：获取未完成订单；可配合 `get_order_status(symbol, order_id, ...)` 查询单一订单
-  - `cancel_all(symbol)`：撤销指定交易对的全部未完成订单
-- 账户/仓位：
-  - `fetch_balance(currency)`：返回全部或指定币种余额（大小写不敏感）
-  - `get_position(symbol=None)`：返回全部或指定交易对的仓位信息
-  - `close_all_positions(symbol=None)`：返回全部或指定交易对的仓位信息
+### 🚀 核心功能概览
+
+#### 行情相关
+- **`get_price_now(symbol)`** - 获取最新成交价
+- **`get_orderbook(symbol, level)`** - 获取订单簿（bids/asks）
+- **`get_klines(symbol, timeframe, limit, start_time, end_time)`** - 获取K线数据
+- **`fees(symbol, limit, offset)`** - 获取资金费率
+
+#### 交易相关
+- **`place_order(symbol, side, order_type, size, price=None, **kwargs)`** - 下单
+- **`revoke_order(order_id, symbol)`** - 撤单
+- **`amend_order(order_id, symbol, ...)`** - 改单（查单→撤单→下单）
+- **`get_open_orders(symbol=None, instType='SWAP')`** - 获取未完成订单
+- **`get_order_status(order_id, keep_origin=False)`** - 查询订单状态
+- **`cancel_all(symbol)`** - 撤销指定交易对全部订单
+
+#### 账户/仓位
+- **`fetch_balance(currency)`** - 获取余额（支持多币种）
+- **`get_position(symbol=None, keep_origin=False)`** - 获取仓位信息
+- **`close_all_positions(symbol=None)`** - 平仓所有仓位
+
+### 🔧 执行引擎功能
+
+#### ExecutionEngine 核心方法
+- **`place_incremental_orders(amount, coin, side, soft=True)`** - 增量下单
+- **`set_coin_position(coin, usdt_amount, soft=True)`** - 设置币种仓位
+- **`_order_tracking_logic(coins, soft_orders_to_focus)`** - 订单追踪逻辑
+
+#### 系统监控功能
+- **`monitor_positions()`** - 仓位监控（支持自动纠正）
+- **`get_position_summary()`** - 获取仓位汇总
+- **`get_anomaly_summary()`** - 获取异常汇总
+- **`start_position_monitoring()`** - 启动连续监控
+
+### 📊 支持的交易所
+
+| 交易所 | 驱动文件 | 账户支持 | 特殊功能 |
+|--------|----------|----------|----------|
+| **OKX** | `drivers/okx/driver.py` | 动态账户映射 | 完整的期货交易支持 |
+| **Backpack** | `drivers/backpack/driver.py` | 动态账户映射 | 原生永续合约支持 |
+| **Binance** | `drivers/binance/driver.py` | 基础支持 | 全球最大交易所 |
+
+### 🎯 动态账户管理
+
+所有交易所驱动都支持通过 `account_id` 参数动态选择账户：
+
+```python
+# 使用主账户 (account_id=0)
+engine = ExecutionEngine(account=0, exchange_type='okx')
+
+# 使用子账户 (account_id=1)
+engine = ExecutionEngine(account=1, exchange_type='backpack')
+
+# 使用第三个账户 (account_id=2)
+engine = ExecutionEngine(account=2, exchange_type='okx')
+```
+
+账户映射基于 `configs/account.yaml` 配置文件：
+- `account_id=0` → 第一个账户（通常是main）
+- `account_id=1` → 第二个账户（通常是sub1）
+- `account_id=2` → 第三个账户（通常是sub2）
+
+---
+
+## 🏗️ 系统架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        CTOS 系统架构                          │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │   应用层 (Apps)   │  │   配置层 (Config) │  │   工具层 (Tools)  │ │
+│  │                │  │                │  │                │ │
+│  │ • 网格策略       │  │ • 账户配置       │  │ • 回测工具       │ │
+│  │ • 对冲策略       │  │ • 系统配置       │  │ • 模拟器        │ │
+│  │ • 排名策略       │  │ • 密钥管理       │  │ • 可视化        │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                  核心运行时 (Core Runtime)                │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ 执行引擎     │  │ 系统监控     │  │ 账户管理     │    │ │
+│  │  │ExecutionEngine│  │SystemMonitor│  │AccountManager│    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ 风险监控     │  │ 信号生成     │  │ 数据处理     │    │ │
+│  │  │RiskWatcher  │  │SignalGenerator│  │DataHandler  │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                   系统内核 (Kernel)                      │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ 系统调用     │  │ 策略调度     │  │ 事件总线     │    │ │
+│  │  │  syscalls   │  │  scheduler  │  │  event_bus  │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                   交易所驱动 (Drivers)                   │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │   OKX       │  │  Backpack   │  │  Binance    │    │ │
+│  │  │   Driver    │  │   Driver    │  │   Driver    │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                   数据存储 (Storage)                     │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │   日志       │  │   数据源     │  │   存储       │    │ │
+│  │  │  Logging    │  │  DataFeed   │  │  Storage    │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 🔄 数据流向
+1. **策略** → **执行引擎** → **系统调用** → **交易所驱动** → **交易所API**
+2. **交易所API** → **交易所驱动** → **系统调用** → **执行引擎** → **系统监控**
+3. **系统监控** → **异常检测** → **自动纠正** → **执行引擎** → **交易所驱动**
+
+---
+
+## 🌟 系统特性
+
+### 🔥 核心功能
+- **统一交易接口** - 一套API支持OKX、Backpack、Binance三大交易所
+- **动态账户管理** - 支持多账户切换，基于配置文件自动映射
+- **智能仓位监控** - 基于quantityUSD的精准监控，支持自动纠正
+- **多维度异常检测** - 价格、仓位、收益、风险全方位监控
+- **自动纠正机制** - 检测到异常时自动下单纠正
+- **完整日志系统** - 结构化日志、操作记录、异常报告
+
+### 🛡️ 安全特性
+- **风险控制** - 内置风控模块，支持多种风险指标监控
+- **账户隔离** - 多账户独立管理，避免交叉影响
+- **操作审计** - 完整的操作记录和异常追踪
+- **自动熔断** - 异常情况下自动停止交易
+
+### 🚀 性能特性
+- **高精度计算** - 统一处理不同交易所的精度差异
+- **智能下单** - 自动处理价格和数量精度转换
+- **增量交易** - 支持增量下单，避免重复操作
+- **实时监控** - 支持连续监控和定时任务
 
 ---
 
@@ -128,16 +286,6 @@ ctos/
 7. **循序渐进学习**
    👉 先用现成策略 → 再改配置参数 → 最后想学编程时自己写。
 
-
----
-
-## 运行时与安全性
-
-* **风控关卡：** 下单前检查（价格区间、最大杠杆/名义、最大撤单率）。
-* **Kill-switch：** 触发异常 → 策略立即停机、撤单、告警。
-* **确定性：** 策略输入输出全记录，可复现回测。
-* **可观测性：** 结构化日志 + 指标（延迟、成交、滑点、拒单等）。
-
 ---
 
 ## 快速开始（实践流程）
@@ -146,21 +294,15 @@ ctos/
    克隆仓库或下载模板：
 
    ```bash
-   git clone https://github.com/your-org/ctos.git
-   cd ctos
-   ```
-
-   或使用脚手架生成：
-
-   ```bash
-   python3 scaffold_ctos.py --name ctos --exchanges okx backpack binance
+   git clone https://github.com/CryptoFxxker/CTOS.git
    cd ctos
    ```
 
 2. **搭建环境**
 
    ```bash
-   python -m venv .venv && source .venv/bin/activate
+   conda create -n ctos python=3.10 -y
+   conda activate ctos
    pip install -U pip
    pip install -r requirements.txt
    ```
@@ -168,29 +310,34 @@ ctos/
 3. **配置 API Key**
 
    ```bash
-   cp configs/secrets.example.yaml configs/secrets.yaml
+   cp configs/secrets.example.yaml configs/account.yaml
    ```
 
    填入 **OKX / Backpack / Binance** 的 API Key
+   ### 3.1 测试用例（可选）
 
-   > ⚠️ 请勿将该文件提交到 git
-
-4. **配置全局参数**
-   修改 `configs/ctos.yaml`，选择：
-
-   * `default_exchange`（okx / backpack / binance）
-   * `mode`: `paper`（模拟）或 `live`（实盘）
-   * 日志、风控参数、数据存储方式
-
-5. **运行内置策略**
+   如需验证环境和 API Key 配置是否正确，可运行内置测试脚本：
 
    ```bash
-   python -m apps.strategies.examples.mean_reversion
+   python configs/example_usage.py
    ```
 
-   或运行 `apps/strategies/` 下你自己的策略文件。
+   该脚本会自动对 OKX 和 Backpack 交易所的主流币种进行下单测试，并输出结果。建议首次部署时先运行，确保一切正常。
+   > ⚠️ 请勿将该文件提交到 git
 
-6. **回测/重放**
+4. **运行内置策略**
+
+   ```bash
+   # 运行全币种网格策略
+   python apps/strategies/grid/Grid-All-Coin.py
+   
+   # 或运行其他策略
+   python apps/strategies/examples/your_strategy.py
+   ```
+
+   策略会自动使用 ExecutionEngine 和 SystemMonitor 进行执行和监控。
+
+6. **回测/重放@TODO** 
    将历史数据放入 `tools/backtest/`，然后：
 
    ```bash
@@ -199,13 +346,7 @@ ctos/
 
    结果会写入 `var/logs/` 并存储在 `var/data/`。
 
-7. **切换实盘（谨慎）**
-
-   * 将 `configs/ctos.yaml` 中的 `mode` 改为 `live`
-   * 确保已启用风控与 Kill-switch
-   * 再次运行策略 → 会路由到真实交易所
-
-👉 流程一目了然：**获取代码 → 安装环境 → 填 API Key → 配置 → 模拟策略 → 回测 → 实盘上线**
+👉 流程一目了然：**获取代码 → 安装环境 → 填 API Key → 配置 → 实盘上线**
 
 ---
 
@@ -228,8 +369,12 @@ ctos/
 
 
 * **🎉 里程碑 2（2025.09.）**
-  ✅ 完成了系统调用的统一输入与输出、规范了精度不一致、下单粒度不一致、合约面值差异的各类问题，完成了执行器、日志系统的接入，更加稳定。
-   🚀 下一步，要完成系统监控、仓位异常监测等功能。同时将一些功能做成常驻服务、此外还要设计事件总线、调度机制、服务持久化等、最后还要做个网站、并且提供傻瓜式的接入服务
+  ✅ 完成了基于quantityUSD的精准仓位监控系统
+  ✅ 实现了多维度异常检测（价格、仓位、收益、风险）
+  ✅ 完成了自动纠正机制，支持仓位异常自动修复
+  ✅ 实现了完整的日志系统和数据持久化
+  ✅ 支持OKX、Backpack、Binance三大交易所
+  🚀 系统已具备生产环境部署能力！
   🥂🎊 恭喜上线，未来可期！
 
 ---

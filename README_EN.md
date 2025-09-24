@@ -1,14 +1,17 @@
-## CTOS: Crypto Trading Operating System (Linux‑inspired)
+🌐 Languages: [English](README_EN.md) | [中文](README.md)
+![](logo.png)
+## CTOS: Crypto Trading Operating System (Linux-inspired)
 
-**Scope:** Quant trading on CEXs (initially OKX, Backpack, Binance).
-**Design note:** CTOS borrows Linux’s concepts (arch, driver, syscall, scheduler, processes), but it’s not a full copy. We adapt what’s useful for building robust, composable, and portable trading systems.
+**Scope:** Quantitative trading on centralized exchanges (CEX) (initially supporting OKX, Backpack, Binance).
+**Design note:** CTOS borrows Linux's concepts (architecture arch, driver, syscall, scheduler, processes), but it's not a complete copy. Instead, we selectively adopt ideas suitable for building robust, composable, and portable trading systems.
 
 ### Why CTOS?
 
-* **Portability:** Abstract away exchange quirks behind **standard trading syscalls**.
-* **Composability:** Strategies = “processes”; Exchange adapters = “drivers”; Each CEX = “arch”.
-* **Reliability:** Separation of concerns (kernel/runtime/drivers) improves testability & safety.
-* **Observability:** Structured logs, metrics, and reproducible backtests.
+* **Portability:** Abstract away exchange differences through **unified trading system calls (syscalls)**.
+* **Composability:** Strategies = "processes"; Exchange adapters = "drivers"; Each exchange = "architecture".
+* **Reliability:** Layered design of kernel/runtime/drivers improves testability and safety.
+* **Observability:** Structured logs, metrics, and reproducible backtesting capabilities.
+* **High Robustness:** Aligns order price and quantity precision across all exchanges, supports amount-based ordering with automatic conversion, worry-free throughout.
 
 ---
 
@@ -27,85 +30,238 @@
 
 ---
 
-## Directory Layout
+## Project Directory Structure
 
 ```
 ctos/
-├─ README.md
-├─ .gitignore
-├─ configs/
-│  ├─ ctos.yaml                 # global config & toggles
-│  └─ secrets.example.yaml      # api keys template (never commit real keys)
-├─ ctos/
-│  ├─ __init__.py
-│  ├─ core/
-│  │  ├─ kernel/
-│  │  │  ├─ syscalls.py         # canonical syscall spec
-│  │  │  ├─ scheduler.py        # strategy process orchestration
-│  │  │  └─ event_bus.py        # pub/sub of events (orders, fills, ticks)
-│  │  ├─ runtime/
-│  │  │  ├─ strategy_manager.py # load/run/stop user strategies
-│  │  │  ├─ execution_engine.py # syscall dispatch, retries, idempotency
-│  │  │  ├─ risk.py             # pre-trade checks, throttles, kill-switch
-│  │  │  └─ portfolio.py        # positions, exposure, PnL
-│  │  └─ io/
-│  │     ├─ datafeed/           # REST/WS streams normalization
-│  │     ├─ storage/            # parquet/sqlite adapters
-│  │     └─ logging/            # structured logging config
-│  └─ drivers/
-│     ├─ okx/
-│     │  ├─ __init__.py
-│     │  ├─ arch.yaml           # features, limits, symbol shape
-│     │  ├─ rest.py             # REST adapter
-│     │  ├─ ws.py               # websocket streams
-│     │  └─ signer.py           # auth & request signing
-│     ├─ binance/               # same pattern as okx/
-│     └─ backpack/              # same pattern as okx/
-├─ apps/
-│  ├─ strategies/
-│  │  └─ examples/
-│  │     └─ mean_reversion.py   # demo strategy calling syscalls
-│  └─ research/
-│     └─ notebooks/             # optional
-├─ tools/
-│  ├─ backtest/                 # offline simulator & replay
-│  └─ simulator/                # latency, slippage, fee models
-├─ scripts/
-│  ├─ run_dev.sh                # convenience runners (optional)
-│  └─ backtest.sh
-└─ tests/                       # unit & integration tests
+├─ README.md                    # Project documentation
+├─ pyproject.toml              # Python project configuration
+├─ requirements.txt            # Python dependencies
+├─ environment.yml             # Conda environment configuration
+├─ configs/                    # Configuration management directory
+│  ├─ account.yaml             # Account configuration file (API keys)
+│  ├─ account_reader.py        # Account configuration reader
+│  ├─ config_reader.py         # General configuration reader
+│  └─ example_usage.py         # Configuration usage examples
+├─ ctos/                       # Core code directory
+│  ├─ core/                    # Core system modules
+│  │  ├─ kernel/               # System kernel
+│  │  │  ├─ syscalls.py        # Unified trading system call interface
+│  │  │  ├─ scheduler.py       # Strategy scheduler
+│  │  │  └─ event_bus.py       # Event bus
+│  │  ├─ runtime/              # Runtime system
+│  │  │  ├─ ExecutionEngine.py # Execution engine (core)
+│  │  │  ├─ SystemMonitor.py   # System monitor
+│  │  │  ├─ AccountManager.py  # Account manager
+│  │  │  ├─ RiskWatcher.py     # Risk monitor
+│  │  │  ├─ SignalGenerator.py # Signal generator
+│  │  │  ├─ DataHandler.py     # Data handler
+│  │  │  └─ IndicatorCalculator.py # Indicator calculator
+│  │  └─ io/                   # Input/output modules
+│  │     ├─ logging/           # Logging system
+│  │     ├─ datafeed/          # Data source integration
+│  │     └─ storage/           # Data storage
+│  └─ drivers/                 # Exchange drivers
+│     ├─ okx/                  # OKX exchange driver
+│     │  ├─ driver.py          # OKX main driver
+│     │  └─ util.py            # OKX utility functions
+│     ├─ backpack/             # Backpack exchange driver
+│     │  ├─ driver.py          # Backpack main driver
+│     │  └─ util.py            # Backpack utility functions
+│     └─ binance/              # Binance exchange driver
+├─ apps/                       # Application layer
+│  ├─ strategies/              # Trading strategies
+│  │  ├─ grid/                 # Grid strategies
+│  │  │  └─ Grid-All-Coin.py   # All-coin grid strategy
+│  │  ├─ hedge/                # Hedging strategies
+│  │  ├─ rank/                 # Ranking strategies
+│  │  └─ examples/             # Example strategies
+│  ├─ indicatorVisualization/  # Indicator visualization
+│  └─ website/                 # Web interface
+├─ tools/                      # Tool set
+├─ scripts/                    # Script files
+└─ tests/                      # Test files
 ```
 
+### 🔥 Core Files Description
+
+#### System Core
+- **`ctos/core/runtime/ExecutionEngine.py`** - Execution engine, system core, responsible for strategy execution and system calls
+- **`ctos/core/runtime/SystemMonitor.py`** - System monitor, responsible for position monitoring, anomaly detection and auto-correction
+- **`ctos/core/kernel/syscalls.py`** - Unified trading system call interface, abstracts exchange differences
+
+#### Exchange Drivers
+- **`ctos/drivers/okx/driver.py`** - OKX exchange driver, supports dynamic account mapping
+- **`ctos/drivers/backpack/driver.py`** - Backpack exchange driver, supports dynamic account mapping
+- **`ctos/drivers/binance/driver.py`** - Binance exchange driver
+
+#### Configuration Management
+- **`configs/account.yaml`** - Account configuration file, stores API keys for each exchange
+- **`configs/account_reader.py`** - Account configuration reader, supports dynamic account management
+
+#### Trading Strategies
+- **`apps/strategies/grid/Grid-All-Coin.py`** - All-coin grid strategy, integrated with ExecutionEngine
+- **`apps/strategies/examples/`** - Example strategy collection
+
+#### Monitoring & Logging
+- **`ctos/core/io/logging/`** - Logging directory, contains:
+  - `{exchange}_Account{id}_{strategy}_system_monitor.log` - System monitoring logs
+  - `{exchange}_Account{id}_{strategy}_operation_log.log` - Operation logs
+  - `{exchange}_account{id}_position_backup.json` - Position backup
+  - `{exchange}_account{id}_anomaly_report.json` - Anomaly reports
+
 ---
 
-## BackpackDriver Feature Overview
+## Trading System Calls (Unified Interface)
+
+> Each exchange driver must implement these interfaces; strategies call syscalls through ExecutionEngine.
+
+### 🚀 Core Function Overview
+
+#### Market Data
+- **`get_price_now(symbol)`** - Get latest traded price
+- **`get_orderbook(symbol, level)`** - Get order book (bids/asks)
+- **`get_klines(symbol, timeframe, limit, start_time, end_time)`** - Get K-line data
+- **`fees(symbol, limit, offset)`** - Get funding rates
+
+#### Trading
+- **`place_order(symbol, side, order_type, size, price=None, **kwargs)`** - Place order
+- **`revoke_order(order_id, symbol)`** - Cancel order
+- **`amend_order(order_id, symbol, ...)`** - Modify order (query→cancel→place)
+- **`get_open_orders(symbol=None, instType='SWAP')`** - Get open orders
+- **`get_order_status(order_id, keep_origin=False)`** - Query order status
+- **`cancel_all(symbol)`** - Cancel all orders for specified trading pair
+
+#### Account/Position
+- **`fetch_balance(currency)`** - Get balance (supports multiple currencies)
+- **`get_position(symbol=None, keep_origin=False)`** - Get position information
+- **`close_all_positions(symbol=None)`** - Close all positions
+
+### 🔧 Execution Engine Functions
+
+#### ExecutionEngine Core Methods
+- **`place_incremental_orders(amount, coin, side, soft=True)`** - Incremental order placement
+- **`set_coin_position(coin, usdt_amount, soft=True)`** - Set coin position
+- **`_order_tracking_logic(coins, soft_orders_to_focus)`** - Order tracking logic
+
+#### System Monitoring Functions
+- **`monitor_positions()`** - Position monitoring (supports auto-correction)
+- **`get_position_summary()`** - Get position summary
+- **`get_anomaly_summary()`** - Get anomaly summary
+- **`start_position_monitoring()`** - Start continuous monitoring
+
+### 📊 Supported Exchanges
+
+| Exchange | Driver File | Account Support | Special Features |
+|----------|-------------|-----------------|------------------|
+| **OKX** | `drivers/okx/driver.py` | Dynamic account mapping | Complete futures trading support |
+| **Backpack** | `drivers/backpack/driver.py` | Dynamic account mapping | Native perpetual contract support |
+| **Binance** | `drivers/binance/driver.py` | Basic support | World's largest exchange |
+
+### 🎯 Dynamic Account Management
+
+All exchange drivers support dynamic account selection through `account_id` parameter:
+
+```python
+# Use main account (account_id=0)
+engine = ExecutionEngine(account=0, exchange_type='okx')
+
+# Use sub account (account_id=1)
+engine = ExecutionEngine(account=1, exchange_type='backpack')
+
+# Use third account (account_id=2)
+engine = ExecutionEngine(account=2, exchange_type='okx')
+```
+
+Account mapping is based on `configs/account.yaml` configuration file:
+- `account_id=0` → First account (usually main)
+- `account_id=1` → Second account (usually sub1)
+- `account_id=2` → Third account (usually sub2)
 
 ---
 
-### Market Data
+## 🏗️ System Architecture
 
-* `symbols()` → (list, error): Retrieves and filters trading pairs from the public market interface based on type (perp/spot).
-* `get_price_now(symbol)`: Gets the latest traded price.
-* `get_orderbook(symbol, level)`: Gets the order book (bids/asks).
-* `get_klines(symbol, timeframe, limit, start_time, end_time)`: Returns k-line data according to the target data frame structure (automatically derives time ranges based on period boundaries).
-* `fees(symbol, limit, offset)`: Retrieves funding rates (returns raw data and a latest snapshot).
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        CTOS System Architecture             │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │ Application     │  │ Configuration   │  │ Tools Layer     │ │
+│  │ Layer (Apps)    │  │ Layer (Config)  │  │ (Tools)         │ │
+│  │                 │  │                 │  │                 │ │
+│  │ • Grid Strategy │  │ • Account Config│  │ • Backtest Tools│ │
+│  │ • Hedge Strategy│  │ • System Config │  │ • Simulator     │ │
+│  │ • Rank Strategy │  │ • Key Management│  │ • Visualization │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                Core Runtime (Core Runtime)              │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ Execution   │  │ System      │  │ Account     │    │ │
+│  │  │ Engine      │  │ Monitor     │  │ Manager     │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ Risk        │  │ Signal      │  │ Data        │    │ │
+│  │  │ Watcher     │  │ Generator   │  │ Handler     │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                    System Kernel (Kernel)               │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ System      │  │ Strategy    │  │ Event       │    │ │
+│  │  │ Calls       │  │ Scheduler   │  │ Bus         │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                  Exchange Drivers (Drivers)             │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │   OKX       │  │  Backpack   │  │  Binance    │    │ │
+│  │  │   Driver    │  │   Driver    │  │   Driver    │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                    Data Storage (Storage)               │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │ │
+│  │  │ Logging     │  │ Data Feed   │  │ Storage     │    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 🔄 Data Flow
+1. **Strategy** → **Execution Engine** → **System Calls** → **Exchange Driver** → **Exchange API**
+2. **Exchange API** → **Exchange Driver** → **System Calls** → **Execution Engine** → **System Monitor**
+3. **System Monitor** → **Anomaly Detection** → **Auto Correction** → **Execution Engine** → **Exchange Driver**
 
 ---
 
-### Trading
+## 🌟 System Features
 
-* `place_order(symbol, side, order_type, size, price=None, **kwargs)`: Places an order, compatible with parameters like `post_only` and `time_in_force`.
-* `revoke_order(order_id, symbol)`: Cancels an order (requires `symbol` for Backpack API).
-* `amend_order(order_id, symbol, ...)`: Amends an order by looking it up, canceling it, and then placing a new one. Supports changes to price, size, TIF, `post_only`, etc.
-* `get_open_orders(symbol=None, market_type='PERP')`: Gets open orders. Can be used with `get_order_status(symbol, order_id, ...)` to query a single order.
-* `cancel_all(symbol)`: Cancels all open orders for a specified trading pair.
+### 🔥 Core Functions
+- **Unified Trading Interface** - One API supports OKX, Backpack, Binance exchanges
+- **Dynamic Account Management** - Support multi-account switching, auto-mapping based on configuration
+- **Smart Position Monitoring** - Precise monitoring based on quantityUSD, supports auto-correction
+- **Multi-dimensional Anomaly Detection** - Comprehensive monitoring of price, position, profit, risk
+- **Auto-correction Mechanism** - Automatically place orders to correct anomalies when detected
+- **Complete Logging System** - Structured logs, operation records, anomaly reports
+
+### 🛡️ Security Features
+- **Risk Control** - Built-in risk management module, supports multiple risk indicator monitoring
+- **Account Isolation** - Independent multi-account management, avoids cross-contamination
+- **Operation Audit** - Complete operation records and anomaly tracking
+- **Auto Circuit Breaker** - Automatically stop trading in case of anomalies
+
+### 🚀 Performance Features
+- **High Precision Calculation** - Unified handling of precision differences across exchanges
+- **Smart Order Placement** - Automatic handling of price and quantity precision conversion
+- **Incremental Trading** - Support incremental order placement, avoiding duplicate operations
+- **Real-time Monitoring** - Support continuous monitoring and scheduled tasks
 
 ---
-
-### Account/Position
-
-* `fetch_balance(currency)`: Returns the balance for all or a specified currency (case-insensitive).
-* `get_position(symbol=None)`: Returns position information for all or a specified trading pair.
 
 ### 🎯 CTOS Design Goals (For Beginners)
 
@@ -146,111 +302,103 @@ ctos/
 ## Quick Start (Practical Workflow)
 
 1. **Get the Code**
-   Clone or download the CTOS repository scaffold:
+   Clone the repository:
 
    ```bash
-   git clone https://github.com/your-org/ctos.git
-   cd ctos
-   ```
-
-   Or generate the skeleton locally:
-
-   ```bash
-   python3 scaffold_ctos.py --name ctos --exchanges okx backpack binance
+   git clone https://github.com/CryptoFxxker/CTOS.git
    cd ctos
    ```
 
 2. **Set Up the Environment**
-   Create a clean Python environment and install dependencies:
 
    ```bash
-   python -m venv .venv && source .venv/bin/activate
+   conda create -n ctos python=3.10 -y
+   conda activate ctos
    pip install -U pip
    pip install -r requirements.txt
    ```
 
 3. **Configure API Keys**
 
-   * Copy the example secrets file:
-
-     ```bash
-     cp configs/secrets.example.yaml configs/secrets.yaml
-     ```
-   * Fill in your **OKX / Backpack / Binance** API keys.
-
-     > ⚠️ Never commit this file to git.
-
-4. **Configure Global Settings**
-
-   * Edit `configs/ctos.yaml` to choose:
-
-     * `default_exchange` (`okx`, `backpack`, `binance`)
-     * `mode`: `paper` (simulation) or `live`
-     * logging, risk limits, and data storage.
-
-5. **Run a Built-in Strategy**
-   Start one of the demo strategies in **paper mode**:
-
    ```bash
-   python -m apps.strategies.examples.mean_reversion
+   cp configs/secrets.example.yaml configs/account.yaml
    ```
 
-   Or run your own strategy file in `apps/strategies/`.
+   Fill in **OKX / Backpack / Binance** API Keys
 
-6. **Backtest or Replay**
+   ### 3.1 Test Cases (Optional)
 
-   * Place historical data files under `tools/backtest/`.
-   * Launch the backtest runner:
+   To verify environment and API Key configuration, run the built-in test script:
 
-     ```bash
-     ./scripts/backtest.sh
-     ```
-   * Results will be logged into `var/logs/` and stored in `var/data/`.
+   ```bash
+   python configs/example_usage.py
+   ```
 
-7. **Move to Live Trading (Carefully)**
+   This script will automatically test order placement on OKX and Backpack exchanges for mainstream coins and output results. Recommended to run first during initial deployment to ensure everything is working properly.
+   > ⚠️ Do not commit this file to git
 
-   * Switch `mode: live` in `configs/ctos.yaml`.
-   * Make sure **risk checks and kill-switch** are enabled.
-   * Run your strategy again — it will now route orders to the real exchange.
+4. **Run Built-in Strategies**
 
----
+   ```bash
+   # Run all-coin grid strategy
+   python apps/strategies/grid/Grid-All-Coin.py
+   
+   # Or run other strategies
+   python apps/strategies/examples/your_strategy.py
+   ```
 
-👉 This way the flow is: **get code → install env → set API keys → configure runtime → run paper strategy → backtest → live deploy**.
+   Strategies will automatically use ExecutionEngine and SystemMonitor for execution and monitoring.
 
-Would you like me to also add a **table of example commands** for running the strategies in your current `Strategy.py` (like `btc`, `grid`, `hedge` etc.) so that it’s included in the README?
+6. **Backtest/Replay@TODO** 
+   Place historical data in `tools/backtest/`, then:
+
+   ```bash
+   ./scripts/backtest.sh
+   ```
+
+   Results will be written to `var/logs/` and stored in `var/data/`.
+
+👉 The flow is clear: **get code → install environment → fill API keys → configure → live deployment**
 
 
 ## Roadmap
 
-
 * **v0.1**
-  Syscall specification; driver skeleton (OKX / Backpack / Binance); runtime scheduling; simulated trading
+  System call specification; exchange drivers (OKX/Backpack/Binance) skeleton; runtime scheduling; simulated trading
 
 * **v0.2**
-  Unified WebSocket stream; consistency between backtesting and simulation; richer risk-control modules
+  Unified WebSocket data stream; consistency between backtesting and simulation; richer risk control modules
 
 * **v0.3**
   Multi-exchange portfolio net asset management; real-time failover; hot restart; stronger indicators and UI
 
-* **🎉 Milestone (2025.09.17)**
+* **🎉 Milestone 1 (2025.09.17)**
   ✅ Completed unified API design and abstraction for 2 exchanges.
   🚀 Achieved a significant milestone today: **AI-driven, system-call-based grid strategy code** has been generated, fine-tuned, and officially deployed!
-  📂 Location: `apps/strategies/grid/Grid.py`
+  🥂🎊 Cheers to this launch — onward to the next stage!
+
+* **🎉 Milestone 2 (2025.09.)**
+  ✅ Completed precise position monitoring system based on quantityUSD
+  ✅ Implemented multi-dimensional anomaly detection (price, position, profit, risk)
+  ✅ Completed auto-correction mechanism, supports automatic position anomaly repair
+  ✅ Implemented complete logging system and data persistence
+  ✅ Supports OKX, Backpack, Binance three major exchanges
+  🚀 System is ready for production environment deployment!
   🥂🎊 Cheers to this launch — onward to the next stage!
 
 ---
 
 ## Security & Compliance
 
-* **Principle of Least Privilege:** API keys should only have the necessary trading permissions; withdrawal must always remain disabled.
-* **Key Security:** Store secrets in `configs/secrets.yaml` (excluded from version control), or use environment variables / system key managers.
-* **Risk Controls First:** Pre-trade checks, circuit breakers, kill-switch mechanisms, rate-limit enforcement, and full logging.
+* **Principle of Least Privilege:** API keys should only have necessary trading permissions; withdrawal must always remain disabled.
+* **Key Security:** Use `configs/secrets.yaml` (excluded from version control), or system key management, environment variables.
+* **Risk Controls First:** Pre-trade checks, circuit breakers, kill-switch, rate limiting and logging.
 * **Reproducible Backtests:** All strategy inputs/outputs and market snapshots must be replayable.
 
 ---
 
 ## License & Disclaimer
 
-* **Disclaimer:** Cryptocurrency trading carries extremely high risk. CTOS is provided as a research/tooling framework; use it at your own discretion and risk.
-* **License:** Choose an open-source license (MIT / Apache-2.0 / GPL-3.0) and specify it clearly in the `LICENSE` file.
+* **Disclaimer:** Cryptocurrency trading carries extremely high risk. CTOS is provided as a research/tooling framework; please assess risks and take responsibility yourself.
+* **License:** Choose your preferred license (MIT / Apache-2.0 / GPL-3.0) and specify it clearly in the `LICENSE` file.
 

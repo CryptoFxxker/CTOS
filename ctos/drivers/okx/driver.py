@@ -717,11 +717,16 @@ class OkxDriver(TradingSyscalls):
                             fee = float(d.get('fundingFee') or d.get('fundingFee') or 0)
                         except Exception:
                             ts = None
+                        try:
+                            quantityUSD = float(d.get('notionalUsd') or 0)
+                        except Exception:
+                            ts = None
                         unified.append({
                             'symbol': d.get('instId'),
                             'positionId': d.get('posId'),
                             'side': side,
                             'quantity': abs(qty),
+                            'quantityUSD': abs(quantityUSD),
                             'entryPrice': entry,
                             'markPrice': mark,
                             'pnlUnrealized': upl,
