@@ -18,21 +18,29 @@ from pathlib import Path
 from typing import Dict, Optional, Union, Any
 from enum import Enum
 
-# 确保项目根目录在sys.path中
-def _add_bpx_path():
-    """添加bpx包路径到sys.path，支持多种运行方式"""
+def add_project_paths(project_name="ctos", subpackages=None):
+    """
+    自动查找项目根目录，并将其及常见子包路径添加到 sys.path。
+    :param project_name: 项目根目录标识（默认 'ctos'）
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    bpx_path = os.path.join(current_dir, 'bpx')
-    if bpx_path not in sys.path:
-        sys.path.insert(0, bpx_path)
-    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
-    root_bpx_path = os.path.join(project_root, 'bpx')
-    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
-        sys.path.insert(0, root_bpx_path)
-    if os.path.exists(project_root) and project_root not in sys.path:
+    project_root = None
+    # 向上回溯，找到项目根目录
+    path = current_dir
+    while path != os.path.dirname(path):  # 一直回溯到根目录
+        if os.path.basename(path) == project_name or os.path.exists(os.path.join(path, ".git")):
+            project_root = path
+            break
+        path = os.path.dirname(path)
+    if not project_root:
+        raise RuntimeError(f"未找到项目根目录（包含 {project_name} 或 .git）")
+    # 添加根目录
+    if project_root not in sys.path:
         sys.path.insert(0, project_root)
+    return project_root
 # 执行路径添加
-_add_bpx_path()
+PROJECT_ROOT = add_project_paths()
+print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
 
 import logging
 
@@ -161,13 +169,6 @@ class AccountManager:
         """创建OKX Driver"""
         try:
             # 添加项目根目录到sys.path
-            import sys
-            from pathlib import Path
-            _THIS_FILE = Path(__file__).resolve()
-            _PROJECT_ROOT = _THIS_FILE.parents[2]
-            if str(_PROJECT_ROOT) not in sys.path:
-                sys.path.insert(0, str(_PROJECT_ROOT))
-            
             from ctos.drivers.okx.driver import OkxDriver, init_OkxClient
             
             # 初始化OKX客户端

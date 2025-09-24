@@ -1,22 +1,34 @@
 import logging, json, time, sys, threading, atexit, queue, os
 from logging.handlers import RotatingFileHandler
 # 确保项目根目录在sys.path中
-def _add_bpx_path():
-    """添加bpx包路径到sys.path，支持多种运行方式"""
+import os
+import sys
+def add_project_paths(project_name="ctos"):
+    """
+    自动查找项目根目录，并将其及常见子包路径添加到 sys.path。
+    :param project_name: 项目根目录标识（默认 'ctos'）
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    bpx_path = os.path.join(current_dir, 'bpx')
-    if bpx_path not in sys.path:
-        sys.path.insert(0, bpx_path)
-    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
-    root_bpx_path = os.path.join(project_root, 'bpx')
-    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
-        sys.path.insert(0, root_bpx_path)
-    if os.path.exists(project_root) and project_root not in sys.path:
+    project_root = None
+    # 向上回溯，找到项目根目录
+    path = current_dir
+    while path != os.path.dirname(path):  # 一直回溯到根目录
+        if os.path.basename(path) == project_name or os.path.exists(os.path.join(path, ".git")):
+            project_root = path
+            break
+        path = os.path.dirname(path)
+    if not project_root:
+        raise RuntimeError(f"未找到项目根目录（包含 {project_name} 或 .git）")
+    # 添加根目录
+    if project_root not in sys.path:
         sys.path.insert(0, project_root)
     return project_root
 # 执行路径添加
-_PROJECT_ROOT = _add_bpx_path()
+PROJECT_ROOT = add_project_paths()
+print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
 
+
+from ctos.drivers.okx.util import BeijingTime
 
 class SystemMonitor:
     # ---------- 参数 ----------
@@ -31,7 +43,7 @@ class SystemMonitor:
         # 获取交易所名称
         cex_name = getattr(execution_engine.cex_driver, 'cex', 'UNKNOWN')
         # 创建logging目录
-        log_dir = os.path.join(_PROJECT_ROOT, 'ctos', 'core', 'io', 'logging')
+        log_dir = os.path.join(PROJECT_ROOT, 'ctos', 'core', 'io', 'logging')
         os.makedirs(log_dir, exist_ok=True)
         
         # 生成带交易所名称的文件名
@@ -97,7 +109,7 @@ class SystemMonitor:
     # ---------- 对外 API ----------
     def record_operation(self, operation, source_strategy, details):
         log_entry = {
-            "ts":   time.strftime("%Y-%m-%d %H:%M:%S"),
+            "ts":   BeijingTime(),
             "op":   operation,
             "src":  source_strategy,
             "det":  details

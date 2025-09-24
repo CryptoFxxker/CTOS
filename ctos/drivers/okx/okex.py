@@ -30,8 +30,11 @@ def _add_bpx_path():
         sys.path.insert(0, root_bpx_path)
     if os.path.exists(project_root) and project_root not in sys.path:
         sys.path.insert(0, project_root)
-
+    return project_root
 # 执行路径添加
+PROJECT_ROOT = _add_bpx_path()
+print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
+
 _add_bpx_path()
 
 try:

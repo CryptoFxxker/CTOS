@@ -45,7 +45,7 @@ except Exception:
         # When the full package is available in sys.path
         from ctos.drivers.backpack.bpx.account import Account  # type: ignore
         from ctos.drivers.backpack.bpx.public import Public    # type: ignore
-        from ctos.drivers.backpack.util import _reduce_significant_digits    # type: ignore
+        from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places    # type: ignore
     except Exception as e:
         # As a last resort, add the local folder so `bpx` can be found when running this file directly
         backpack_dir = os.path.dirname(__file__)
@@ -67,35 +67,114 @@ except ImportError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
     from ctos.core.kernel.syscalls import TradingSyscalls
 
+# Import account reader
+try:
+    from configs.account_reader import get_backpack_credentials, list_accounts
+except ImportError:
+    # 如果无法导入，使用备用方案
+    def get_backpack_credentials(account='main'):
+        return {
+            'public_key': os.getenv("BP_PUBLIC_KEY", ""),
+            'secret_key': os.getenv("BP_SECRET_KEY", "")
+        }
+    
+    def list_accounts(exchange='backpack'):
+        return ['main', 'grid', 'rank']  # 默认账户列表
 
-def init_BackpackClients(window=10000):
+def get_account_name_by_id(account_id=0, exchange='backpack'):
     """
-    Initialize Backpack Account and Public clients using env credentials.
-    Required envs:
-      - BP_PUBLIC_KEY
-      - BP_SECRET_KEY
+    根据账户ID获取账户名称
+    
+    Args:
+        account_id: 账户ID
+        exchange: 交易所名称
+        
+    Returns:
+        str: 账户名称
     """
-    public_key = os.getenv("BP_PUBLIC_KEY")
-    secret_key = os.getenv("BP_SECRET_KEY")
-    missing = []
-    if not public_key:
-        missing.append("BP_PUBLIC_KEY")
-    if not secret_key:
-        missing.append("BP_SECRET_KEY")
-    if missing:
-        print("[Backpack] Missing environment vars:", ", ".join(missing))
-        print("[Backpack] 建议: 运行 scripts/config_env.py 配置，或手动在 .env 中添加上述键并加载。")
-        print("[Backpack] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
+    try:
+        accounts = list_accounts(exchange)
+        
+        if account_id < len(accounts):
+            return accounts[account_id]
+        else:
+            print(f"警告: 账户ID {account_id} 超出范围，可用账户: {accounts}")
+            return accounts[0] if accounts else 'main'
+            
+    except Exception as e:
+        print(f"获取账户名称失败: {e}，使用默认映射")
+        # 回退到默认映射
+        default_mapping = {0: 'main', 1: 'grid', 2: 'rank'}
+        return default_mapping.get(account_id, 'main')
+
+def init_BackpackClients(window=10000, account_id=0):
+    """
+    Initialize Backpack Account and Public clients using account configuration.
+    
+    Args:
+        window: 时间窗口参数
+        account_id: 账户ID，根据配置文件中的账户顺序映射 (0=第一个账户, 1=第二个账户, ...)
+        
+    Returns:
+        tuple: (Account, Public) 客户端实例
+        
+    Note:
+        账户ID映射基于configs/account.yaml中accounts.backpack下的账户顺序
+        例如: 如果配置文件中有['main', 'grid', 'rank']，则account_id=0对应main，account_id=1对应grid
+    """
+    # 从配置文件动态获取账户名称
+    account_name = get_account_name_by_id(account_id, 'backpack')
+    
+    try:
+        # 使用账户获取器获取认证信息
+        credentials = get_backpack_credentials(account_name)
+        public_key = credentials.get('public_key', '')
+        secret_key = credentials.get('secret_key', '')
+        
+        if not public_key or not secret_key:
+            print(f"[Backpack] 账户 {account_name} (ID: {account_id}) 认证信息不完整")
+            print(f"[Backpack] 尝试使用环境变量作为备用方案")
+            # 回退到环境变量
+            public_key = os.getenv("BP_PUBLIC_KEY", public_key)
+            secret_key = os.getenv("BP_SECRET_KEY", secret_key)
+            
+        if not public_key or not secret_key:
+            missing = []
+            if not public_key:
+                missing.append("BP_PUBLIC_KEY")
+            if not secret_key:
+                missing.append("BP_SECRET_KEY")
+            print(f"[Backpack] Missing credentials for account {account_name}: {', '.join(missing)}")
+            return None, None
+            
+    except Exception as e:
+        print(f"[Backpack] 获取账户 {account_name} 认证信息失败: {e}")
+        print(f"[Backpack] 尝试使用环境变量作为备用方案")
+        # 回退到环境变量
+        public_key = os.getenv("BP_PUBLIC_KEY")
+        secret_key = os.getenv("BP_SECRET_KEY")
+        
+        if not public_key or not secret_key:
+            missing = []
+            if not public_key:
+                missing.append("BP_PUBLIC_KEY")
+            if not secret_key:
+                missing.append("BP_SECRET_KEY")
+            print(f"[Backpack] Missing environment vars: {', '.join(missing)}")
+            return None, None
+    
     account = None
     public = None
     try:
         account = Account(public_key, secret_key, window=window)
+        print(f"✓ Backpack Account客户端初始化成功 (账户: {account_name}, ID: {account_id})")
     except Exception as e:
-        print('init Account failed:', e)
+        print(f'✗ Backpack Account客户端初始化失败: {e}')
     try:
         public = Public()
+        print(f"✓ Backpack Public客户端初始化成功")
     except Exception as e:
-        print('init Public failed:', e)
+        print(f'✗ Backpack Public客户端初始化失败: {e}')
     return account, public
 
 
@@ -111,13 +190,26 @@ class BackpackDriver(TradingSyscalls):
     def __init__(self, account_client=None, public_client=None, mode="perp", default_quote="USDC", account_id=0):
         self.cex = 'Backpack'
         self.quote_ccy = 'USDC'
+        self.account_id = account_id
+        """
+        :param account_client: Optional. An initialized Account client.
+        :param public_client: Optional. An initialized Public client.
+        :param mode: "perp" or "spot". If "perp", we append '_PERP' suffix when needed.
+        :param default_quote: default quote when user passes 'ETH' without '_USDC'
+        :param account_id: 账户ID，根据配置文件中的账户顺序映射 (0=第一个账户, 1=第二个账户, ...)
+        """
         if account_client is None or public_client is None:
-            acc, pub = init_BackpackClients()
+            acc, pub = init_BackpackClients(account_id=account_id)
             self.account = account_client or acc
             self.public = public_client or pub
+            if acc and pub:
+                print(f"✓ Backpack Driver初始化成功 (账户ID: {account_id})")
+            else:
+                print(f"✗ Backpack Driver初始化失败 (账户ID: {account_id})")
         else:
             self.account = account_client
             self.public = public_client
+            print(f"✓ Backpack Driver使用外部客户端 (账户ID: {account_id})")
         self.mode = (mode or "perp").lower()
         self.default_quote = default_quote or "USDC"
         self.symbol = 'ETH_USDC_PERP'
@@ -299,7 +391,11 @@ class BackpackDriver(TradingSyscalls):
             
             # 推测数量精度：基于volume的最后一位有效数字位置
             size_precision = self._infer_size_precision(volume, last_price)
-            
+            order_id, err = self.place_order(symbol, 'Bid', 'Limit', size_precision, align_decimal_places(float(last_price), float(last_price)*0.95))
+            if err is None:
+                self.revoke_order(order_id, symbol)
+            else:
+                size_precision *= 10
             # 推测最小下单数量：基于数量精度和价格
             min_order_size = size_precision
             
@@ -361,7 +457,9 @@ class BackpackDriver(TradingSyscalls):
                 ratio = 1.0 / last_price
                 
                 # 向上取整到更高一位
-                if ratio < 1:
+                if ratio < 0.1:
+                    min_size = 0.1
+                elif ratio < 1:
                     min_size = 1.0
                 elif ratio < 10:
                     min_size = 10.0

@@ -1,0 +1,216 @@
+{
+  "timestamp": "2025-09-24T05:26:12.722331",
+  "exchange": "backpack",
+  "positions": {
+    "ETH_USDC_PERP": {
+      "init_price": 4096.12067936,
+      "avg_cost": 4494.8244317433755,
+      "size": 0.7061999999999999,
+      "side": "long",
+      "pnlUnrealized": -0.090063
+    },
+    "APT_USDC_PERP": {
+      "init_price": 4.26388138,
+      "avg_cost": 4.40226510557294,
+      "size": 178.2,
+      "side": "short",
+      "pnlUnrealized": -0.129324
+    },
+    "OP_USDC_PERP": {
+      "init_price": 0.69190557,
+      "avg_cost": 0.7528531496536864,
+      "size": 1013.0,
+      "side": "short",
+      "pnlUnrealized": 0.102942
+    },
+    "DOGE_USDC_PERP": {
+      "init_price": 0.23301294,
+      "avg_cost": 0.2658072777994496,
+      "size": 12117.0,
+      "side": "long",
+      "pnlUnrealized": -2.032761
+    },
+    "SUI_USDC_PERP": {
+      "init_price": 3.33372253,
+      "avg_cost": 3.5397600757886316,
+      "size": 210.59999999999997,
+      "side": "short",
+      "pnlUnrealized": 0.166122
+    },
+    "LTC_USDC_PERP": {
+      "init_price": 106.38797554,
+      "avg_cost": 112.87390037593985,
+      "size": 5.767999999999999,
+      "side": "short",
+      "pnlUnrealized": 0.174234
+    },
+    "WLD_USDC_PERP": {
+      "init_price": 1.30273927,
+      "avg_cost": 1.4872441871330886,
+      "size": 545.6,
+      "side": "short",
+      "pnlUnrealized": 1.06313
+    },
+    "HYPE_USDC_PERP": {
+      "init_price": 44.13577532,
+      "avg_cost": 52.14189412647751,
+      "size": 15.089999999999991,
+      "side": "short",
+      "pnlUnrealized": 0.92706
+    },
+    "AAVE_USDC_PERP": {
+      "init_price": 272.3682442,
+      "avg_cost": 296.9939675248371,
+      "size": 2.6879999999999997,
+      "side": "short",
+      "pnlUnrealized": -0.980262
+    },
+    "HBAR_USDC_PERP": {
+      "init_price": 0.2194173,
+      "avg_cost": 0.23463777586638374,
+      "size": 3136.0,
+      "side": "short",
+      "pnlUnrealized": 0.155733
+    },
+    "JUP_USDC_PERP": {
+      "init_price": 0.46072637,
+      "avg_cost": 0.5092916192254574,
+      "size": 1592.0,
+      "side": "short",
+      "pnlUnrealized": 0.494773
+    },
+    "TON_USDC_PERP": {
+      "init_price": 2.82402093,
+      "avg_cost": 3.1062403728399803,
+      "size": 248.5,
+      "side": "short",
+      "pnlUnrealized": -0.039377
+    },
+    "XRP_USDC_PERP": {
+      "init_price": 2.79975737,
+      "avg_cost": 3.0082353208021995,
+      "size": 713.2964000000001,
+      "side": "long",
+      "pnlUnrealized": 0.05998
+    },
+    "TIA_USDC_PERP": {
+      "init_price": 1.46103532,
+      "avg_cost": 1.6821143414785347,
+      "size": 454.70000000000005,
+      "side": "short",
+      "pnlUnrealized": 0.199232
+    },
+    "ADA_USDC_PERP": {
+      "init_price": 0.80986157,
+      "avg_cost": 0.8661418867928771,
+      "size": 876.0,
+      "side": "short",
+      "pnlUnrealized": -0.069504
+    },
+    "BNB_USDC_PERP": {
+      "init_price": 1007.75324014,
+      "avg_cost": 953.9377089687337,
+      "size": 2.9925,
+      "side": "long",
+      "pnlUnrealized": -0.270286
+    },
+    "ONDO_USDC_PERP": {
+      "init_price": 0.92628454,
+      "avg_cost": 1.0183392013325334,
+      "size": 767.2,
+      "side": "short",
+      "pnlUnrealized": -0.123179
+    },
+    "NEAR_USDC_PERP": {
+      "init_price": 3.0487027,
+      "avg_cost": 2.7266249201277954,
+      "size": 313.0,
+      "side": "short",
+      "pnlUnrealized": -0.08132
+    },
+    "BTC_USDC_PERP": {
+      "init_price": 111414.52673477,
+      "avg_cost": 115246.57358490567,
+      "size": 0.03698,
+      "side": "long",
+      "pnlUnrealized": -0.079859
+    },
+    "PENGU_USDC_PERP": {
+      "init_price": 0.0294621,
+      "avg_cost": 0.033183441594387755,
+      "size": 24220.0,
+      "side": "short",
+      "pnlUnrealized": 0.354468
+    },
+    "DOT_USDC_PERP": {
+      "init_price": 3.96769028,
+      "avg_cost": 4.176571649851815,
+      "size": 190.2,
+      "side": "short",
+      "pnlUnrealized": -0.003828
+    },
+    "SOL_USDC_PERP": {
+      "init_price": 206.05907421,
+      "avg_cost": 234.92602898550726,
+      "size": 14.011,
+      "side": "long",
+      "pnlUnrealized": -0.58607
+    },
+    "AVAX_USDC_PERP": {
+      "init_price": 36.08676395,
+      "avg_cost": 30.44633708779617,
+      "size": 30.34,
+      "side": "short",
+      "pnlUnrealized": -0.378887
+    },
+    "IP_USDC_PERP": {
+      "init_price": 11.71956027,
+      "avg_cost": 12.556519904561005,
+      "size": 239.75000000000006,
+      "side": "short",
+      "pnlUnrealized": 2.487446
+    },
+    "ARB_USDC_PERP": {
+      "init_price": 0.4330019,
+      "avg_cost": 0.48519939771769216,
+      "size": 1604.0,
+      "side": "short",
+      "pnlUnrealized": -0.077189
+    },
+    "XLM_USDC_PERP": {
+      "init_price": 0.36431187,
+      "avg_cost": 0.37995256204297767,
+      "size": 1957.0,
+      "side": "short",
+      "pnlUnrealized": 0.151361
+    },
+    "CRV_USDC_PERP": {
+      "init_price": 0.67456062,
+      "avg_cost": 0.7472223340569194,
+      "size": 1101.0,
+      "side": "short",
+      "pnlUnrealized": -0.119246
+    },
+    "TRUMP_USDC_PERP": {
+      "init_price": 7.64744272,
+      "avg_cost": 8.4043613717143,
+      "size": 74.5,
+      "side": "short",
+      "pnlUnrealized": 0.024264
+    },
+    "LINK_USDC_PERP": {
+      "init_price": 21.41934403,
+      "avg_cost": 23.27014336890244,
+      "size": 33.239999999999995,
+      "side": "short",
+      "pnlUnrealized": -0.365135
+    },
+    "UNI_USDC_PERP": {
+      "init_price": 8.03883583,
+      "avg_cost": 9.05349735072257,
+      "size": 78.99999999999999,
+      "side": "short",
+      "pnlUnrealized": -0.045467
+    }
+  }
+}

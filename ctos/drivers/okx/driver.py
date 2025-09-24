@@ -27,10 +27,11 @@ def _add_bpx_path():
     return project_root
 # 执行路径添加
 _PROJECT_ROOT = _add_bpx_path()
+print('PROJECT_ROOT: ', _PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
+
 try:
     # 优先：绝对导入（当项目以包方式安装/运行时）
     from ctos.drivers.okx.util import *
-    from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
     from ctos.drivers.okx.okex import *
     # Import your own client defined in /mnt/data/okex.py (or your project path).
     # Change the name below to match your class or factory if different.
@@ -47,25 +48,96 @@ except ImportError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
     from ctos.core.kernel.syscalls import TradingSyscalls
 
-def init_OkxClient(symbol="ETH-USDT-SWAP", account=0, show=False):
-    # ACCESS_KEY = ACCESS_KEY if not os.getenv("OKX_ACCESS_KEY") else ACCESS_KEY
-    # SECRET_KEY = SECRET_KEY if not os.getenv("OKX_SECRET_KEY") else SECRET_KEY
-    # PASSPHRASE = PASSPHRASE if not os.getenv("OKX_PASSPHRASE") else PASSPHRASE
+# Import account reader
+try:
+    from configs.account_reader import get_okx_credentials, list_accounts
+except ImportError:
+    # 如果无法导入，使用备用方案
+    def get_okx_credentials(account='main'):
+        from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
+        return {
+            'api_key': ACCESS_KEY,
+            'api_secret': SECRET_KEY,
+            'passphrase': PASSPHRASE
+        }
+    
+    def list_accounts(exchange='okx'):
+        return ['main', 'sub1', 'sub2']  # 默认账户列表
 
-    # missing = []
-    # if not ACCESS_KEY:
-    #     missing.append("OKX_ACCESS_KEY")
-    # if not SECRET_KEY:
-    #     missing.append("OKX_SECRET_KEY")
-    # if not PASSPHRASE:
-    #     missing.append("OKX_PASSPHRASE")
-    # if missing:
-    #     print("[OKX] Missing environment vars:", ", ".join(missing))
-    #     print("[OKX] 建议: 运行 scripts/config_env.py 配置，或手动在 .env 中添加上述键并加载。")
-    #     print("[OKX] Hint: run scripts/config_env.py to set them, or add to .env and source it.")
+def get_account_name_by_id(account_id=0, exchange='okx'):
+    """
+    根据账户ID获取账户名称
+    
+    Args:
+        account_id: 账户ID
+        exchange: 交易所名称
+        
+    Returns:
+        str: 账户名称
+    """
+    try:
+        accounts = list_accounts(exchange)
+        
+        if account_id < len(accounts):
+            return accounts[account_id]
+        else:
+            print(f"警告: 账户ID {account_id} 超出范围，可用账户: {accounts}")
+            return accounts[0] if accounts else 'main'
+            
+    except Exception as e:
+        print(f"获取账户名称失败: {e}，使用默认映射")
+        # 回退到默认映射
+        default_mapping = {0: 'main', 1: 'sub1', 2: 'sub2'}
+        return default_mapping.get(account_id, 'main')
+
+def init_OkxClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
+    """
+    初始化OKX客户端
+    
+    Args:
+        symbol: 交易对符号
+        account_id: 账户ID，根据配置文件中的账户顺序映射 (0=第一个账户, 1=第二个账户, ...)
+        show: 是否显示调试信息
+        
+    Returns:
+        OkexSpot: OKX客户端实例
+        
+    Note:
+        账户ID映射基于configs/account.yaml中accounts.okx下的账户顺序
+        例如: 如果配置文件中有['main', 'sub1', 'sub2']，则account_id=0对应main，account_id=1对应sub1
+    """
     if symbol.find('-') == -1:
         symbol = f'{symbol.upper()}-USDT-SWAP'
-    return OkexSpot(symbol=symbol, access_key=ACCESS_KEY, secret_key=SECRET_KEY, passphrase=PASSPHRASE, host=None)
+    
+    # 从配置文件动态获取账户名称
+    account_name = get_account_name_by_id(account_id, 'okx')
+    
+    try:
+        # 使用账户获取器获取认证信息
+        credentials = get_okx_credentials(account_name)
+        
+        if show:
+            print(f"使用OKX账户: {account_name} (ID: {account_id})")
+            print(f"认证字段: {list(credentials.keys())}")
+        
+        return OkexSpot(
+            symbol=symbol, 
+            access_key=credentials['api_key'], 
+            secret_key=credentials['api_secret'], 
+            passphrase=credentials['passphrase'], 
+            host=None
+        )
+    except Exception as e:
+        print(f"获取OKX账户 {account_name} 认证信息失败: {e}")
+        # 回退到默认配置
+        from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
+        return OkexSpot(
+            symbol=symbol, 
+            access_key=ACCESS_KEY, 
+            secret_key=SECRET_KEY, 
+            passphrase=PASSPHRASE, 
+            host=None
+        )
 
 class OkxDriver(TradingSyscalls):
     """
@@ -81,20 +153,24 @@ class OkxDriver(TradingSyscalls):
                  price_scale=1e-8, size_scale=1e-8, account_id=0):
         self.cex = 'OKX'
         self.quote_ccy = 'USDT'
+        self.account_id = account_id
         """
         :param okx_client: Optional. An initialized client from okex.py (authenticated).
                            If None, will try to instantiate OkexSpot() with defaults.
         :param mode: "swap" or "spot". If "swap", we append '-SWAP' suffix when needed.
         :param default_quote: default quote when user passes 'BTC' without '-USDT'
+        :param account_id: 账户ID，根据配置文件中的账户顺序映射 (0=第一个账户, 1=第二个账户, ...)
         """
         if okx_client is None:
             try:
-                self.okx = init_OkxClient()
+                self.okx = init_OkxClient(account_id=account_id)
+                print(f"✓ OKX Driver初始化成功 (账户ID: {account_id})")
             except Exception as e:
-                print(e)
+                print(f"✗ OKX Driver初始化失败 (账户ID: {account_id}): {e}")
                 self.okx = None
         else:
             self.okx = okx_client
+            print(f"✓ OKX Driver使用外部客户端 (账户ID: {account_id})")
         self.mode = (mode or "swap").lower()
         self.default_quote = default_quote or "USDT"
         self.price_scale = price_scale
