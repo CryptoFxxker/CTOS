@@ -6,13 +6,45 @@ import ssl
 import time
 import json
 import os
+import sys
 from urllib.parse import urlparse
+from datetime import datetime
+
+
+
+# 添加项目路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.insert(0, project_root)
+
+
+from ctos.drivers.backpack.driver import BackpackDriver
+from ctos.drivers.okx.driver import OkxDriver
 
 try:
     import requests
 except Exception:
     requests = None
 
+# 导入驱动
+try:
+    from ctos.drivers.okx.driver import init_OkxClient
+    from ctos.drivers.backpack.driver import init_BackpackClients
+    OKX_AVAILABLE = True
+    BACKPACK_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ OKX/Backpack驱动导入失败: {e}")
+    OKX_AVAILABLE = False
+    BACKPACK_AVAILABLE = False
+
+try:
+    from ctos.drivers.binance.driver import init_BinanceClient
+    BINANCE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ Binance驱动导入失败: {e}")
+    BINANCE_AVAILABLE = False
+
+DRIVERS_AVAILABLE = OKX_AVAILABLE or BACKPACK_AVAILABLE or BINANCE_AVAILABLE
 
 EXCHANGES = [
     {
@@ -37,6 +69,18 @@ EXCHANGES = [
         "advice": {
             "zh": "若无法连接 api.backpack.exchange，请检查出口网络与代理；亦可尝试 curl 指定 --resolve 以绕过 DNS。",
             "en": "If api.backpack.exchange is unreachable, verify egress network/proxy; try curl with --resolve to bypass DNS.",
+        },
+    },
+    {
+        "name": "Binance",
+        "base": os.getenv("BINANCE_BASE_URL", "https://api.binance.com"),
+        "check_paths": [
+            "/api/v3/time",
+            "/api/v3/exchangeInfo",
+        ],
+        "advice": {
+            "zh": "若无法连接 api.binance.com，请检查网络连接和防火墙设置。",
+            "en": "If api.binance.com is unreachable, check network connection and firewall settings.",
         },
     },
 ]
@@ -164,30 +208,246 @@ def probe_exchange(ex):
     return result
 
 
+def test_driver_initialization():
+    """测试驱动初始化"""
+    print("\n" + "="*50)
+    print("🚀 驱动初始化测试")
+    print("="*50)
+    
+    driver_tests = []
+    
+    # 测试OKX驱动
+    if OKX_AVAILABLE:
+        print("\n📊 测试 OKX 驱动...")
+        try:
+            client = OkxDriver(account_id=0)
+            if client:
+                # 测试基本功能
+                test_results = {
+                    "name": "OKX",
+                    "init_ok": True,
+                    "client_type": type(client).__name__,
+                    "tests": {}
+                }
+
+                # 测试获取交易对
+                try:
+                    t0 = time.time()
+                    symbols, _ = client.symbols(instType="SWAP")
+                    test_results["tests"]["get_symbols"] = {
+                        "ok": True,
+                        "ms": int((time.time() - t0) * 1000),
+                        "count": len(symbols) if symbols else 0
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_symbols"] = {"ok": False, "error": str(e)}
+                
+                # 测试获取价格
+                try:
+                    t0 = time.time()
+                    price = client.get_price_now("eth")
+                    test_results["tests"]["get_price"] = {
+                        "ok": price is not None,
+                        "ms": int((time.time() - t0) * 1000),
+                        "price": price,
+                        "symbol": "eth",
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_price"] = {"ok": False, "error": str(e)}
+                    
+            else:
+                test_results = {"name": "OKX", "init_ok": False, "error": "Client initialization failed"}
+                
+        except Exception as e:
+            test_results = {"name": "OKX", "init_ok": False, "error": str(e)}
+        
+        driver_tests.append(test_results)
+    
+    # 测试Backpack驱动
+    if BACKPACK_AVAILABLE:
+        print("\n📊 测试 Backpack 驱动...")
+        try:
+            bp = BackpackDriver(account_id=0)
+            if bp:
+                test_results = {
+                    "name": "Backpack",
+                    "init_ok": True,
+                    "account_client": bp.__class__.__name__,
+                    "tests": {}
+                }
+                # 测试获取市场信息
+                try:
+                    t0 = time.time()
+                    markets, _ = bp.symbols()
+                    test_results["tests"]["get_markets"] = {
+                        "ok": True,
+                        "ms": int((time.time() - t0) * 1000),
+                        "count": len(markets) if markets else 0
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_markets"] = {"ok": False, "error": str(e)}
+                
+                # 测试获取价格
+                try:
+                    t0 = time.time()
+                    ticker = bp.get_price_now("eth")
+                    test_results["tests"]["get_price"] = {
+                        "ok": ticker is not None,
+                        "ms": int((time.time() - t0) * 1000),
+                        "price": ticker if ticker else None,
+                        "symbol": "eth",
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_price"] = {"ok": False, "error": str(e)}
+                    
+            else:
+                test_results = {"name": "Backpack", "init_ok": False, "error": "Client initialization failed"}
+                
+        except Exception as e:
+            test_results = {"name": "Backpack", "init_ok": False, "error": str(e)}
+        
+        driver_tests.append(test_results)
+    
+    # 测试Binance驱动
+    if BINANCE_AVAILABLE:
+        print("\n📊 测试 Binance 驱动...")
+        try:
+            client = init_BinanceClient()
+            if client:
+                test_results = {
+                    "name": "Binance",
+                    "init_ok": True,
+                    "client_type": type(client).__name__,
+                    "tests": {}
+                }
+                
+                # 测试获取时间
+                try:
+                    t0 = time.time()
+                    time_data = client.get_server_time()
+                    test_results["tests"]["get_price_now"] = {
+                        "ok": True,
+                        "ms": int((time.time() - t0) * 1000),
+                        "data": time_data
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_price_now"] = {"ok": False, "error": str(e)}
+                
+                # 测试获取交易对信息
+                try:
+                    t0 = time.time()
+                    info = client.get_exchange_info()
+                    test_results["tests"]["get_exchange_info"] = {
+                        "ok": True,
+                        "ms": int((time.time() - t0) * 1000),
+                        "symbols_count": len(info.get("symbols", [])) if info else 0,
+                        "symbol": "BTCUSDT",
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_exchange_info"] = {"ok": False, "error": str(e)}
+                
+                # 测试获取价格
+                try:
+                    t0 = time.time()
+                    price = client.get_symbol_ticker(symbol="BTCUSDT")
+                    test_results["tests"]["get_price"] = {
+                        "ok": price is not None,
+                        "ms": int((time.time() - t0) * 1000),
+                        "price": price.get("price") if price else None,
+                        "symbol": "BTCUSDT",
+                    }
+                except Exception as e:
+                    test_results["tests"]["get_price"] = {"ok": False, "error": str(e)}
+                    
+            else:
+                test_results = {"name": "Binance", "init_ok": False, "error": "Client initialization failed"}
+                
+        except Exception as e:
+            test_results = {"name": "Binance", "init_ok": False, "error": str(e)}
+        
+        driver_tests.append(test_results)
+    
+    return driver_tests
+
+
 def main():
+    print("🌐 CTOS 网络连接与驱动测试")
+    print("="*50)
+    print(f"测试时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # 网络连接测试
+    print("\n🔗 网络连接测试")
+    print("-" * 30)
     reports = []
     for ex in EXCHANGES:
         reports.append(probe_exchange(ex))
 
-    # Pretty print bilingual report
-    for r in reports:
-        print("\n==============================")
-        print(f"Exchange: {r['name']}  Base: {r['base']}")
-        print("- Proxy env:", json.dumps(r.get('proxy', {}), ensure_ascii=False))
-        print("- DNS:", json.dumps(r['dns'], ensure_ascii=False))
-        print("- TCP:", json.dumps(r['tcp'], ensure_ascii=False))
-        print("- TLS:", json.dumps(r['tls'], ensure_ascii=False))
-        print("- HTTP checks:")
-        for h in r['http']:
-            print("  *", json.dumps(h, ensure_ascii=False))
-        ok = r['summary']['ok']
-        print(f"- SUMMARY(EN): {'OK' if ok else 'ISSUES: ' + ', '.join(r['summary']['issues'])} (mode={r['summary']['mode']})")
-        print(f"  Advice: {r['summary']['advice_en']}")
-        print(f"- 总结(中文): {'正常' if ok else '问题: ' + ', '.join(r['summary']['issues'])} (模式={r['summary']['mode']})")
-        print(f"  建议: {r['summary']['advice_zh']}")
+    # 驱动测试
+    driver_tests = []
+    if DRIVERS_AVAILABLE:
+        driver_tests = test_driver_initialization()
+    else:
+        print("\n⚠️ 驱动不可用，跳过驱动测试")
 
-    print("\nTip: set OKX_BASE_URL / BP_BASE_URL to override defaults if needed.")
-    print("Tip: set NET_PROBE_MODE=proxy|direct|both to control HTTP probing mode (default both).")
+    # 生成综合报告
+    print("\n" + "="*50)
+    print("📋 综合测试报告")
+    print("="*50)
+    
+    # 网络连接报告
+    print("\n🌐 网络连接状态:")
+    for r in reports:
+        ok = r['summary']['ok']
+        status = "✅ 正常" if ok else "❌ 异常"
+        print(f"  {r['name']}: {status}")
+        if not ok:
+            print(f"    问题: {', '.join(r['summary']['issues'])}")
+    
+    # 驱动测试报告
+    if driver_tests:
+        print("\n🚀 驱动测试状态:")
+        for test in driver_tests:
+            if test.get("init_ok"):
+                print(f"  {test['name']}: ✅ 初始化成功")
+                for test_name, result in test.get("tests", {}).items():
+                    status = "✅" if result.get("ok") else "❌"
+                    ms = result.get("ms", 0)
+                    print(f"    {test_name}: {status} ({ms}ms)")
+            else:
+                print(f"  {test['name']}: ❌ 初始化失败 - {test.get('error', 'Unknown error')}")
+    
+    # 详细报告
+    print("\n" + "="*50)
+    print("📊 详细测试结果")
+    print("="*50)
+    
+    # 网络连接详细结果
+    for r in reports:
+        print(f"\n🌐 {r['name']} 网络测试:")
+        print(f"  DNS: {r['dns']}")
+        print(f"  TCP: {r['tcp']}")
+        print(f"  TLS: {r['tls']}")
+        print(f"  HTTP测试:")
+        for h in r['http']:
+            print(f"    {h['url']} ({h['mode']}): {h}")
+    
+    # 驱动测试详细结果
+    if driver_tests:
+        for test in driver_tests:
+            print(f"\n🚀 {test['name']} 驱动测试:")
+            if test.get("init_ok"):
+                print(f"  初始化: ✅ 成功")
+                print(f"  客户端类型: {test.get('client_type', test.get('account_client', 'Unknown'))}")
+                for test_name, result in test.get("tests", {}).items():
+                    print(f"  {test_name}: {result}")
+            else:
+                print(f"  初始化: ❌ 失败 - {test.get('error', 'Unknown error')}")
+
+    print("\n💡 提示:")
+    print("  - 设置环境变量 OKX_BASE_URL / BP_BASE_URL / BINANCE_BASE_URL 可覆盖默认URL")
+    print("  - 设置 NET_PROBE_MODE=proxy|direct|both 可控制HTTP探测模式")
+    print("  - 确保已正确配置各交易所的API密钥")
+    
     return 0
 
 

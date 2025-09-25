@@ -1,2 +1,2 @@
-btc,sol,eth,doge,xrp,bnb
-2,1.5,1.5,1,1,1.5
+btc,sol,eth,doge,xrp,bnb,ada
+2,1.5,1.5,1,1,1.5,1

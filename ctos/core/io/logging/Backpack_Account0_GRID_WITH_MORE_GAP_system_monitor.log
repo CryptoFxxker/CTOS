@@ -9,3 +9,21 @@
 2025-09-25 10:55:24,578 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 40681.87432575226}
 2025-09-25 10:55:34,757 - INFO - ExecutionEngine initialized for backpack account 0
 2025-09-25 10:55:34,758 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-25 11:57:20,323 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 3705.563784837723}
+2025-09-25 11:57:25,878 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-25 11:57:25,878 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-25 12:08:51,891 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 686.0110187530518}
+2025-09-25 12:13:35,337 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-25 12:13:47,018 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'sell', 'price': 205.96, 'sizes': 13.83, 'order_id': '10396720857'}
+2025-09-25 12:13:47,018 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SOL_USDC_PERP', 'target_amount': 47.36842105263158, 'open_position': 2896.4894612094, 'diff': 2849.1210401567682, 'order_id': ['10396720857'], 'status': 'success'}
+2025-09-25 12:13:48,938 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'sell', 'price': 112303.0, 'sizes': 0.0356, 'order_id': '10396726143'}
+2025-09-25 12:13:48,938 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BTC_USDC_PERP', 'target_amount': 63.1578947368421, 'open_position': 4065.226127224544, 'diff': 4002.068232487702, 'order_id': ['10396726143'], 'status': 'success'}
+2025-09-25 12:13:52,897 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'sell', 'price': 4048.24, 'sizes': 0.6981, 'order_id': '10396739684'}
+2025-09-25 12:13:52,898 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ETH_USDC_PERP', 'target_amount': 47.36842105263158, 'open_position': 2873.3213775173, 'diff': 2825.952956464668, 'order_id': ['10396739684'], 'status': 'success'}
+2025-09-25 12:13:54,889 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XRP_USDC_PERP', 'action': 'sell', 'price': 2.8635, 'sizes': 699.7871, 'order_id': '10396746113'}
+2025-09-25 12:13:54,889 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XRP_USDC_PERP', 'target_amount': 31.57894736842105, 'open_position': 2035.419415678368, 'diff': 2003.840468309947, 'order_id': ['10396746113'], 'status': 'success'}
+2025-09-25 12:13:57,159 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOGE_USDC_PERP', 'action': 'sell', 'price': 0.23537, 'sizes': 12118.8, 'order_id': '10396752706'}
+2025-09-25 12:13:57,160 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOGE_USDC_PERP', 'target_amount': 31.57894736842105, 'open_position': 2883.988878897, 'diff': 2852.409931528579, 'order_id': ['10396752706'], 'status': 'success'}
+2025-09-25 12:13:59,102 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'sell', 'price': 995.09, 'sizes': 2.413, 'order_id': '10396757863'}
+2025-09-25 12:13:59,102 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BNB_USDC_PERP', 'target_amount': 47.36842105263158, 'open_position': 2448.1192412918, 'diff': 2400.750820239168, 'order_id': ['10396757863'], 'status': 'success'}
+2025-09-25 12:15:33,204 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}

@@ -289,6 +289,9 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 ---
 
 ## 快速开始（实践流程）
+> ⚠️ 如遇网络连接问题，请确保已配置科学上网环境以顺利访问交易所API。
+> 💡 网络或API连通性排查建议：可运行 `python scripts/net_probe.py`，自动检测本地到 OKX、Backpack、Binance 等交易所的网络连通性、DNS、TLS 及驱动可用性，并给出详细诊断和修复建议。
+
 
 1. **获取代码**
    克隆仓库或下载模板：

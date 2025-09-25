@@ -102,7 +102,7 @@ def main_test():
     print(f"{'='*50}")
 
 def main1_test():
-    cex, engine = pick_exchange('bp', 1)
+    cex, engine = pick_exchange('bp', 0)
     bp = engine.cex_driver
     pos, _ = bp.get_position()
 
@@ -135,8 +135,9 @@ def main1_test():
         btc_rate = all_rate[0] / sum(all_rate)
         split_rate = {good_group[x + 1]: all_rate[x + 1] / sum(all_rate) for x in range(len(all_rate) - 1)}
 
-    start_money = bp.fetch_balance()
-    leverage_times = 2
+    start_money = 10000 if bp.fetch_balance('USDC') < 1000  else bp.fetch_balance('USDC')
+    print(f"start_money: {start_money}")
+    leverage_times = 0.5
     init_operate_position = start_money * leverage_times
     new_rate_place2order = {k:v for k,v in rate_price2order.items() if k in all_coins}
 

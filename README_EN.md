@@ -330,7 +330,7 @@ Account mapping is based on `configs/account.yaml` configuration file:
 
    To verify environment and API Key configuration, run the built-in test script:
 
-   ```bash
+     ```bash
    python configs/example_usage.py
    ```
 
@@ -352,9 +352,9 @@ Account mapping is based on `configs/account.yaml` configuration file:
 6. **Backtest/Replay@TODO** 
    Place historical data in `tools/backtest/`, then:
 
-   ```bash
-   ./scripts/backtest.sh
-   ```
+     ```bash
+     ./scripts/backtest.sh
+     ```
 
    Results will be written to `var/logs/` and stored in `var/data/`.
 

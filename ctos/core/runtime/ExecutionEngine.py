@@ -2,6 +2,8 @@ import sys
 import os
 import re
 import decimal
+import time
+
 
 # 动态添加bpx包路径到sys.path
 def _add_bpx_path():
@@ -150,8 +152,8 @@ class ExecutionEngine:
                     side = data['side']
                     open_position = float(data['quantityUSD']) if  side == 'long' else -float(data['quantityUSD'])
                     diff = open_position - usdt_amount
-                    if diff < usdt_amount * 0.05:
-                        continue
+                    # if diff < usdt_amount * 0.05:
+                    #     continue
                     print(f"【{coin.upper()} 】需要补齐差额: {round(diff, 2)} = 现有:{round(open_position, 2)} - Target:{round(usdt_amount)}")
                     # 记录操作开始
                     

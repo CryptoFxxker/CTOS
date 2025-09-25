@@ -34,11 +34,11 @@ PROJECT_ROOT = add_project_paths()
 print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
 
 
-from ctos.drivers.backpack.util import align_decimal_places, round_dynamic, round_to_two_digits, rate_price2order, cal_amount
+from ctos.drivers.backpack.util import align_decimal_places, round_dynamic, round_to_two_digits, rate_price2order, cal_amount, BeijingTime
 from ctos.core.runtime.ExecutionEngine import pick_exchange
 
 
-def main1_test(engine, ):
+def main1_test(engine):
     bp = engine.cex_driver
     pos, _ = bp.get_position()
 
@@ -72,6 +72,7 @@ def main1_test(engine, ):
         split_rate = {good_group[x + 1]: all_rate[x + 1] / sum(all_rate) for x in range(len(all_rate) - 1)}
 
     start_money = bp.fetch_balance()
+    print(f"start_money: {start_money}")
     leverage_times = 0.2
     init_operate_position = start_money * leverage_times if start_money * leverage_times > len(all_coins) * 10 else len(all_coins) * 10
     new_rate_place2order = {k:v for k,v in rate_price2order.items() if k in all_coins}
@@ -232,7 +233,7 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
     
     # 情况1: 两个订单都不存在，下新订单
     if not buy_exists and not sell_exists:
-        print(f"\n[{sym}] 两个订单都不存在，下新订单...")
+        print(f"{BeijingTime()} | [{sym}] 两个订单都不存在，下新订单...")
         
         # 下买单
         buy_qty = align_decimal_places(size_precision, base_amount / buy_price)
@@ -261,16 +262,16 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
             price=sell_price
         )
         if sell_err:
-            print(f"[{sym}] 卖单失败: {sell_err}")
+            print(f"{BeijingTime()} | [{sym}] 卖单失败: {sell_err}")
         else:
             data["sell_order_id"] = sell_oid
-            print(f"[{sym}] 卖单已下: {sell_qty} @ {sell_price}, id={sell_oid}")
+            print(f"{BeijingTime()} | [{sym}] 卖单已下: {sell_qty} @ {sell_price}, id={sell_oid}")
         
         return True
     
     # 情况2: 买单成交，卖单还在
     elif not buy_exists and sell_exists:
-        print(f"\n[{sym}] 买单成交！调整策略...")
+        print(f"{BeijingTime()} | [{sym}] 买单成交！调整策略...")
         
         # 更新初始价格
         data["init_price"] = init_price * 0.99
@@ -290,10 +291,10 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
             price=new_buy_price
         )
         if buy_err:
-            print(f"[{sym}] 新买单失败: {buy_err}")
+            print(f"{BeijingTime()} | [{sym}] 新买单失败: {buy_err}")
         else:
             data["buy_order_id"] = buy_oid
-            print(f"[{sym}] 新买单已下: {buy_qty} @ {new_buy_price}, id={buy_oid}")
+            print(f"{BeijingTime()} | [{sym}] 新买单已下: {buy_qty} @ {new_buy_price}, id={buy_oid}")
         
         # 改单现有卖单
         if sell_order_id:
@@ -305,16 +306,16 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
                 size=sell_qty
             )
             if amend_err:
-                print(f"[{sym}] 改单失败: {amend_err}")
+                print(f"{BeijingTime()} | [{sym}] 改单失败: {amend_err}")
             else:
                 data["sell_order_id"] = new_sell_oid
-                print(f"[{sym}] 卖单已改单: {sell_qty} @ {new_sell_price}, 新id={new_sell_oid}")
+                print(f"{BeijingTime()} | [{sym}] 卖单已改单: {sell_qty} @ {new_sell_price}, 新id={new_sell_oid}")
         
         return True
     
     # 情况3: 卖单成交，买单还在
     elif buy_exists and not sell_exists:
-        print(f"\n[{sym}] 卖单成交！调整策略...")
+        print(f"{BeijingTime()} | [{sym}] 卖单成交！调整策略...")
         
         # 更新初始价格
         data["init_price"] = init_price * 1.01
@@ -334,10 +335,10 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
                 size=buy_qty
             )
             if amend_err:
-                print(f"[{sym}] 改单失败: {amend_err}")
+                print(f"{BeijingTime()} | [{sym}] 改单失败: {amend_err}")
             else:
                 data["buy_order_id"] = new_buy_oid
-                print(f"[{sym}] 买单已改单: {buy_qty} @ {new_buy_price}, 新id={new_buy_oid}")
+                print(f"{BeijingTime()} | [{sym}] 买单已改单: {buy_qty} @ {new_buy_price}, 新id={new_buy_oid}")
         
         # 下新卖单
         sell_qty = align_decimal_places(size_precision, base_amount / new_sell_price)
@@ -349,10 +350,10 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
             price=new_sell_price
         )
         if sell_err:
-            print(f"[{sym}] 新卖单失败: {sell_err}")
+            print(f"{BeijingTime()} | [{sym}] 新卖单失败: {sell_err}")
         else:
             data["sell_order_id"] = sell_oid
-            print(f"[{sym}] 新卖单已下: {sell_qty} @ {new_sell_price}, id={sell_oid}")
+            print(f"{BeijingTime()} | [{sym}] 新卖单已下: {sell_qty} @ {new_sell_price}, id={sell_oid}")
         
         return True
     
@@ -445,34 +446,7 @@ def show_help():
 """)
 
 def main():
-    print("\n=== 网格策略 (订单管理版) ===")
-    
-    # 解析命令行参数
-    force_refresh = False
-    arg_ex = None
-    show_help_flag = False
-    acount_id = None
-    base_amount = 8.88
-    if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
-            if arg in ['--refresh', '-r', '--force']:
-                force_refresh = True
-            elif arg in ['--help', '-h']:
-                show_help_flag = True
-            elif arg in ['okx', 'bp', 'ok', 'backpack']:
-                arg_ex = arg
-            elif arg in ['01234']:
-                acount_id = int(arg)
-            elif arg in ['8.88', '888', '8888', '6.66', '66.6', '6666']:
-                base_amount = float(arg)
-    
-    if show_help_flag:
-        show_help()
-        return
-    
-    # 自动用当前文件名（去除后缀）作为默认策略名，细节默认为COMMON
-    default_strategy = os.path.splitext(os.path.basename(__file__))[0].upper()
-    exch, engine = pick_exchange(arg_ex, acount_id, strategy=default_strategy, strategy_detail="COMMON")
+
     print(f"使用交易所: {exch}")
     
     if force_refresh:
@@ -556,4 +530,33 @@ def main():
         })
 
 if __name__ == '__main__':
+    print("\n=== 网格策略 (订单管理版) ===")
+
+    # 解析命令行参数
+    force_refresh = False
+    arg_ex = None
+    show_help_flag = False
+    acount_id = None
+    base_amount = 8.88
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            if arg in ['--refresh', '-r', '--force']:
+                force_refresh = True
+            elif arg in ['--help', '-h']:
+                show_help_flag = True
+            elif arg in ['okx', 'bp', 'ok', 'backpack']:
+                arg_ex = arg
+            elif arg in ['01234']:
+                acount_id = int(arg)
+            elif arg in ['8.88', '888', '8888', '6.66', '66.6', '6666']:
+                base_amount = float(arg)
+    
+    if show_help_flag:
+        show_help()
+        sys.exit()
+    
+    # 自动用当前文件名（去除后缀）作为默认策略名，细节默认为COMMON
+    default_strategy = os.path.splitext(os.path.basename(__file__))[0].upper()
+    exch, engine = pick_exchange(arg_ex, acount_id, strategy=default_strategy, strategy_detail="COMMON")
+    main1_test(engine)
     main()
