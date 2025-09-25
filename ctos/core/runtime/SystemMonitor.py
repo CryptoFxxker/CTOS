@@ -480,7 +480,7 @@ class SystemMonitor:
         
 
         # 检查仓位价值风险
-        if abs(quantity_usd) > self.execution_engine.cex_driver.fetch_balance('USDT') * 0.5:  # 大仓位警告
+        if abs(quantity_usd) > self.execution_engine.cex_driver.fetch_balance() * 0.5:  # 大仓位警告
             self._record_anomaly("Large Position Warning", risk_metrics)
             self.logger.warning(f"{symbol} 大仓位警告: ${quantity_usd:.2f}")
     

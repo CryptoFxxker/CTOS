@@ -193,7 +193,7 @@ def clock_worker(shared_ref):
 
 # 获取资产总额并保存
 def log_asset():
-    total_equity_usd = exchange.fetch_balance('USDT')
+    total_equity_usd = exchange.fetch_balance()
     
     # 保存到文件（修复：使用 balance_file_path 检查存在性，并容错读取）
     if os.path.exists(balance_file_path):

@@ -100,7 +100,7 @@ class TradingSyscalls(object):
         raise NotImplementedError
 
     # ---- Account ----
-    def fetch_balance(self, currency='USDT', window=None):
+    def fetch_balance(self, currency, window=None):
         """Return balance information
            :param currency: Currency to fetch balance for (e.g., 'USDT', 'USDC', 'ALL')
            :param window: Time window for balance query (optional)

@@ -372,27 +372,29 @@ def print_position(sym, pos, init_price, start_ts):
     hh = uptime // 3600
     mm = (uptime % 3600) // 60
     ss = uptime % 60
+    if not pos:
+        output = f"=== [仓位监控] 当前没有仓位： {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
+    else:
+        # 从仓位数据里拿需要的字段
+        price_now = float(pos.get("markPrice", 0) or 0)
+        avg_cost = float(pos.get("entryPrice", 0) or 0)
+        size = float(pos.get("quantity", 0) or 0)
+        side = pos.get("side", "?")
+        pnlUnrealized = float(pos.get("pnlUnrealized", 0) or 0)
 
-    # 从仓位数据里拿需要的字段
-    price_now = float(pos.get("markPrice", 0) or 0)
-    avg_cost = float(pos.get("entryPrice", 0) or 0)
-    size = float(pos.get("quantity", 0) or 0)
-    side = pos.get("side", "?")
-    pnlUnrealized = float(pos.get("pnlUnrealized", 0) or 0)
+        change_pct = (price_now - init_price) / init_price * 100 if init_price else 0.0
 
-    change_pct = (price_now - init_price) / init_price * 100 if init_price else 0.0
-
-    header = f"=== [仓位监控] {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
-    line = (
-        f"现价={round_dynamic(price_now)} | "
-        f"起步价_init_price={round_dynamic(init_price)} | "
-        f"均价_avg_cost={avg_cost:.4f} | "
-        f"数量={round_to_two_digits(size)} | "
-        f"方向={side} | "
-        f"浮盈={pnlUnrealized:+.2f} | "
-        f"涨跌幅={change_pct:+.2f}%"
-    )
-    output = header + line + '===='
+        header = f"=== [仓位监控] {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
+        line = (
+            f"现价={round_dynamic(price_now)} | "
+            f"起步价_init_price={round_dynamic(init_price)} | "
+            f"均价_avg_cost={avg_cost:.4f} | "
+            f"数量={round_to_two_digits(size)} | "
+            f"方向={side} | "
+            f"浮盈={pnlUnrealized:+.2f} | "
+            f"涨跌幅={change_pct:+.2f}%"
+        )
+        output = header + line + '===='
     if len(output) < 180:
         output += ' ' * (180 - len(output))
     print('\r' + output, end='')
@@ -516,9 +518,11 @@ def main():
             for sym, data in GridPositions.items():
                 try:
                     time.sleep(sleep_time)
-                    pos = poses[sym]
                     # 获取当前持仓信息用于显示
-
+                    if sym not in poses:
+                        pos = {}
+                    else:
+                        pos = poses[sym]
                     exchange_limits_info, err = engine.cex_driver.exchange_limits(symbol=sym)
                     if err:
                         print('CEX DRIVER.exchange_limits error ', err)

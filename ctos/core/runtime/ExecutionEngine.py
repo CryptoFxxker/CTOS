@@ -100,7 +100,7 @@ class ExecutionEngine:
         
         # 初始化余额（如果支持）
         try:
-            self.init_balance = float(self.cex_driver.fetch_balance('USDT'))
+            self.init_balance = float(self.cex_driver.fetch_balance())
         except Exception as e:
             self.logger.warning(f"Failed to fetch initial balance: {e}")
             self.init_balance = 0.0
