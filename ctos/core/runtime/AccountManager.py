@@ -169,10 +169,10 @@ class AccountManager:
         """创建OKX Driver"""
         try:
             # 添加项目根目录到sys.path
-            from ctos.drivers.okx.driver import OkxDriver, init_OkxClient
+            from ctos.drivers.okx.driver import OkxDriver, init_CexClient
             
             # 初始化OKX客户端
-            okx_client = init_OkxClient(account=account_id)
+            okx_client = init_CexClient(account_id=account_id)
             if not okx_client:
                 self.logger.error(f"Failed to initialize OKX client for account {account_id}")
                 return None

@@ -28,7 +28,7 @@ except Exception:
 
 # 导入驱动
 try:
-    from ctos.drivers.okx.driver import init_OkxClient
+    from ctos.drivers.okx.driver import init_CexClient
     from ctos.drivers.backpack.driver import init_BackpackClients
     OKX_AVAILABLE = True
     BACKPACK_AVAILABLE = True

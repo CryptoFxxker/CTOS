@@ -21,3 +21,9 @@
 {"ts": "2025-09-25 12:13:59", "op": "PlaceIncrementalOrders", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "action": "sell", "price": 995.09, "sizes": 2.413, "order_id": "10396757863"}}
 {"ts": "2025-09-25 12:13:59", "op": "SetCoinPosition AlignTo", "src": "COMMON", "det": {"symbol": "BNB_USDC_PERP", "target_amount": 47.36842105263158, "open_position": 2448.1192412918, "diff": 2400.750820239168, "order_id": ["10396757863"], "status": "success"}}
 {"ts": "2025-09-25 12:15:33", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-25 16:44:30", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 16137.550241470337}}
+{"ts": "2025-09-25 16:48:44", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-25 16:49:57", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-25 16:52:13", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-25 17:00:42", "op": "StrategyStart", "src": "Grid-Order-Management", "det": {"exchange": "backpack", "strategy": "Grid-Order-Management", "version": "3.0", "force_refresh": false}}
+{"ts": "2025-09-25 20:17:03", "op": "StrategyExit", "src": "Grid-Order-Management", "det": {"reason": "Manual interrupt", "uptime": 11781.532798528671}}

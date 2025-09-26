@@ -90,7 +90,7 @@ def get_account_name_by_id(account_id=0, exchange='okx'):
         default_mapping = {0: 'main', 1: 'sub1', 2: 'sub2'}
         return default_mapping.get(account_id, 'main')
 
-def init_OkxClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
+def init_CexClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
     """
     初始化OKX客户端
     
@@ -163,7 +163,7 @@ class OkxDriver(TradingSyscalls):
         """
         if okx_client is None:
             try:
-                self.okx = init_OkxClient(account_id=account_id)
+                self.okx = init_CexClient(account_id=account_id)
                 print(f"✓ OKX Driver初始化成功 (账户ID: {account_id})")
             except Exception as e:
                 print(f"✗ OKX Driver初始化失败 (账户ID: {account_id}): {e}")
@@ -491,13 +491,13 @@ class OkxDriver(TradingSyscalls):
         )
 
 
-    def amend_order(self, orderId, **kwargs):
+    def amend_order(self, order_id, **kwargs):
         # Map to amend/modify if available
         if hasattr(self.okx, "amend_order"):
-            order_id, err = self.okx.amend_order(orderId=orderId, **kwargs)
+            order_id, err = self.okx.amend_order(orderId=order_id, **kwargs)
             return order_id, err
         if hasattr(self.okx, "modify_order"):
-            order_id, err  = self.okx.modify_order(orderId=orderId, **kwargs)
+            order_id, err  = self.okx.modify_order(orderId=order_id, **kwargs)
             return order_id, err
         raise NotImplementedError("okex.py client lacks amend_order/modify_order")
 
@@ -507,13 +507,14 @@ class OkxDriver(TradingSyscalls):
             return success, error
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
-    def get_order_status(self, order_id, keep_origin=True):
+    def get_order_status(self, order_id, symbol=None, keep_origin=False):
         if hasattr(self.okx, "get_order_status"):
-            success, error = self.okx.get_order_status(order_id=order_id)
+            success, error = self.okx.get_order_status(order_id=order_id, symbol=symbol)
             if keep_origin:
                 return success, error
 
             if error:
+                print(f"order_status {order_id} success: {success} error: {error}")
                 return None, error
 
             od = None
@@ -660,10 +661,10 @@ class OkxDriver(TradingSyscalls):
                 return e
         raise NotImplementedError("okex.py client lacks fetch_balance")
 
-    def get_position(self, symbol=None, keep_origin=True, instType='SWAP'):
+    def get_position(self, symbol=None, keep_origin=False, instType='SWAP'):
         if hasattr(self.okx, "get_position"):
             try:
-                success, error = self.okx.get_position(symbol, instType=instType)
+                success, error = self.okx.get_position(symbol=symbol, instType=instType)
                 if keep_origin:
                     return success, error
 

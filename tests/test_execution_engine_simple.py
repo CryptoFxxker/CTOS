@@ -101,17 +101,12 @@ def main_test():
     print(f"测试结果: {success_count}/{total_count} 成功")
     print(f"{'='*50}")
 
-def main1_test():
-    cex, engine = pick_exchange('bp', 0)
+def main1_test(cex='bp', account=3, strategy='HEDGE', strategy_detail='COMMON', leverage_times=1):
+    cex, engine = pick_exchange(cex=cex, account=account, strategy=strategy, strategy_detail=strategy_detail)
     bp = engine.cex_driver
-    pos, _ = bp.get_position()
-
-    now_position = {x['symbol']:float(x['netCost']) for x in pos}
-    print(json.dumps(now_position, indent=4))
-
     all_coins, _  = bp.symbols()
 
-    all_coins = [x[:x.find('_')].lower() for x in all_coins if x[:x.find('_')].lower() in rate_price2order.keys()] 
+    all_coins = [x[:x.find('U') - 1].lower() for x in all_coins if x[:x.find('U') - 1].lower() in rate_price2order.keys()] 
     print(all_coins, len(all_coins))
 
 
@@ -135,17 +130,15 @@ def main1_test():
         btc_rate = all_rate[0] / sum(all_rate)
         split_rate = {good_group[x + 1]: all_rate[x + 1] / sum(all_rate) for x in range(len(all_rate) - 1)}
 
-    start_money = 10000 if bp.fetch_balance('USDC') < 1000  else bp.fetch_balance('USDC')
+    start_money = bp.fetch_balance()
     print(f"start_money: {start_money}")
-    leverage_times = 0.5
     init_operate_position = start_money * leverage_times
     new_rate_place2order = {k:v for k,v in rate_price2order.items() if k in all_coins}
-
     usdt_amounts = []
     coins_to_deal = []
     is_btc_failed = False
     now_position = {}
-    for coin in all_coins:
+    for coin in set(all_coins):
         time.sleep(0.2)
         if coin in good_group:
             operate_amount = cal_amount(coin, init_operate_position, good_group, btc_rate, split_rate)
@@ -171,4 +164,5 @@ def main1_test():
         time.sleep(1)
 
 if __name__ == '__main__':
-    main1_test()
+    main1_test(cex='okx', account=0, strategy='HEDGE', strategy_detail='COMMON', leverage_times=1)
+    # main1_test(cex='bp', account=3, strategy='HEDGE', strategy_detail='COMMON', leverage_times=1)

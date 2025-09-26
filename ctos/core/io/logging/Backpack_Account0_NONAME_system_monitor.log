@@ -191,3 +191,6 @@
 2025-09-25 12:36:26,002 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'APT_USDC_PERP', 'target_amount': -217.3913043478261, 'open_position': -217.648198268, 'diff': -0.25689392017389423, 'order_id': ['10400553162'], 'status': 'success'}
 2025-09-25 12:36:27,910 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'buy', 'price': 1.2982, 'sizes': 1.0, 'order_id': '10400556372'}
 2025-09-25 12:36:27,910 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'WLD_USDC_PERP', 'target_amount': -217.3913043478261, 'open_position': -218.07051672, 'diff': -0.6792123721739074, 'order_id': ['10400556372'], 'status': 'success'}
+2025-09-25 14:49:49,054 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-25 14:51:45,122 - INFO - ExecutionEngine initialized for backpack account 0
+2025-09-25 15:22:40,333 - INFO - ExecutionEngine initialized for backpack account 0

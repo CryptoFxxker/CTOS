@@ -2,7 +2,7 @@ import sys
 import os
 import re
 import decimal
-import time
+import time 
 
 
 # 动态添加bpx包路径到sys.path
@@ -86,6 +86,7 @@ class ExecutionEngine:
             self.account_manager = account_manager
         
         # 获取Driver
+
         self.cex_driver = self.account_manager.get_driver(
             ExchangeType(self.exchange_type), 
             account, 
@@ -128,7 +129,7 @@ class ExecutionEngine:
         for coin, usdt_amount in zip(coins, usdt_amounts):
             try:
                 symbol_full, _, _ = self.cex_driver._norm_symbol(coin)
-                # exchange = init_OkxClient(coin)
+                # exchange = init_CexClient(coin)
                 data = all_pos_info.get(symbol_full, None)
                 if not data:
                     print('！！！！！！！！！！还没开仓呢哥！')
@@ -152,8 +153,8 @@ class ExecutionEngine:
                     side = data['side']
                     open_position = float(data['quantityUSD']) if  side == 'long' else -float(data['quantityUSD'])
                     diff = open_position - usdt_amount
-                    # if diff < usdt_amount * 0.05:
-                    #     continue
+                    if diff < 1:
+                        continue
                     print(f"【{coin.upper()} 】需要补齐差额: {round(diff, 2)} = 现有:{round(open_position, 2)} - Target:{round(usdt_amount)}")
                     # 记录操作开始
                     
@@ -206,7 +207,7 @@ class ExecutionEngine:
     def _order_tracking_logic(self, coins, soft_orders_to_focus):
         start_time = time.time()
         done_coin = []
-        time.sleep(10)
+        # time.sleep(10)
         coin_process_times = {}
         exchange = self.cex_driver
         watch_times_for_all_coins = 0
@@ -234,7 +235,7 @@ class ExecutionEngine:
                     for order in exist_orders_for_coin:
                         if order in soft_orders_to_focus:
                             # print(f'order: {order} is still opening')
-                            data, err = exchange.get_order_status(order_id=order, symbol=self.cex_driver._norm_symbol(coin)[0], keep_origin=False)
+                            data, err = exchange.get_order_status(order_id=order, symbol=exchange._norm_symbol(coin)[0], keep_origin=False)
                             if err or not data:
                                 print(f'data: {data}, err: {err}')
                                 continue
@@ -247,15 +248,19 @@ class ExecutionEngine:
                                 new_price = tmp_price if tmp_price > float(data['price']) else float(data['price'])
                             # 解决 TypeError: 'str' object cannot be interpreted as an integer
                             # pop() 需要传入索引时是整数，但这里 order 是订单号（字符串），应使用 remove
-                            if order in soft_orders_to_focus:
-                                soft_orders_to_focus.remove(order)
-                            order, err = exchange.amend_order(order_id=order,  symbol=self.cex_driver._norm_symbol(coin)[0], price=new_price, quantity=float(data['quantity']))
-                            soft_orders_to_focus.append(order)
-                            time.sleep(5)
+
+                            new_order, err = exchange.amend_order(order_id=order,  symbol=self.cex_driver._norm_symbol(coin)[0], price=new_price, quantity=float(data['quantity']))
+                            if err is None and new_order in soft_orders_to_focus and exchange.cex.lower() == 'backpack':
+                                soft_orders_to_focus[soft_orders_to_focus.index(order)] = new_order
+                            print(f"amend_order  {order} to {new_order}: {self.cex_driver._norm_symbol(coin)[0]} {new_price}, {float(data['quantity'])}")
+                            time.sleep(6.66)
                             need_to_watch = True
-                    print(f'\r追踪【{coin}】中，它目前还有{len(exist_orders_for_coin)}个订单', end=' ')
+                    print(f'\r共有{len(coins)}个币种，完成了{len(done_coin)}个, 正追踪【{coin}】中，它目前还有{len(exist_orders_for_coin)}个订单', end=' ')
                 except Exception as e:
-                    print('❌ 订单追踪失败：', coin, exist_orders_for_coin, len(soft_orders_to_focus), e, data)
+                    try:
+                        print('❌ 订单追踪失败000：', coin, exist_orders_for_coin, len(soft_orders_to_focus), e, data)
+                    except Exception as e1:
+                        print('❌ 订单追踪失败111：', coin, exist_orders_for_coin, len(soft_orders_to_focus), e, e1)
             # 这里之前多打了个tab 差点没把我弄死，每次都只监控一个订单就退出了，绝
             if not need_to_watch or time.time() - start_time > 10800:
                 print(f'✅ {"到点了" if need_to_watch else "所有订单都搞定了"}，收工！')
@@ -398,9 +403,9 @@ def init_all_thing(exchange_type='okx', account=0):
     
     if exchange_type.lower() == 'okx':
         try:
-            from ctos.drivers.okx.driver import init_OkxClient
-            eth = init_OkxClient('eth', account)
-            btc = init_OkxClient('btc', account)
+            from ctos.drivers.okx.driver import init_CexClient
+            eth = init_CexClient('eth', account)
+            btc = init_CexClient('btc', account)
         except Exception as e:
             engine.logger.warning(f"Failed to create ETH/BTC clients: {e}")
     

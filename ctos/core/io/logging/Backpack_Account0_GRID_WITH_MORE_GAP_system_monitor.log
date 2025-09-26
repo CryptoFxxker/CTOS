@@ -27,3 +27,4 @@
 2025-09-25 12:13:59,102 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'sell', 'price': 995.09, 'sizes': 2.413, 'order_id': '10396757863'}
 2025-09-25 12:13:59,102 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BNB_USDC_PERP', 'target_amount': 47.36842105263158, 'open_position': 2448.1192412918, 'diff': 2400.750820239168, 'order_id': ['10396757863'], 'status': 'success'}
 2025-09-25 12:15:33,204 - INFO - OP StrategyStart | {'exchange': 'backpack', 'strategy': 'Grid-Order-Management', 'version': '3.0', 'force_refresh': False}
+2025-09-25 16:44:30,756 - INFO - OP StrategyExit | {'reason': 'Manual interrupt', 'uptime': 16137.550241470337}

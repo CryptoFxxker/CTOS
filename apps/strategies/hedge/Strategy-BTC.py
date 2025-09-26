@@ -32,7 +32,7 @@ except ImportError as import_error:
 import math
 
 import  psutil, time
-from ctos.core.kernel.runtime.ExecutionEngine import ExecutionEngine, init_OkxClient
+from ctos.core.runtime.ExecutionEngine import ExecutionEngine, init_CexClient
 
 
 def set_leverage(increase_times, start_money, leverage_times):
@@ -81,7 +81,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     touch_lower_bolling = -1
     win_times = 0
     try:
-        with open(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'good_group.txt'), 'r', encoding='utf8') as f:
+        with open(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'good_group.txt' if engine.cex_driver.cex.find('o')!=-1 else 'good_group_bp.txt'), 'r', encoding='utf8') as f:
             data = f.readlines()
             good_group = data[0].strip().split(',')
             all_rate = [float(x) for x in data[1].strip().split(',')]
@@ -92,7 +92,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
             split_rate = {good_group[x + 1]: all_rate[x + 1] / sum(all_rate) for x in range(len(all_rate) - 1)}
 
             if len(data) == 3:
-                bad_coins = [x for x in f.readline().strip().split(',') if x not in good_group]
+                bad_coins = [x for x in data[2].strip().split(',') if x not in good_group]
             else:
                 bad_coins = []
     except Exception as e:
@@ -109,8 +109,8 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
     is_win = True if reset_start_money == 0 else False
     print('来咯来咯！比特币！带我开始赚钱咯！')
     print('good_group, btc_rate, split_rate:', good_group, btc_rate, split_rate)
-    if coins_to_be_bad:
-        new_rate_place2order = {k: v for k, v in rate_price2order.items() if k in good_group + coins_to_be_bad}
+    if bad_coins:
+        new_rate_place2order = {k: v for k, v in rate_price2order.items() if k in good_group + bad_coins}
     else:
         new_rate_place2order = rate_price2order
     if start_leverage == 0:
@@ -120,13 +120,11 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
         if start_leverage < 0:
             is_btc_failed = True
             start_leverage = abs(start_leverage)
-        leverage_times = start_leverage if start_leverage > len(new_rate_place2order) * 10 / float(engine.cex_driver.fetch_balance('USDT')) else 1
-    print(new_rate_place2order)
+        leverage_times = start_leverage if start_leverage > len(new_rate_place2order) * 10 / float(engine.cex_driver.fetch_balance()) else 1
+    print('coin to trade: ', new_rate_place2order.keys())
     sanction_line = 0.01
-    min_coin_amount_to_trade = engine.min_amount_to_trade
-
     last_operation_time = 0
-    grid_add = 0.00488
+    grid_add = 0.0025
     grid_reduce_base = 0.00388
     grid_add_times = 0
 
@@ -142,22 +140,8 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
         try:
             if just_kill_position:
                 start_money = reset_start_money
-            elif is_win and win_times > 0:
-                if not use_grid_with_index:
-                    if leverage_times > 5:
-                        leverage_times *= 0.8088
-                    elif leverage_times >= 2:
-                        leverage_times *= 0.8488
-                    elif leverage_times >= 0.5:
-                        leverage_times *= 0.8888
-                    elif leverage_times <= 0.5:
-                        leverage_times = 0.5
-                else:
-                    pass
-                start_money = float(engine.cex_driver.fetch_balance('USDT'))  ##  * (1 - win_times * 1.88/100)
             else:
-                start_money = reset_start_money if reset_start_money > 0 else float(
-                    engine.cex_driver.fetch_balance('USDT'))
+                start_money = reset_start_money if reset_start_money > 0 else float(engine.cex_driver.fetch_balance())
                 reset_start_money = 0
             stop_with_leverage = math.sqrt(math.log(leverage_times if leverage_times > 1.5 else 1.5, 2))
             stop_rate = 1 + 0.01 * stop_with_leverage
@@ -171,7 +155,7 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
             max_leverage_times = leverage_times
             # 0. 开仓机制，不是直接计算仓位，而是通过对比当前仓位与预期仓位的差值，去进行对齐，避免突然中断导致的错误
             init_operate_position = start_money * leverage_times
-            target_money = float(engine.cex_driver.fetch_balance('USDT'))
+            target_money = float(engine.cex_driver.fetch_balance())
             if (not just_kill_position) and is_win:
                 usdt_amounts = []
                 coins_to_deal = []
@@ -188,25 +172,19 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                             sell_amount = -sell_amount
                         usdt_amounts.append(-sell_amount)
                         coins_to_deal.append(coin)
-                # try:
-                #     if len(focus_orders) > 0:
-                #         engine.cex_driver.revoke_orders(focus_orders)
-                # except Exception as e:
-                #     print('撤销订单失败： ', e)
                 print(usdt_amounts, coins_to_deal, leverage_times, start_money)
-                # return
                 focus_orders = engine.set_coin_position_to_target(usdt_amounts, coins_to_deal, soft=True)
                 engine.focus_on_orders(new_rate_place2order.keys(), focus_orders)
                 is_win = False
 
             # coinPrices_for_openPosition = {k: engine.cex_driver.get_price_now(k) for k in new_rate_place2order.keys()}
             # save_para(coinPrices_for_openPosition, 'coinPrices_for_openPosition.json')
-            coinPrices_for_openPosition = load_para(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
+            coinPrices_for_openPosition = load_para(os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', f'{engine.cex_driver.cex}-Account{engine.account}-coinPrices_for_openPosition.json'))
             coinPrices_for_openPosition = {}
             if not coinPrices_for_openPosition:
                 coinPrices_for_openPosition = {k: engine.cex_driver.get_price_now(k) for k in
                                                new_rate_place2order.keys()}
-                save_para(coinPrices_for_openPosition, os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', 'coinPrices_for_openPosition.json'))
+                save_para(coinPrices_for_openPosition, os.path.join(_PROJECT_ROOT, 'apps', 'strategies', 'hedge', 'trade_log_okex', f'{engine.cex_driver.cex}-Account{engine.account}-coinPrices_for_openPosition.json'))
             #
             #  # 0.1 开仓之后，将一些参数存到本地，然后定时读取，做到参数热更新，
             #  param_file_path = 'btc_is_king_strategy_paras.json'
@@ -258,8 +236,8 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                     #########################################################
 
                     # 1.1 这个部分是加仓机制，下跌达到一定程度之后进行补仓操作，补仓有最低补仓价值，补完之后拉长补仓亏损率，避免杠杆拉高导致的急速高频加仓
-                    now_money = float(engine.cex_driver.fetch_balance('USDT'))
-                    os.system(f'echo {now_money} > now_money.log')
+                    now_money = float(engine.cex_driver.fetch_balance())
+                    os.system(f'echo {now_money} > {engine.cex_driver.cex}-Account{engine.account}-now_money.log')
 
                     if use_grid_with_index:
                         if count > 0 and count % 6 == 0 and not just_kill_position and leverage_times < 4:
@@ -592,15 +570,6 @@ def btc_is_the_king(account=0, start_leverage=1.0, coins_to_be_bad=['eth'], good
                             print("\r💡 good_pool 中无满足资金条件的币，本轮跳过", end='')
                             time.sleep(1)
 
-                    # @TODO 数据量不够，还是得先建立数据库
-                    # 7. 考虑引入预测模型来判断未来的走势，如果平均预期下跌幅度达到1个点，那么可以进行较大幅度的降低杠杆，反之亦然。存储数据，开发模型
-                    if count % 60 == 0 and not just_kill_position:
-                        pass
-
-                    # @TODO 加一个动态平衡good_groups内部的机制，
-                    # 7. 如果一只做多方向的票跌超多，btc跌的少，那么就置换掉一部分btc和这只票的持仓，达到抄底的效果。但是要控制好度，避免沦为接盘侠，虽然选股肯定是选大屁股，但是怕黑天鹅
-                    if count % 60 == 0 and not just_kill_position:
-                        pass
 
                 except Exception as e:
                     print(f'\raha? 垃圾api啊 {BeijingTime()}', e)

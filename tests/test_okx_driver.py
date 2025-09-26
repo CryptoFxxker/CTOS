@@ -11,7 +11,7 @@ _PROJECT_ROOT = _THIS_FILE.parents[1]  # repo root containing the top-level `cto
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from ctos.drivers.okx.driver import OkxDriver, init_OkxClient
+from ctos.drivers.okx.driver import OkxDriver, init_CexClient
 from ctos.drivers.okx.okex import *
 from ctos.drivers.okx.util import *
 

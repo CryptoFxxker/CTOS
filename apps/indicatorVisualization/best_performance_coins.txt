@@ -1,1 +1,1 @@
-arb,op,tia,ldo,jup,doge,gala,cro,bonk,crv,pengu,om,near,avax,wld,hype,imx,ip
+doge,tia,op,arb,gala,ldo,jup,om,bonk,crv,cro,pengu,near,avax,wld,hype,imx,ip

@@ -333,12 +333,13 @@ class OkexSpot:
         )
         return result
 
-    def get_order_status(self, order_id):
+    def get_order_status(self, order_id, symbol=None):
         """Get order status.
        @param order_id: order id.
        """
+        symbol = self.symbol if not symbol else symbol
         uri = "/api/v5/trade/order"
-        params = {"instId": self.symbol, "ordId": order_id}
+        params = {"instId": symbol, "ordId": order_id}
         success, error = self.request(method="GET", uri=uri, params=params, auth=True)
         return success, error
 

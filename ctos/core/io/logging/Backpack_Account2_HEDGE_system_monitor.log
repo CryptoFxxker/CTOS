@@ -1,0 +1,246 @@
+2025-09-25 23:27:55,289 - INFO - ExecutionEngine initialized for backpack account 2
+2025-09-25 23:28:35,970 - INFO - ExecutionEngine initialized for backpack account 2
+2025-09-25 23:28:45,622 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'SOL_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:47,505 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 201.04, 'sizes': 0.32, 'order_id': '10498328592'}
+2025-09-25 23:28:47,506 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'BTC_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:49,501 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'buy', 'price': 110925.1, 'sizes': 0.002, 'order_id': '10498334401'}
+2025-09-25 23:28:49,502 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'ETH_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:51,469 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'buy', 'price': 3986.05, 'sizes': 0.0164, 'order_id': '10498339011'}
+2025-09-25 23:28:51,470 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'XRP_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:53,568 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XRP_USDC_PERP', 'action': 'buy', 'price': 2.8284, 'sizes': 15.372, 'order_id': '10498344440'}
+2025-09-25 23:28:53,569 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'SUI_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:55,513 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'sell', 'price': 3.1987, 'sizes': 6.51, 'order_id': '10498349271'}
+2025-09-25 23:28:55,513 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'DOGE_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:57,357 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOGE_USDC_PERP', 'action': 'buy', 'price': 0.2306, 'sizes': 282.8, 'order_id': '10498354421'}
+2025-09-25 23:28:57,357 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'JUP_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:28:59,241 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'sell', 'price': 0.4462, 'sizes': 46.7, 'order_id': '10498358366'}
+2025-09-25 23:28:59,242 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'TRUMP_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:01,187 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'sell', 'price': 7.573, 'sizes': 2.75, 'order_id': '10498364154'}
+2025-09-25 23:29:01,187 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'LTC_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:03,089 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LTC_USDC_PERP', 'action': 'sell', 'price': 104.31, 'sizes': 0.2, 'order_id': '10498368700'}
+2025-09-25 23:29:03,090 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'ADA_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:05,334 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'sell', 'price': 0.7898, 'sizes': 30.0, 'order_id': '10498374465'}
+2025-09-25 23:29:05,335 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'LINK_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:07,189 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'action': 'sell', 'price': 20.814, 'sizes': 1.0, 'order_id': '10498378788'}
+2025-09-25 23:29:07,189 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'IP_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:09,070 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 8.5973, 'sizes': 2.4, 'order_id': '10498383851'}
+2025-09-25 23:29:09,071 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'HYPE_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:10,921 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 41.024, 'sizes': 0.51, 'order_id': '10498390214'}
+2025-09-25 23:29:10,922 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'BNB_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:12,786 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'buy', 'price': 989.82, 'sizes': 0.044, 'order_id': '10498395124'}
+2025-09-25 23:29:12,787 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'AVAX_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:14,829 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AVAX_USDC_PERP', 'action': 'sell', 'price': 30.231, 'sizes': 0.69, 'order_id': '10498400335'}
+2025-09-25 23:29:14,829 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'ONDO_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:16,693 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'sell', 'price': 0.8943, 'sizes': 23.3, 'order_id': '10498406439'}
+2025-09-25 23:29:16,693 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'ARB_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:18,761 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4222, 'sizes': 49.3, 'order_id': '10498411540'}
+2025-09-25 23:29:18,762 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'AAVE_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:20,613 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AAVE_USDC_PERP', 'action': 'sell', 'price': 266.88, 'sizes': 0.08, 'order_id': '10498416599'}
+2025-09-25 23:29:20,613 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'DOT_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:22,537 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOT_USDC_PERP', 'action': 'sell', 'price': 3.92, 'sizes': 5.3, 'order_id': '10498420804'}
+2025-09-25 23:29:22,537 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'NEAR_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:24,601 - INFO - OP PlaceIncrementalOrders | {'symbol': 'NEAR_USDC_PERP', 'action': 'sell', 'price': 2.8624, 'sizes': 7.0, 'order_id': '10498426372'}
+2025-09-25 23:29:24,602 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'OP_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:26,481 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'sell', 'price': 0.6672, 'sizes': 30.0, 'order_id': '10498431566'}
+2025-09-25 23:29:26,481 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'PENGU_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:28,410 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.028091, 'sizes': 700.0, 'order_id': '10498436145'}
+2025-09-25 23:29:28,410 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'TIA_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:30,598 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.4058, 'sizes': 15.0, 'order_id': '10498441683'}
+2025-09-25 23:29:30,598 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'UNI_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:32,505 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'sell', 'price': 7.635, 'sizes': 2.7, 'order_id': '10498446117'}
+2025-09-25 23:29:32,506 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'CRV_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:34,525 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.6719, 'sizes': 30.0, 'order_id': '10498451131'}
+2025-09-25 23:29:34,526 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'TON_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:36,673 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TON_USDC_PERP', 'action': 'sell', 'price': 2.7545, 'sizes': 7.6, 'order_id': '10498456685'}
+2025-09-25 23:29:36,674 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'HBAR_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:38,573 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'sell', 'price': 0.21437, 'sizes': 100.0, 'order_id': '10498462361'}
+2025-09-25 23:29:38,573 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'XLM_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:40,477 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XLM_USDC_PERP', 'action': 'sell', 'price': 0.36119, 'sizes': 60.0, 'order_id': '10498467684'}
+2025-09-25 23:29:40,478 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'APT_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:42,322 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'sell', 'price': 4.075, 'sizes': 5.1, 'order_id': '10498471940'}
+2025-09-25 23:29:42,322 - INFO - OP SetCoinPosition  OpenPosition | {'symbol': 'WLD_USDC_PERP', 'error': '无法获取持仓信息'}
+2025-09-25 23:29:44,233 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.2546, 'sizes': 17.0, 'order_id': '10498475938'}
+2025-09-25 23:38:05,705 - INFO - ExecutionEngine initialized for backpack account 2
+2025-09-25 23:38:48,169 - INFO - ExecutionEngine initialized for backpack account 2
+2025-09-25 23:39:00,373 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 201.32, 'sizes': 1.83, 'order_id': '10500096363'}
+2025-09-25 23:39:00,374 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SOL_USDC_PERP', 'target_amount': 433.81754125043483, 'open_position': 64.4092912928, 'diff': -369.40824995763484, 'order_id': ['10500096363'], 'status': 'success'}
+2025-09-25 23:39:02,274 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'buy', 'price': 111206.9, 'sizes': 0.011, 'order_id': '10500102982'}
+2025-09-25 23:39:02,274 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BTC_USDC_PERP', 'target_amount': 1446.0584708347826, 'open_position': 222.3921371225, 'diff': -1223.6663337122827, 'order_id': ['10500102982'], 'status': 'success'}
+2025-09-25 23:39:04,445 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'buy', 'price': 4003.17, 'sizes': 0.092, 'order_id': '10500109490'}
+2025-09-25 23:39:04,446 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ETH_USDC_PERP', 'target_amount': 433.81754125043483, 'open_position': 65.646497939936, 'diff': -368.1710433104988, 'order_id': ['10500109490'], 'status': 'success'}
+2025-09-25 23:39:06,345 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XRP_USDC_PERP', 'action': 'buy', 'price': 2.8344, 'sizes': 86.6636, 'order_id': '10500114178'}
+2025-09-25 23:39:06,345 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XRP_USDC_PERP', 'target_amount': 289.2116941669566, 'open_position': 43.57240315344, 'diff': -245.63929101351658, 'order_id': ['10500114178'], 'status': 'success'}
+2025-09-25 23:39:08,353 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'sell', 'price': 3.202, 'sizes': 36.77, 'order_id': '10500119986'}
+2025-09-25 23:39:08,354 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SUI_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.8467717759, 'diff': 117.73383167909999, 'order_id': ['10500119986'], 'status': 'success'}
+2025-09-25 23:39:10,237 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOGE_USDC_PERP', 'action': 'buy', 'price': 0.23108, 'sizes': 1594.6, 'order_id': '10500125212'}
+2025-09-25 23:39:10,238 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOGE_USDC_PERP', 'target_amount': 433.81754125043483, 'open_position': 65.34799586, 'diff': -368.46954539043486, 'order_id': ['10500125212'], 'status': 'success'}
+2025-09-25 23:39:12,149 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'sell', 'price': 0.4481, 'sizes': 262.6, 'order_id': '10500130095'}
+2025-09-25 23:39:12,149 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'JUP_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.925803467, 'diff': 117.65479998799998, 'order_id': ['10500130095'], 'status': 'success'}
+2025-09-25 23:39:14,058 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'sell', 'price': 7.601, 'sizes': 15.48, 'order_id': '10500134249'}
+2025-09-25 23:39:14,058 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TRUMP_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.90593175, 'diff': 117.67467170499998, 'order_id': ['10500134249'], 'status': 'success'}
+2025-09-25 23:39:15,902 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LTC_USDC_PERP', 'action': 'sell', 'price': 104.61, 'sizes': 1.1, 'order_id': '10500139528'}
+2025-09-25 23:39:15,902 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'LTC_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.923975788, 'diff': 117.65662766699998, 'order_id': ['10500139528'], 'status': 'success'}
+2025-09-25 23:39:17,846 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'sell', 'price': 0.7925, 'sizes': 140.0, 'order_id': '10500145897'}
+2025-09-25 23:39:17,846 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ADA_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -23.7662127, 'diff': 114.81439075499999, 'order_id': ['10500145897'], 'status': 'success'}
+2025-09-25 23:39:19,762 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'action': 'sell', 'price': 20.898, 'sizes': 5.6, 'order_id': '10500151402'}
+2025-09-25 23:39:19,762 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'LINK_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.90262815, 'diff': 117.67797530499999, 'order_id': ['10500151402'], 'status': 'success'}
+2025-09-25 23:39:21,661 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'sell', 'price': 8.5092, 'sizes': 13.9, 'order_id': '10500156088'}
+2025-09-25 23:39:21,661 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'IP_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.411648736, 'diff': 118.16895471899998, 'order_id': ['10500156088'], 'status': 'success'}
+2025-09-25 23:39:23,856 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 41.403, 'sizes': 2.84, 'order_id': '10500161765'}
+2025-09-25 23:39:23,857 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'HYPE_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -21.1082826348, 'diff': 117.4723208202, 'order_id': ['10500161765'], 'status': 'success'}
+2025-09-25 23:39:25,838 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'buy', 'price': 993.7, 'sizes': 0.247, 'order_id': '10500166314'}
+2025-09-25 23:39:25,838 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BNB_USDC_PERP', 'target_amount': 289.2116941669566, 'open_position': 43.71746323736, 'diff': -245.4942309295966, 'order_id': ['10500166314'], 'status': 'success'}
+2025-09-25 23:39:27,689 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AVAX_USDC_PERP', 'action': 'sell', 'price': 30.318, 'sizes': 3.88, 'order_id': '10500171269'}
+2025-09-25 23:39:27,690 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'AVAX_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.9240172354, 'diff': 117.65658621959999, 'order_id': ['10500171269'], 'status': 'success'}
+2025-09-25 23:39:29,541 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'sell', 'price': 0.8984, 'sizes': 130.9, 'order_id': '10500176423'}
+2025-09-25 23:39:29,541 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ONDO_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.944603699, 'diff': 117.63599975599999, 'order_id': ['10500176423'], 'status': 'success'}
+2025-09-25 23:39:31,465 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4228, 'sizes': 278.5, 'order_id': '10500182408'}
+2025-09-25 23:39:31,465 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ARB_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.840272001, 'diff': 117.74033145399999, 'order_id': ['10500182408'], 'status': 'success'}
+2025-09-25 23:39:33,618 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AAVE_USDC_PERP', 'action': 'sell', 'price': 268.4, 'sizes': 0.44, 'order_id': '10500188472'}
+2025-09-25 23:39:33,618 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'AAVE_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -21.4721166224, 'diff': 117.1084868326, 'order_id': ['10500188472'], 'status': 'success'}
+2025-09-25 23:39:35,498 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOT_USDC_PERP', 'action': 'sell', 'price': 3.937, 'sizes': 29.9, 'order_id': '10500193720'}
+2025-09-25 23:39:35,498 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOT_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.872716891, 'diff': 117.70788656399999, 'order_id': ['10500193720'], 'status': 'success'}
+2025-09-25 23:39:37,373 - INFO - OP PlaceIncrementalOrders | {'symbol': 'NEAR_USDC_PERP', 'action': 'sell', 'price': 2.8707, 'sizes': 41.0, 'order_id': '10500198852'}
+2025-09-25 23:39:37,374 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'NEAR_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.09352597, 'diff': 118.48707748499999, 'order_id': ['10500198852'], 'status': 'success'}
+2025-09-25 23:39:39,353 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'sell', 'price': 0.6696, 'sizes': 180.0, 'order_id': '10500203512'}
+2025-09-25 23:39:39,353 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'OP_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.0798133, 'diff': 118.50079015499999, 'order_id': ['10500203512'], 'status': 'success'}
+2025-09-25 23:39:41,282 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'action': 'sell', 'price': 0.028209, 'sizes': 4200.0, 'order_id': '10500207928'}
+2025-09-25 23:39:41,282 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'PENGU_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -19.745243, 'diff': 118.83536045499999, 'order_id': ['10500207928'], 'status': 'success'}
+2025-09-25 23:39:43,201 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.4094, 'sizes': 83.0, 'order_id': '10500213198'}
+2025-09-25 23:39:43,202 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TIA_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -21.14246445, 'diff': 117.43813900499998, 'order_id': ['10500213198'], 'status': 'success'}
+2025-09-25 23:39:45,065 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'sell', 'price': 7.676, 'sizes': 15.4, 'order_id': '10500218285'}
+2025-09-25 23:39:45,066 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'UNI_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.701821429, 'diff': 117.87878202599998, 'order_id': ['10500218285'], 'status': 'success'}
+2025-09-25 23:39:46,953 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.677, 'sizes': 170.0, 'order_id': '10500223538'}
+2025-09-25 23:39:46,954 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'CRV_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.3160423, 'diff': 118.264561155, 'order_id': ['10500223538'], 'status': 'success'}
+2025-09-25 23:39:48,865 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TON_USDC_PERP', 'action': 'sell', 'price': 2.7584, 'sizes': 42.6, 'order_id': '10500229243'}
+2025-09-25 23:39:48,866 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TON_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.966174948, 'diff': 117.61442850699999, 'order_id': ['10500229243'], 'status': 'success'}
+2025-09-25 23:39:50,773 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'sell', 'price': 0.21529, 'sizes': 540.0, 'order_id': '10500235138'}
+2025-09-25 23:39:50,774 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'HBAR_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -21.516312, 'diff': 117.06429145499999, 'order_id': ['10500235138'], 'status': 'success'}
+2025-09-25 23:39:52,701 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XLM_USDC_PERP', 'action': 'sell', 'price': 0.36206, 'sizes': 320.0, 'order_id': '10500241263'}
+2025-09-25 23:39:52,702 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XLM_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -21.7207308, 'diff': 116.85987265499999, 'order_id': ['10500241263'], 'status': 'success'}
+2025-09-25 23:39:54,573 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'sell', 'price': 4.09, 'sizes': 28.8, 'order_id': '10500246824'}
+2025-09-25 23:39:54,574 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'APT_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -20.859359703, 'diff': 117.72124375199999, 'order_id': ['10500246824'], 'status': 'success'}
+2025-09-25 23:39:56,436 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.2586, 'sizes': 93.0, 'order_id': '10500251865'}
+2025-09-25 23:39:56,437 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'WLD_USDC_PERP', 'target_amount': -138.580603455, 'open_position': -21.38212995, 'diff': 117.19847350499998, 'order_id': ['10500251865'], 'status': 'success'}
+2025-09-25 23:44:24,153 - INFO - ExecutionEngine initialized for backpack account 2
+2025-09-25 23:44:35,110 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-25 23:44:35,110 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SOL_USDC_PERP', 'target_amount': 432.25847752695665, 'open_position': 431.970367973, 'diff': -0.2881095539566445, 'error': '订单金额过小，无法下单', 'status': 'failed'}
+2025-09-25 23:44:37,053 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'sell', 'price': 111335.2, 'sizes': 0.0001, 'order_id': '10501058441'}
+2025-09-25 23:44:37,054 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BTC_USDC_PERP', 'target_amount': 1440.8615917565219, 'open_position': 1447.66407941103, 'diff': 6.802487654508013, 'order_id': ['10501058441'], 'status': 'success'}
+2025-09-25 23:44:38,946 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'sell', 'price': 4004.18, 'sizes': 0.0004, 'order_id': '10501063200'}
+2025-09-25 23:44:38,946 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ETH_USDC_PERP', 'target_amount': 432.25847752695665, 'open_position': 433.992760812732, 'diff': 1.7342832857753478, 'order_id': ['10501063200'], 'status': 'success'}
+2025-09-25 23:44:40,853 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XRP_USDC_PERP', 'action': 'sell', 'price': 2.8279, 'sizes': 0.1783, 'order_id': '10501067793'}
+2025-09-25 23:44:40,854 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XRP_USDC_PERP', 'target_amount': 288.1723183513044, 'open_position': 288.676606383172, 'diff': 0.5042880318675884, 'order_id': ['10501067793'], 'status': 'success'}
+2025-09-25 23:44:42,705 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'buy', 'price': 3.2023, 'sizes': 0.14, 'order_id': '10501072033'}
+2025-09-25 23:44:42,706 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SUI_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.5387749224, 'diff': -0.4562057123999921, 'order_id': ['10501072033'], 'status': 'success'}
+2025-09-25 23:44:44,610 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOGE_USDC_PERP', 'action': 'sell', 'price': 0.23077, 'sizes': 4.9, 'order_id': '10501079167'}
+2025-09-25 23:44:44,610 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOGE_USDC_PERP', 'target_amount': 432.25847752695665, 'open_position': 433.386112572, 'diff': 1.1276350450433483, 'order_id': ['10501079167'], 'status': 'success'}
+2025-09-25 23:44:46,569 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'sell', 'price': 0.4472, 'sizes': 262.1, 'order_id': '10501085805'}
+2025-09-25 23:44:46,570 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'JUP_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -20.860991339, 'diff': 117.221577871, 'order_id': ['10501085805'], 'status': 'success'}
+2025-09-25 23:44:48,540 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'buy', 'price': 7.601, 'sizes': 0.06, 'order_id': '10501092515'}
+2025-09-25 23:44:48,541 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TRUMP_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.5308242409, 'diff': -0.4482550308999862, 'order_id': ['10501092515'], 'status': 'success'}
+2025-09-25 23:44:50,552 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LTC_USDC_PERP', 'action': 'sell', 'price': 104.62, 'sizes': 0.1, 'order_id': '10501098247'}
+2025-09-25 23:44:50,552 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'LTC_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -135.906919447, 'diff': 2.1756497629999956, 'order_id': ['10501098247'], 'status': 'success'}
+2025-09-25 23:44:52,481 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'sell', 'price': 0.7909, 'sizes': 140.0, 'order_id': '10501103088'}
+2025-09-25 23:44:52,482 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ADA_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -23.726286, 'diff': 114.35628321, 'order_id': ['10501103088'], 'status': 'success'}
+2025-09-25 23:44:53,480 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-25 23:44:53,480 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'LINK_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -137.852592702, 'diff': 0.22997650799999292, 'error': '订单金额过小，无法下单', 'status': 'failed'}
+2025-09-25 23:44:55,459 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 8.517, 'sizes': 0.1, 'order_id': '10501111661'}
+2025-09-25 23:44:55,459 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'IP_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.811916061, 'diff': -0.7293468510000025, 'order_id': ['10501111661'], 'status': 'success'}
+2025-09-25 23:44:57,561 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'sell', 'price': 41.272, 'sizes': 1.74, 'order_id': '10501116216'}
+2025-09-25 23:44:57,561 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'HYPE_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -66.4469961981, 'diff': 71.63557301190001, 'order_id': ['10501116216'], 'status': 'success'}
+2025-09-25 23:44:59,489 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'sell', 'price': 994.53, 'sizes': 0.001, 'order_id': '10501120974'}
+2025-09-25 23:44:59,490 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BNB_USDC_PERP', 'target_amount': 288.1723183513044, 'open_position': 289.46606905233, 'diff': 1.2937507010256013, 'order_id': ['10501120974'], 'status': 'success'}
+2025-09-25 23:45:01,557 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AVAX_USDC_PERP', 'action': 'sell', 'price': 30.26, 'sizes': 3.87, 'order_id': '10501127183'}
+2025-09-25 23:45:01,557 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'AVAX_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -20.889776082, 'diff': 117.192793128, 'order_id': ['10501127183'], 'status': 'success'}
+2025-09-25 23:45:03,442 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'buy', 'price': 0.8978, 'sizes': 0.3, 'order_id': '10501132048'}
+2025-09-25 23:45:03,443 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ONDO_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.371056974, 'diff': -0.28848776399999565, 'order_id': ['10501132048'], 'status': 'success'}
+2025-09-25 23:45:05,349 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'buy', 'price': 0.4224, 'sizes': 1.0, 'order_id': '10501137522'}
+2025-09-25 23:45:05,349 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ARB_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.511680208, 'diff': -0.42911099799999874, 'order_id': ['10501137522'], 'status': 'success'}
+2025-09-25 23:45:07,262 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AAVE_USDC_PERP', 'action': 'buy', 'price': 269.09, 'sizes': 0.01, 'order_id': '10501144089'}
+2025-09-25 23:45:07,262 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'AAVE_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -139.902304542, 'diff': -1.8197353319999934, 'order_id': ['10501144089'], 'status': 'success'}
+2025-09-25 23:45:09,242 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOT_USDC_PERP', 'action': 'buy', 'price': 3.928, 'sizes': 0.1, 'order_id': '10501150498'}
+2025-09-25 23:45:09,242 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOT_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.317690368, 'diff': -0.23512115799999833, 'order_id': ['10501150498'], 'status': 'success'}
+2025-09-25 23:45:11,301 - INFO - OP PlaceIncrementalOrders | {'symbol': 'NEAR_USDC_PERP', 'action': 'sell', 'price': 2.8637, 'sizes': 1.0, 'order_id': '10501155834'}
+2025-09-25 23:45:11,302 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'NEAR_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -137.47306272, 'diff': 0.6095064900000011, 'order_id': ['10501155834'], 'status': 'success'}
+2025-09-25 23:45:13,305 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'sell', 'price': 0.668, 'sizes': 180.0, 'order_id': '10501162423'}
+2025-09-25 23:45:13,305 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'OP_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -20.03487, 'diff': 118.04769921, 'order_id': ['10501162423'], 'status': 'success'}
+2025-09-25 23:45:14,236 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-25 23:45:14,236 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'PENGU_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -137.920986, 'diff': 0.16158321000000342, 'error': '订单金额过小，无法下单', 'status': 'failed'}
+2025-09-25 23:45:15,385 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-25 23:45:15,385 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TIA_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -137.94713828, 'diff': 0.1354309300000125, 'error': '订单金额过小，无法下单', 'status': 'failed'}
+2025-09-25 23:45:17,229 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'sell', 'price': 7.666, 'sizes': 15.3, 'order_id': '10501174899'}
+2025-09-25 23:45:17,230 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'UNI_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -20.705749929, 'diff': 117.376819281, 'order_id': ['10501174899'], 'status': 'success'}
+2025-09-25 23:45:19,159 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'sell', 'price': 0.6754, 'sizes': 10.0, 'order_id': '10501181075'}
+2025-09-25 23:45:19,159 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'CRV_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -135.158542, 'diff': 2.9240272099999913, 'order_id': ['10501181075'], 'status': 'success'}
+2025-09-25 23:45:21,089 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TON_USDC_PERP', 'action': 'buy', 'price': 2.7563, 'sizes': 0.1, 'order_id': '10501188840'}
+2025-09-25 23:45:21,090 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TON_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -138.431228338, 'diff': -0.3486591280000084, 'order_id': ['10501188840'], 'status': 'success'}
+2025-09-25 23:45:23,093 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'sell', 'price': 0.21471, 'sizes': 540.0, 'order_id': '10501195571'}
+2025-09-25 23:45:23,093 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'HBAR_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -21.478752, 'diff': 116.60381721, 'order_id': ['10501195571'], 'status': 'success'}
+2025-09-25 23:45:24,989 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XLM_USDC_PERP', 'action': 'sell', 'price': 0.36052, 'sizes': 320.0, 'order_id': '10501201117'}
+2025-09-25 23:45:24,990 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XLM_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -21.6544056, 'diff': 116.42816361, 'order_id': ['10501201117'], 'status': 'success'}
+2025-09-25 23:45:26,935 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'sell', 'price': 4.087, 'sizes': 28.7, 'order_id': '10501207791'}
+2025-09-25 23:45:26,936 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'APT_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -20.842513995, 'diff': 117.240055215, 'order_id': ['10501207791'], 'status': 'success'}
+2025-09-25 23:45:28,858 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.2537, 'sizes': 93.0, 'order_id': '10501213040'}
+2025-09-25 23:45:28,859 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'WLD_USDC_PERP', 'target_amount': -138.08256921, 'open_position': -21.31651471, 'diff': 116.7660545, 'order_id': ['10501213040'], 'status': 'success'}
+2025-09-25 23:59:29,017 - INFO - ExecutionEngine initialized for backpack account 2
+2025-09-25 23:59:40,521 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SOL_USDC_PERP', 'action': 'buy', 'price': 200.95, 'sizes': 0.01, 'order_id': '10503567027'}
+2025-09-25 23:59:40,522 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SOL_USDC_PERP', 'target_amount': 433.6886407147827, 'open_position': 432.0493524155, 'diff': -1.6392882992827253, 'order_id': ['10503567027'], 'status': 'success'}
+2025-09-25 23:59:42,590 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BTC_USDC_PERP', 'action': 'buy', 'price': 111555.4, 'sizes': 0.0001, 'order_id': '10503572937'}
+2025-09-25 23:59:42,590 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BTC_USDC_PERP', 'target_amount': 1445.6288023826087, 'open_position': 1439.100189981348, 'diff': -6.528612401260716, 'order_id': ['10503572937'], 'status': 'success'}
+2025-09-25 23:59:44,489 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ETH_USDC_PERP', 'action': 'buy', 'price': 4000.83, 'sizes': 0.0004, 'order_id': '10503577185'}
+2025-09-25 23:59:44,490 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ETH_USDC_PERP', 'target_amount': 433.6886407147827, 'open_position': 432.09815729688, 'diff': -1.5904834179027034, 'order_id': ['10503577185'], 'status': 'success'}
+2025-09-25 23:59:46,486 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XRP_USDC_PERP', 'action': 'buy', 'price': 2.8294, 'sizes': 0.3221, 'order_id': '10503581674'}
+2025-09-25 23:59:46,487 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XRP_USDC_PERP', 'target_amount': 289.1257604765218, 'open_position': 288.214435194201, 'diff': -0.9113252823208313, 'order_id': ['10503581674'], 'status': 'success'}
+2025-09-25 23:59:48,373 - INFO - OP PlaceIncrementalOrders | {'symbol': 'SUI_USDC_PERP', 'action': 'sell', 'price': 3.2106, 'sizes': 0.01, 'order_id': '10503586327'}
+2025-09-25 23:59:48,373 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'SUI_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.5208605598, 'diff': 0.018566335199977857, 'order_id': ['10503586327'], 'status': 'success'}
+2025-09-25 23:59:50,269 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOGE_USDC_PERP', 'action': 'buy', 'price': 0.23114, 'sizes': 4.6, 'order_id': '10503592060'}
+2025-09-25 23:59:50,269 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOGE_USDC_PERP', 'target_amount': 433.6886407147827, 'open_position': 432.6242725, 'diff': -1.0643682147826894, 'order_id': ['10503592060'], 'status': 'success'}
+2025-09-25 23:59:52,349 - INFO - OP PlaceIncrementalOrders | {'symbol': 'JUP_USDC_PERP', 'action': 'sell', 'price': 0.4471, 'sizes': 1.1, 'order_id': '10503596764'}
+2025-09-25 23:59:52,350 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'JUP_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.0542896, 'diff': 0.48513729499998703, 'order_id': ['10503596764'], 'status': 'success'}
+2025-09-25 23:59:54,321 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TRUMP_USDC_PERP', 'action': 'sell', 'price': 7.591, 'sizes': 0.07, 'order_id': '10503601892'}
+2025-09-25 23:59:54,321 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TRUMP_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.9876734927, 'diff': 0.5517534022999939, 'order_id': ['10503601892'], 'status': 'success'}
+2025-09-25 23:59:56,417 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LTC_USDC_PERP', 'action': 'buy', 'price': 104.52, 'sizes': 0.1, 'order_id': '10503606491'}
+2025-09-25 23:59:56,418 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'LTC_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -146.298107046, 'diff': -7.758680151000021, 'order_id': ['10503606491'], 'status': 'success'}
+2025-09-25 23:59:58,301 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ADA_USDC_PERP', 'action': 'sell', 'price': 0.7902, 'sizes': 150.0, 'order_id': '10503611039'}
+2025-09-25 23:59:58,302 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ADA_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -23.7156912, 'diff': 114.823735695, 'order_id': ['10503611039'], 'status': 'success'}
+2025-09-26 00:00:00,214 - INFO - OP PlaceIncrementalOrders | {'symbol': 'LINK_USDC_PERP', 'action': 'sell', 'price': 20.887, 'sizes': 0.1, 'order_id': '10503615631'}
+2025-09-26 00:00:00,214 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'LINK_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.82552993, 'diff': 0.7138969650000035, 'order_id': ['10503615631'], 'status': 'success'}
+2025-09-26 00:00:02,345 - INFO - OP PlaceIncrementalOrders | {'symbol': 'IP_USDC_PERP', 'action': 'buy', 'price': 8.5627, 'sizes': 0.1, 'order_id': '10503620065'}
+2025-09-26 00:00:02,346 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'IP_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.903483582, 'diff': -0.3640566870000157, 'order_id': ['10503620065'], 'status': 'success'}
+2025-09-26 00:00:04,365 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HYPE_USDC_PERP', 'action': 'buy', 'price': 41.725, 'sizes': 0.03, 'order_id': '10503621857'}
+2025-09-26 00:00:04,366 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'HYPE_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -139.730212386, 'diff': -1.190785491000014, 'order_id': ['10503621857'], 'status': 'success'}
+2025-09-26 00:00:06,362 - INFO - OP PlaceIncrementalOrders | {'symbol': 'BNB_USDC_PERP', 'action': 'buy', 'price': 995.0, 'sizes': 0.001, 'order_id': '10503625490'}
+2025-09-26 00:00:06,363 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'BNB_USDC_PERP', 'target_amount': 289.1257604765218, 'open_position': 288.56339162, 'diff': -0.5623688565218004, 'order_id': ['10503625490'], 'status': 'success'}
+2025-09-26 00:00:08,302 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AVAX_USDC_PERP', 'action': 'sell', 'price': 30.247, 'sizes': 0.02, 'order_id': '10503629228'}
+2025-09-26 00:00:08,302 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'AVAX_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.9590985568, 'diff': 0.5803283381999904, 'order_id': ['10503629228'], 'status': 'success'}
+2025-09-26 00:00:10,921 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ONDO_USDC_PERP', 'action': 'sell', 'price': 0.8973, 'sizes': 0.7, 'order_id': '10503633562'}
+2025-09-26 00:00:10,922 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ONDO_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.953022049, 'diff': 0.5864048459999935, 'order_id': ['10503633562'], 'status': 'success'}
+2025-09-26 00:00:12,779 - INFO - OP PlaceIncrementalOrders | {'symbol': 'ARB_USDC_PERP', 'action': 'sell', 'price': 0.4227, 'sizes': 1.0, 'order_id': '10503636024'}
+2025-09-26 00:00:12,779 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'ARB_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.12533702, 'diff': 0.41408987500000194, 'order_id': ['10503636024'], 'status': 'success'}
+2025-09-26 00:00:14,666 - INFO - OP PlaceIncrementalOrders | {'symbol': 'AAVE_USDC_PERP', 'action': 'sell', 'price': 268.67, 'sizes': 0.01, 'order_id': '10503639484'}
+2025-09-26 00:00:14,666 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'AAVE_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -136.9809780555, 'diff': 1.558448839499988, 'order_id': ['10503639484'], 'status': 'success'}
+2025-09-26 00:00:16,542 - INFO - OP PlaceIncrementalOrders | {'symbol': 'DOT_USDC_PERP', 'action': 'sell', 'price': 3.932, 'sizes': 0.1, 'order_id': '10503645759'}
+2025-09-26 00:00:16,542 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'DOT_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.950912593, 'diff': 0.588514301999993, 'order_id': ['10503645759'], 'status': 'success'}
+2025-09-26 00:00:18,473 - INFO - OP PlaceIncrementalOrders | {'symbol': 'NEAR_USDC_PERP', 'action': 'sell', 'price': 2.868, 'sizes': 1.0, 'order_id': '10503651229'}
+2025-09-26 00:00:18,473 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'NEAR_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.51740224, 'diff': 1.0220246549999956, 'order_id': ['10503651229'], 'status': 'success'}
+2025-09-26 00:00:20,365 - INFO - OP PlaceIncrementalOrders | {'symbol': 'OP_USDC_PERP', 'action': 'sell', 'price': 0.6697, 'sizes': 180.0, 'order_id': '10503656994'}
+2025-09-26 00:00:20,365 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'OP_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -20.0610963, 'diff': 118.47833059499999, 'order_id': ['10503656994'], 'status': 'success'}
+2025-09-26 00:00:21,381 - INFO - OP PlaceIncrementalOrders | {'symbol': 'PENGU_USDC_PERP', 'error': '订单金额过小，无法下单'}
+2025-09-26 00:00:21,381 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'PENGU_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.070681, 'diff': 0.46874589499998365, 'error': '订单金额过小，无法下单', 'status': 'failed'}
+2025-09-26 00:00:23,337 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TIA_USDC_PERP', 'action': 'sell', 'price': 1.4101, 'sizes': 1.0, 'order_id': '10503664349'}
+2025-09-26 00:00:23,337 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TIA_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.04258048, 'diff': 0.49684641499999316, 'order_id': ['10503664349'], 'status': 'success'}
+2025-09-26 00:00:25,405 - INFO - OP PlaceIncrementalOrders | {'symbol': 'UNI_USDC_PERP', 'action': 'sell', 'price': 7.671, 'sizes': 0.1, 'order_id': '10503669391'}
+2025-09-26 00:00:25,406 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'UNI_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.27258324, 'diff': 0.2668436550000024, 'order_id': ['10503669391'], 'status': 'success'}
+2025-09-26 00:00:27,510 - INFO - OP PlaceIncrementalOrders | {'symbol': 'CRV_USDC_PERP', 'action': 'buy', 'price': 0.6767, 'sizes': 10.0, 'order_id': '10503674537'}
+2025-09-26 00:00:27,511 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'CRV_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -141.9846267, 'diff': -3.4451998050000157, 'order_id': ['10503674537'], 'status': 'success'}
+2025-09-26 00:00:29,663 - INFO - OP PlaceIncrementalOrders | {'symbol': 'TON_USDC_PERP', 'action': 'sell', 'price': 2.7635, 'sizes': 0.1, 'order_id': '10503680955'}
+2025-09-26 00:00:29,664 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'TON_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.355747677, 'diff': 0.18367921799998044, 'order_id': ['10503680955'], 'status': 'success'}
+2025-09-26 00:00:31,612 - INFO - OP PlaceIncrementalOrders | {'symbol': 'HBAR_USDC_PERP', 'action': 'sell', 'price': 0.21509, 'sizes': 10.0, 'order_id': '10503686338'}
+2025-09-26 00:00:31,613 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'HBAR_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -137.6297024, 'diff': 0.9097244949999777, 'order_id': ['10503686338'], 'status': 'success'}
+2025-09-26 00:00:33,549 - INFO - OP PlaceIncrementalOrders | {'symbol': 'XLM_USDC_PERP', 'action': 'sell', 'price': 0.36097, 'sizes': 320.0, 'order_id': '10503690085'}
+2025-09-26 00:00:33,550 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'XLM_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -21.6463104, 'diff': 116.89311649499999, 'order_id': ['10503690085'], 'status': 'success'}
+2025-09-26 00:00:35,525 - INFO - OP PlaceIncrementalOrders | {'symbol': 'APT_USDC_PERP', 'action': 'sell', 'price': 4.092, 'sizes': 0.1, 'order_id': '10503696202'}
+2025-09-26 00:00:35,526 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'APT_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.291272964, 'diff': 0.24815393099999028, 'order_id': ['10503696202'], 'status': 'success'}
+2025-09-26 00:00:37,438 - INFO - OP PlaceIncrementalOrders | {'symbol': 'WLD_USDC_PERP', 'action': 'sell', 'price': 1.2573, 'sizes': 1.0, 'order_id': '10503701225'}
+2025-09-26 00:00:37,438 - INFO - OP SetCoinPosition AlignTo | {'symbol': 'WLD_USDC_PERP', 'target_amount': -138.539426895, 'open_position': -138.2549883, 'diff': 0.28443859499998325, 'order_id': ['10503701225'], 'status': 'success'}

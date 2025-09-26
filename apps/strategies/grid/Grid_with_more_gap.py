@@ -169,7 +169,7 @@ def load_GridPositions(exchange: str, account: int) -> tuple[dict, bool]:
 def get_all_GridPositions(engine, exchange: str, use_cache: bool = True):
     """
     获取所有持仓，支持本地缓存
-    返回 {symbol: {init_price, entryPrice, side, size, buy_order_id, sell_order_id}} 的字典
+    返回 {symbol: {baseline_price, entryPrice, side, size, buy_order_id, sell_order_id}} 的字典
     """
     # 尝试从本地加载
     if use_cache:
@@ -195,7 +195,7 @@ def get_all_GridPositions(engine, exchange: str, use_cache: bool = True):
                 pnlUnrealized = float(pos["pnlUnrealized"] or 0.0)
                 if size > 0:
                     GridPositions[sym] = {
-                        "init_price": mark,
+                        "baseline_price": mark,
                         "avg_cost": entry,
                         "size": size,
                         "side": side,
@@ -222,14 +222,14 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
     """
     buy_order_id = data.get("buy_order_id")
     sell_order_id = data.get("sell_order_id")
-    init_price = data["init_price"]
+    baseline_price = data["baseline_price"]
     # 检查订单是否存在
     buy_exists = buy_order_id and buy_order_id in open_orders
     sell_exists = sell_order_id and sell_order_id in open_orders
     
     # 计算目标价格
-    buy_price = align_decimal_places(price_precision, init_price * 0.975)
-    sell_price = align_decimal_places(price_precision, init_price * 1.015)
+    buy_price = align_decimal_places(price_precision, baseline_price * 0.975)
+    sell_price = align_decimal_places(price_precision, baseline_price * 1.015)
     
     # 情况1: 两个订单都不存在，下新订单
     if not buy_exists and not sell_exists:
@@ -274,12 +274,13 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
         print(f"{BeijingTime()} | [{sym}] 买单成交！调整策略...")
         
         # 更新初始价格
-        data["init_price"] = init_price * 0.99
-        new_init_price = data["init_price"]
+        price_now = engine.cex_driver.get_price_now(sym)
+        data["baseline_price"] = (baseline_price + price_now) * 0.495 if price_now < baseline_price else baseline_price * 0.99
+        new_baseline_price = data["baseline_price"]
         
         # 计算新价格
-        new_buy_price = align_decimal_places(price_precision,  new_init_price * 0.975)
-        new_sell_price = align_decimal_places(price_precision,  new_init_price * 1.015)
+        new_buy_price = align_decimal_places(price_precision,  new_baseline_price * 0.975)
+        new_sell_price = align_decimal_places(price_precision,  new_baseline_price * 1.015)
         
         # 下新买单
         buy_qty = align_decimal_places(size_precision, base_amount / new_buy_price)
@@ -318,12 +319,13 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
         print(f"{BeijingTime()} | [{sym}] 卖单成交！调整策略...")
         
         # 更新初始价格
-        data["init_price"] = init_price * 1.01
-        new_init_price = data["init_price"]
+        price_now = engine.cex_driver.get_price_now(sym)
+        data["baseline_price"] = (baseline_price + price_now) * 0.505 if price_now > baseline_price else baseline_price * 1.01
+        new_baseline_price = data["baseline_price"]
         
         # 计算新价格
-        new_buy_price = align_decimal_places(price_precision,  new_init_price * 0.975)
-        new_sell_price = align_decimal_places(price_precision,  new_init_price * 1.015)
+        new_buy_price = align_decimal_places(price_precision,  new_baseline_price * 0.975)
+        new_sell_price = align_decimal_places(price_precision,  new_baseline_price * 1.015)
         
         # 改单现有买单
         if buy_order_id:
@@ -361,12 +363,12 @@ def manage_grid_orders(engine, sym, data, open_orders, price_precision, size_pre
     else:
         return False
 
-def print_position(sym, pos, init_price, start_ts):
+def print_position(account, sym, pos, baseline_price, start_ts):
     """
     打印实时仓位信息 + 起步价
     :param sym: 交易对
     :param pos: driver.get_position 返回的单个仓位(dict)
-    :param init_price: 手动设定的起步价
+    :param baseline_price: 手动设定的起步价
     :param start_ts: 启动时间戳
     """
     uptime = int(time.time() - start_ts)
@@ -374,7 +376,7 @@ def print_position(sym, pos, init_price, start_ts):
     mm = (uptime % 3600) // 60
     ss = uptime % 60
     if not pos:
-        output = f"=== [仓位监控] 当前没有仓位： {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
+        output = f"=== [仓位监控] | Account {account} | 当前没有仓位： {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
     else:
         # 从仓位数据里拿需要的字段
         price_now = float(pos.get("markPrice", 0) or 0)
@@ -383,20 +385,19 @@ def print_position(sym, pos, init_price, start_ts):
         side = pos.get("side", "?")
         pnlUnrealized = float(pos.get("pnlUnrealized", 0) or 0)
 
-        change_pct = (price_now - init_price) / init_price * 100 if init_price else 0.0
+        change_pct = (price_now - baseline_price) / baseline_price * 100 if baseline_price else 0.0
 
-        header = f"=== [仓位监控] {sym} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
+        header = f"=== [仓位监控] {sym} | Account {account} | Uptime {hh:02d}:{mm:02d}:{ss:02d} ==="
         line = (
             f"现价={round_dynamic(price_now)} | "
-            f"起步价_init_price={round_dynamic(init_price)} | "
-            f"均价_avg_cost={avg_cost:.4f} | "
+            f"起步价={round_dynamic(baseline_price)} | "
             f"数量={round_to_two_digits(size)} | "
             f"方向={side} | "
             f"浮盈={pnlUnrealized:+.2f} | "
             f"涨跌幅={change_pct:+.2f}%"
         )
         output = header + line + '===='
-    if len(output) < 180:
+    if len(output) < 150:
         output += ' ' * (180 - len(output))
     print('\r' + output, end='')
 
@@ -445,89 +446,93 @@ def show_help():
   ✓ 提高执行效率
 """)
 
-def main():
+def main(engines=None, exchs=None):
 
-    print(f"使用交易所: {exch}")
+    print(f"使用交易所: {exchs}")
     
     if force_refresh:
         print("🔄 强制刷新模式：忽略本地缓存")
 
     # 记录策略启动
-    engine.monitor.record_operation("StrategyStart", "Grid-Order-Management", {
-        "exchange": exch,
-        "strategy": "Grid-Order-Management",
-        "version": "3.0",
-        "force_refresh": force_refresh
-    })
+    for engine, exch in zip(engines, exchs):
+        engine.monitor.record_operation("StrategyStart", "Grid-Order-Management", {
+            "exchange": exch,
+            "strategy": "Grid-Order-Management",
+            "version": "3.0",
+            "force_refresh": force_refresh
+        })
 
     # 获取持仓（支持缓存）
-    GridPositions = get_all_GridPositions(engine, exch, use_cache=True if not force_refresh else False)
-    if not GridPositions:
-        print("没有持仓，退出。")
-        engine.monitor.record_operation("StrategyExit", "Grid-Order-Management", {
-            "reason": "No GridPositions found"
-        })
-        return
-    print("初始持仓:", GridPositions)
+    GridPositions_all = [get_all_GridPositions(engine, exch, use_cache=True if not force_refresh else False) for engine, exch in zip(engines, exchs)]
+    for engine, GridPositions in zip(engines, GridPositions_all):
+        if not GridPositions:
+            print("没有持仓，退出。")
+            engine.monitor.record_operation("StrategyExit", "Grid-Order-Management", {
+                "reason": "No GridPositions found"
+            })
+            return
+        print("初始持仓:", GridPositions)
     start_ts = time.time()
     sleep_time = 0.88
     need_to_update = False
-    try:
-        while True:
+    while True:
+        try:
+            for engine, GridPositions in zip(engines, GridPositions_all):
             # 获取全局所有订单
-            open_orders, err = engine.cex_driver.get_open_orders(symbol=None, onlyOrderId=True, keep_origin=False)
-            if err:
-                print(f"获取订单失败: {err}")
-                time.sleep(sleep_time)
-                continue
-            
-            if not isinstance(open_orders, list) or not open_orders:
-                open_orders = []
-            origin_pos, err = engine.cex_driver.get_position(symbol=None, keep_origin=False)
-            poses = {}
-            for pos in origin_pos:
-                poses[pos["symbol"]] = pos
-            if err or not poses:
-                continue
-            for sym, data in GridPositions.items():
-                try:
+                open_orders, err = engine.cex_driver.get_open_orders(symbol=None, onlyOrderId=True, keep_origin=False)
+                if err:
+                    print(f"获取订单失败: {err}")
                     time.sleep(sleep_time)
-                    # 获取当前持仓信息用于显示
-                    if sym not in poses:
-                        pos = {}
-                    else:
-                        pos = poses[sym]
-                    exchange_limits_info, err = engine.cex_driver.exchange_limits(symbol=sym)
-                    if err:
-                        print('CEX DRIVER.exchange_limits error ', err)
-                        return None, err
-                    price_precision = exchange_limits_info['price_precision']
-                    min_order_size = exchange_limits_info['min_order_size']
-                    init_price = data["init_price"]
-                    print_position(sym, pos, init_price, start_ts)
-                    
-                    # 使用新的订单管理逻辑
-                    order_updated = manage_grid_orders(engine, sym, data, open_orders, price_precision, min_order_size, base_amount)
-                    
-                    # 如果有订单更新，保存数据
-                    if order_updated:
-                        need_to_update = True
+                    continue
+                
+                if not isinstance(open_orders, list) or not open_orders:
+                    open_orders = []
+                origin_pos, err = engine.cex_driver.get_position(symbol=None, keep_origin=False)
+                poses = {}
+                for pos in origin_pos:
+                    poses[pos["symbol"]] = pos
+                if err or not poses:
+                    continue
+                for sym, data in GridPositions.items():
+                    try:
+                        time.sleep(sleep_time)
+                        # 获取当前持仓信息用于显示
+                        if sym not in poses:
+                            pos = {}
+                        else:
+                            pos = poses[sym]
+                        exchange_limits_info, err = engine.cex_driver.exchange_limits(symbol=sym)
+                        if err:
+                            print('CEX DRIVER.exchange_limits error ', err)
+                            return None, err
+                        price_precision = exchange_limits_info['price_precision']
+                        min_order_size = exchange_limits_info['min_order_size']
+                        baseline_price = data["baseline_price"]
+                        print_position(engine.account, sym, pos, baseline_price, start_ts)
+                        
+                        # 使用新的订单管理逻辑
+                        order_updated = manage_grid_orders(engine, sym, data, open_orders, price_precision, min_order_size, 6.66 if engine.account==-1 else 8.88)
+                        
+                        # 如果有订单更新，保存数据
+                        if order_updated:
+                            need_to_update = True
 
-                except Exception as e:
-                    print(f"[{sym}] 循环异常:", e)
-                    break
-            if need_to_update:
-                save_GridPositions(GridPositions, exch, engine.account)
-                need_to_update = False
-            # 定期保存数据
-            if time.time() - start_ts % 1800 < sleep_time * len(GridPositions):
-                save_GridPositions(GridPositions, exch, engine.account)
-    except KeyboardInterrupt:
-        print("手动退出。")
-        engine.monitor.record_operation("StrategyExit", "Grid-Order-Management", {
-            "reason": "Manual interrupt",
-            "uptime": time.time() - start_ts
-        })
+                    except Exception as e:
+                        print(f"[{sym}] 循环异常:", e)
+                        break
+                if need_to_update:
+                    save_GridPositions(GridPositions, exch, engine.account)
+                    need_to_update = False
+                # 定期保存数据
+                if time.time() - start_ts % 1800 < sleep_time * len(GridPositions):
+                    save_GridPositions(GridPositions, exch, engine.account)
+        except KeyboardInterrupt:
+            print("手动退出。")
+            engine.monitor.record_operation("StrategyExit", "Grid-Order-Management", {
+                "reason": "Manual interrupt",
+                "uptime": time.time() - start_ts
+            })
+            sys.exit()
 
 if __name__ == '__main__':
     print("\n=== 网格策略 (订单管理版) ===")
@@ -557,6 +562,9 @@ if __name__ == '__main__':
     
     # 自动用当前文件名（去除后缀）作为默认策略名，细节默认为COMMON
     default_strategy = os.path.splitext(os.path.basename(__file__))[0].upper()
-    exch, engine = pick_exchange(arg_ex, acount_id, strategy=default_strategy, strategy_detail="COMMON")
-    main1_test(engine)
-    main()
+    exch1, engine1 = pick_exchange(arg_ex, 1, strategy=default_strategy, strategy_detail="COMMON")
+    # exch2, engine2 = pick_exchange(arg_ex, 0, strategy=default_strategy, strategy_detail="COMMON")
+    # exch3, engine3 = pick_exchange(arg_ex, 3, strategy=default_strategy, strategy_detail="COMMON")
+    # main1_test(engine)
+    # main([engine1, engine2, engine3], [exch1, exch2, exch3])
+    main([engine1], [exch1])

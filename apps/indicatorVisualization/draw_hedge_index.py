@@ -83,7 +83,7 @@ def get_current_dir() -> str:
 
 print(PROJECT_ROOT)
 from ctos.drivers.okx.util import BeijingTime, get_host_ip, rate_price2order, pad_dataframe_to_length_fast
-from ctos.drivers.okx.driver import init_OkxClient as get_okexExchage
+from ctos.drivers.okx.driver import init_CexClient as get_okexExchage
 # === 配置 ===
 COINS = list(rate_price2order.keys())
 # TIMEFRAMES = {
@@ -943,7 +943,7 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
                     return None
                 btc_rate = all_rate[0] / sum(all_rate)
                 if len(data) == 3:
-                    bad_coins = [x for x  in f.readline().strip().split(',') if x not in good_group]
+                    bad_coins = [x for x  in data[2].strip().split(',') if x not in good_group]
                 else:
                     bad_coins = []
         except Exception as e:

@@ -478,7 +478,7 @@ def fuzzy_exchange_input(user_input: str) -> str:
             return 'okx'
     
     # Backpack相关匹配
-    bp_patterns = ['bp', 'backpack', 'b', 'back', 'bp交易所', '背包']
+    bp_patterns = ['bp', 'backpack', 'back', 'bp交易所', '背包']
     for pattern in bp_patterns:
         if pattern in user_input:
             return 'backpack'

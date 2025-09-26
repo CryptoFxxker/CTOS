@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-25T06:33:33.804916",
+  "timestamp": "2025-09-25T12:15:45.981719",
   "exchange": "backpack",
   "GridPositions": {
     "ETH_USDC_PERP": {
@@ -30,22 +30,22 @@
       "sell_order_id": "10397909846"
     },
     "DOGE_USDC_PERP": {
-      "init_price": 0.237979496411415,
+      "init_price": 0.23559970144730086,
       "avg_cost": 0.2656107556436661,
       "size": 12116.8,
       "side": "long",
       "pnlUnrealized": -216.084776,
-      "buy_order_id": "10389828783",
-      "sell_order_id": "10389838762"
+      "buy_order_id": "10455143918",
+      "sell_order_id": "10455150576"
     },
     "SUI_USDC_PERP": {
-      "init_price": 3.31144676088435,
+      "init_price": 3.2130934806393237,
       "avg_cost": 3.528390911943268,
       "size": 202.4,
       "side": "short",
       "pnlUnrealized": 29.546189,
-      "buy_order_id": "10397920983",
-      "sell_order_id": "10397934034"
+      "buy_order_id": "10463374686",
+      "sell_order_id": "10463382469"
     },
     "LTC_USDC_PERP": {
       "init_price": 105.05723546448901,
@@ -66,13 +66,13 @@
       "sell_order_id": "10403684060"
     },
     "HYPE_USDC_PERP": {
-      "init_price": 43.13838995238365,
+      "init_price": 41.8571366324079,
       "avg_cost": 50.17418896283563,
       "size": 12.51,
       "side": "short",
       "pnlUnrealized": 90.524399,
-      "buy_order_id": "10415431983",
-      "sell_order_id": "10415439648"
+      "buy_order_id": "10467127110",
+      "sell_order_id": "10467133521"
     },
     "AAVE_USDC_PERP": {
       "init_price": 271.3096953707996,
@@ -84,22 +84,22 @@
       "sell_order_id": "10403321701"
     },
     "HBAR_USDC_PERP": {
-      "init_price": 0.21768906461544002,
+      "init_price": 0.21551217396928563,
       "avg_cost": 0.23406591546982353,
       "size": 3136.0,
       "side": "short",
       "pnlUnrealized": 36.869957,
-      "buy_order_id": "10399868009",
-      "sell_order_id": "10399876778"
+      "buy_order_id": "10463400697",
+      "sell_order_id": "10463408068"
     },
     "JUP_USDC_PERP": {
-      "init_price": 0.46529453354372996,
+      "init_price": 0.4560351723262097,
       "avg_cost": 0.5061175725531323,
       "size": 1533.3,
       "side": "short",
       "pnlUnrealized": 48.253149,
-      "buy_order_id": "10397973308",
-      "sell_order_id": "10397983664"
+      "buy_order_id": "10458980627",
+      "sell_order_id": "10458988488"
     },
     "TON_USDC_PERP": {
       "init_price": 2.8112031981,
@@ -111,13 +111,13 @@
       "sell_order_id": "10403337871"
     },
     "XRP_USDC_PERP": {
-      "init_price": 2.890239606160017,
+      "init_price": 2.8613372100984167,
       "avg_cost": 3.0074537727761244,
       "size": 710.1296,
       "side": "long",
       "pnlUnrealized": -63.358262,
-      "buy_order_id": "10397993765",
-      "sell_order_id": "10398000745"
+      "buy_order_id": "10456106690",
+      "sell_order_id": "10456112302"
     },
     "TIA_USDC_PERP": {
       "init_price": 1.424396268432215,
@@ -129,13 +129,13 @@
       "sell_order_id": "10403354291"
     },
     "ADA_USDC_PERP": {
-      "init_price": 0.8016859704842999,
+      "init_price": 0.7936691107794569,
       "avg_cost": 0.8640541685110319,
       "size": 853.0,
       "side": "short",
       "pnlUnrealized": 37.257749,
-      "buy_order_id": "10403359498",
-      "sell_order_id": "10403365584"
+      "buy_order_id": "10463424725",
+      "sell_order_id": "10463433875"
     },
     "BNB_USDC_PERP": {
       "init_price": 1006.1921761847999,
@@ -156,13 +156,13 @@
       "sell_order_id": "10403379335"
     },
     "NEAR_USDC_PERP": {
-      "init_price": 2.928491113022808,
+      "init_price": 2.89920620189258,
       "avg_cost": 2.7266249201277954,
       "size": 313.0,
       "side": "short",
       "pnlUnrealized": -110.766484,
-      "buy_order_id": "10403087386",
-      "sell_order_id": "10403093352"
+      "buy_order_id": "10421829069",
+      "sell_order_id": "10421836232"
     },
     "BTC_USDC_PERP": {
       "init_price": 113544.49711449,
@@ -174,13 +174,13 @@
       "sell_order_id": "10293136603"
     },
     "PENGU_USDC_PERP": {
-      "init_price": 0.029181561949386,
+      "init_price": 0.028600848866593215,
       "avg_cost": 0.03272491416454227,
       "size": 22400.0,
       "side": "short",
       "pnlUnrealized": 68.261972,
-      "buy_order_id": "10398047854",
-      "sell_order_id": "10398067767"
+      "buy_order_id": "10463459748",
+      "sell_order_id": "10463473292"
     },
     "DOT_USDC_PERP": {
       "init_price": 3.9579175807419604,
@@ -192,31 +192,31 @@
       "sell_order_id": "10401407639"
     },
     "SOL_USDC_PERP": {
-      "init_price": 206.46230136252098,
+      "init_price": 204.39767834889577,
       "avg_cost": 234.58454285714285,
       "size": 14.0,
       "side": "long",
       "pnlUnrealized": -275.717799,
-      "buy_order_id": "10398077742",
-      "sell_order_id": "10398086476"
+      "buy_order_id": "10457779753",
+      "sell_order_id": "10457785969"
     },
     "AVAX_USDC_PERP": {
-      "init_price": 31.479242133231466,
+      "init_price": 31.164449711899152,
       "avg_cost": 30.533669495581574,
       "size": 30.84,
       "side": "short",
       "pnlUnrealized": -120.946168,
-      "buy_order_id": "10400801315",
-      "sell_order_id": "10400808704"
+      "buy_order_id": "10431313612",
+      "sell_order_id": "10431320877"
     },
     "IP_USDC_PERP": {
-      "init_price": 10.656132505044543,
+      "init_price": 9.440712870601264,
       "avg_cost": 11.462300334308399,
       "size": 239.3,
       "side": "short",
       "pnlUnrealized": -254.830246,
-      "buy_order_id": "10418214728",
-      "sell_order_id": "10418223060"
+      "buy_order_id": "10465958285",
+      "sell_order_id": "10465964158"
     },
     "ARB_USDC_PERP": {
       "init_price": 0.4213995697627353,
@@ -255,13 +255,13 @@
       "sell_order_id": "10398149788"
     },
     "LINK_USDC_PERP": {
-      "init_price": 21.411482446826998,
+      "init_price": 21.197367622358726,
       "avg_cost": 23.191052032502803,
       "size": 31.4,
       "side": "short",
       "pnlUnrealized": 47.954942,
-      "buy_order_id": "10398156354",
-      "sell_order_id": "10398166244"
+      "buy_order_id": "10457802772",
+      "sell_order_id": "10457811409"
     },
     "UNI_USDC_PERP": {
       "init_price": 7.823486808420009,

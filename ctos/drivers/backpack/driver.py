@@ -39,7 +39,7 @@ try:
     # When imported as part of the package
     from .bpx.account import Account  # type: ignore
     from .bpx.public import Public    # type: ignore
-    from ctos.drivers.backpack.util import _reduce_significant_digits    # type: ignore
+    from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places   # type: ignore
 except Exception:
     try:
         # When the full package is available in sys.path
@@ -803,11 +803,11 @@ class BackpackDriver(TradingSyscalls):
                             print(f"⚠ 未知错误类型，尝试通用调整: {error_msg}")
                             if order_type.lower() == 'limit' and price is not None:
                                 # 尝试减少价格精度
-                                price = round(float(price), 2)
+                                price = round(float(price), 4)
                                 print(f"🔧 通用调整价格精度: {original_price} -> {price} (有效数字: {self._count_significant_digits(price)})")
                             
                             # 尝试减少数量精度
-                            size = round(size, 4)
+                            size = round(float(size), 4)
                             print(f"🔧 通用调整数量精度: {original_size} -> {size} (有效数字: {self._count_significant_digits(size)})")
                         
                         # 等待一段时间后重试
@@ -896,7 +896,7 @@ class BackpackDriver(TradingSyscalls):
             place_kwargs['time_in_force'] = new_tif
 
         return self.place_order(
-            full,
+            symbol=full,
             side=new_side,
             order_type=new_type,
             size=str(new_qty),
@@ -1105,13 +1105,19 @@ class BackpackDriver(TradingSyscalls):
         - currency 为 None / 'ALL' / '*' 时返回全部资产字典
         - 指定 currency 时，仅返回对应资产字典 {currency: {...}}；若不存在返回 {}
         """
-        if hasattr(self.account, "get_balances"):
+        if hasattr(self.account, "get_collateral"):
             try:
-                raw = self.account.get_balances()
+                raw = self.account.get_collateral()
                 # 返回全部
                 if currency is None or str(currency).strip() in ('ALL', '*'):
                     return raw
-
+                if isinstance(raw, dict):
+                    if 'collateral' in raw:
+                        for collateral in raw['collateral']:
+                            if collateral['symbol'] == currency.upper():
+                                return float(collateral['totalQuantity'])
+                    elif 'assetsValue' in raw:
+                        return float(raw['assetsValue'])
                 # 仅返回指定币种
                 cur = str(currency).upper()
                 if isinstance(raw, dict):
@@ -1225,7 +1231,7 @@ class BackpackDriver(TradingSyscalls):
             return None, e
 
 
-    def close_all_positions(self, mode="market", price_offset=0.0005, symbol=None, side=None, is_good=None):
+    def close_all_positions(self, mode="market", price_offset=0.0005, symbol=None, side=None, is_good=None, ignore=[], target=[]):
         """
         平掉所有仓位，可附加过滤条件
 
@@ -1235,27 +1241,38 @@ class BackpackDriver(TradingSyscalls):
         :param side: "long" 仅平多仓, "short" 仅平空仓, None 表示不限
         :param is_good: True 仅平盈利仓, False 仅平亏损仓, None 表示不限
         """
-        positions = self.get_position(symbol=symbol)  # 获取所有仓位信息
+        positions, err = self.get_position(symbol=symbol, keep_origin=False)  # 获取所有仓位信息
+        if err:
+            print("获取仓位失败:", err)
+            return
         
         if not positions:
             print("✅ 当前无持仓")
             return
-        
+        if ignore:
+            ignore_position = [self._norm_symbol(x)[0] for x in ignore]
+        else:
+            ignore_position = []
+        if target:
+            target_position = [self._norm_symbol(x)[0] for x in target]
+        else:
+            target_position = []
         for pos in positions:
             sym = pos["symbol"]
-            qty = float(pos["netQuantity"])
-            mark_price = float(pos["markPrice"])
+            if sym in ignore_position:
+                continue
+            if sym not in target_position:
+                continue
+            qty = float(pos["quantity"])
+            mark_price =self.get_price_now(sym)
             pnl_unreal = float(pos["pnlUnrealized"])
-
+            pos_side = pos["side"]
             if qty == 0:
                 continue  # 跳过空仓
 
             # 过滤 symbol
             if symbol and sym != symbol:
                 continue
-
-            # 判断仓位方向
-            pos_side = "long" if qty > 0 else "short"
 
             # 过滤 side
             if side and side != pos_side:
@@ -1268,7 +1285,7 @@ class BackpackDriver(TradingSyscalls):
                 continue
 
             # 构造平仓单
-            if qty > 0:  # 多仓 -> 平仓卖出
+            if pos_side == 'long':  # 多仓 -> 平仓卖出
                 order_side = "SELL"
                 size = qty
             else:        # 空仓 -> 平仓买入
@@ -1281,9 +1298,9 @@ class BackpackDriver(TradingSyscalls):
 
             elif mode == "limit":
                 if order_side == "SELL":
-                    price = mark_price * (1 + price_offset)
+                    price = align_decimal_places(mark_price, mark_price * (1 + price_offset))
                 else:
-                    price = mark_price * (1 - price_offset)
+                    price = align_decimal_places(mark_price, mark_price * (1 - price_offset))
                 self.place_order(symbol=sym, side=order_side, order_type="limit", size=size, price=price)
                 print(f"📤 限价平仓: {sym} {order_side} {size} @ {price}")
 
