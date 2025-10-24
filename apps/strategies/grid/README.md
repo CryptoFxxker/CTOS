@@ -324,3 +324,10 @@ python Grid_with_more_gap.py --refresh bp 2>&1 | tee grid_log.txt
 ---
 
 **免责声明**：本策略仅供学习和研究使用，实际交易存在风险，请谨慎使用并做好风险管理。
+
+## 版本信息
+- 版本: 1.0
+- 创建时间: 2025.10.24 19:30
+- Edited by `Cursor`
+- Author [CryptoHunter](https://github.com/CryptoFxxker/CTOS), [DisCord](https://discord.gg/KvqEFMft), [X](https://x.com/Crypto_Fxxker)
+- Supported By [`CTOS`](https://github.com/CryptoFxxker/CTOS) 交易框架

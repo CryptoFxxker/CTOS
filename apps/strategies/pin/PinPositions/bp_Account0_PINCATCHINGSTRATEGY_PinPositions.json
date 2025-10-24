@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-10-24T11:58:34.412347",
+  "exchange": "bp",
+  "PinPositions": {
+    "LINK_USDC_PERP": {
+      "current_price": 17.68819403,
+      "avg_cost": 17.33954614377475,
+      "size": 8.4,
+      "side": "short",
+      "pnlUnrealized": -3.17992,
+      "orders": [
+        "15097932560",
+        "15097934286",
+        "15097936022",
+        "15097937650",
+        "15097939314",
+        "15097940894"
+      ],
+      "last_check_time": 1761307088.8025613,
+      "pin_caught": false,
+      "profit_threshold": 0.0
+    },
+    "HYPE_USDC_PERP": {
+      "current_price": 39.57717369,
+      "avg_cost": 38.25418085106383,
+      "size": 1.88,
+      "side": "short",
+      "pnlUnrealized": -2.625071,
+      "orders": [
+        "15097946941",
+        "15097948362",
+        "15097950480",
+        "15097952055",
+        "15097953648",
+        "15097955144"
+      ],
+      "last_check_time": 1761307097.879442,
+      "pin_caught": false,
+      "profit_threshold": 0.0
+    },
+    "AAVE_USDC_PERP": {
+      "current_price": 229.1841939,
+      "avg_cost": 224.46561578728793,
+      "size": 4.12,
+      "side": "long",
+      "pnlUnrealized": 46.446651,
+      "orders": [
+        "15097962519",
+        "15097965065",
+        "15097966804",
+        "15097968952",
+        "15097970544",
+        "15097972394"
+      ],
+      "last_check_time": 1761307106.9651182,
+      "pin_caught": false,
+      "profit_threshold": 0.0
+    }
+  }
+}

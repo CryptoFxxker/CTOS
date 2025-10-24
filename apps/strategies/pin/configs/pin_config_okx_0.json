@@ -1,0 +1,17 @@
+{
+  "exchange": "okx",
+  "account": 0,
+  "k_orders": 5,
+  "price_gap_pct": 0.008,
+  "order_gap_pct": 0.003,
+  "gap_type": "geometric",
+  "size_mode": "equal_amount",
+  "base_amount": 15.0,
+  "base_quantity": 0.0,
+  "increasing_factor": 1.15,
+  "profit_threshold": 0.015,
+  "check_interval": 240,
+  "force_refresh": false,
+  "MODE": "DEACTIVATED",
+  "description": "接针策略配置示例 - OKX账户0，更密集的订单布置"
+}
