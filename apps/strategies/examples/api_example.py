@@ -123,6 +123,7 @@ def main():
         eth_funding_rate = engine.cex_driver.fees('ETH-USDT-SWAP', instType='SWAP', keep_origin=False)
         end_time = time.time()
         print(f"Take time {end_time - start_time} seconds.\n BTC funding rate: {btc_funding_rate}\n ETH funding rate: {eth_funding_rate}")
+        print("-----")
         
         # -------------------------账户仓位相关 API 测试-------------------------
         # 获取 关注币种 的余额
