@@ -151,7 +151,7 @@ class OkxDriver(TradingSyscalls):
 
     def __init__(self, okx_client=None, mode="swap", default_quote="USDT",
                  price_scale=1e-8, size_scale=1e-8, account_id=0):
-        self.cex = 'OKX'
+        self.cex = 'okx'
         self.quote_ccy = 'USDT'
         self.account_id = account_id
         """

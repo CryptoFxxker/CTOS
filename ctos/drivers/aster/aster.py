@@ -20,9 +20,21 @@ from helpers.logger import TradingLogger
 
 
 class AsterWebSocketManager:
-    """WebSocket manager for Aster order updates."""
+    """Aster交易所WebSocket管理器，用于处理订单更新消息"""
 
     def __init__(self, config: Dict[str, Any], api_key: str, secret_key: str, order_update_callback):
+        """
+        初始化Aster WebSocket管理器
+        
+        输入参数:
+            config: 配置字典，包含交易配置信息
+            api_key: Aster API密钥
+            secret_key: Aster API密钥
+            order_update_callback: 订单更新回调函数
+        
+        输出: 无
+        作用: 初始化WebSocket连接所需的参数和状态
+        """
         self.api_key = api_key
         self.secret_key = secret_key
         self.order_update_callback = order_update_callback
@@ -37,7 +49,15 @@ class AsterWebSocketManager:
         self.config = config
 
     def _generate_signature(self, params: Dict[str, Any]) -> str:
-        """Generate HMAC SHA256 signature for Aster API authentication."""
+        """
+        生成Aster API认证所需的HMAC SHA256签名
+        
+        输入参数:
+            params: 参数字典，包含API请求参数
+        
+        输出: str - HMAC SHA256签名字符串
+        作用: 为API请求生成认证签名，确保请求的安全性
+        """
         # Use urlencode to properly format the query string
         query_string = urlencode(params)
 
@@ -51,7 +71,14 @@ class AsterWebSocketManager:
         return signature
 
     async def _get_listen_key(self) -> str:
-        """Get listen key for user data stream."""
+        """
+        获取用户数据流的监听密钥
+        
+        输入参数: 无
+        
+        输出: str - 监听密钥字符串
+        作用: 从Aster API获取用于WebSocket用户数据流的监听密钥
+        """
         params = {
             'timestamp': int(time.time() * 1000)
         }
@@ -76,7 +103,14 @@ class AsterWebSocketManager:
                     raise Exception(f"Failed to get listen key: {response.status}")
 
     async def _keepalive_listen_key(self) -> bool:
-        """Keep alive the listen key to prevent timeout."""
+        """
+        保持监听密钥活跃状态，防止超时
+        
+        输入参数: 无
+        
+        输出: bool - 操作是否成功
+        作用: 定期延长监听密钥的有效期，防止WebSocket连接因密钥过期而断开
+        """
         try:
             if not self.listen_key:
                 return False
@@ -112,7 +146,14 @@ class AsterWebSocketManager:
             return False
 
     async def _check_connection_health(self) -> bool:
-        """Check if the WebSocket connection is healthy based on ping timing."""
+        """
+        检查WebSocket连接健康状态
+        
+        输入参数: 无
+        
+        输出: bool - 连接是否健康
+        作用: 基于ping时间检查WebSocket连接是否正常工作，超过10分钟未收到ping则认为连接异常
+        """
         if not self._last_ping_time:
             return True  # No pings received yet, assume healthy
 
@@ -130,7 +171,14 @@ class AsterWebSocketManager:
         return True
 
     async def _start_keepalive_task(self):
-        """Start the keepalive task to extend listen key validity and monitor connection health."""
+        """
+        启动保活任务，延长监听密钥有效期并监控连接健康状态
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 在后台运行保活任务，定期检查连接健康状态和延长监听密钥有效期
+        """
         while self.running:
             try:
                 # Check connection health every 5 minutes
@@ -175,7 +223,14 @@ class AsterWebSocketManager:
                 await asyncio.sleep(60)
 
     async def connect(self):
-        """Connect to Aster WebSocket."""
+        """
+        连接到Aster WebSocket
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 建立与Aster WebSocket的连接，获取监听密钥并开始监听消息
+        """
         try:
             # Get listen key
             self.listen_key = await self._get_listen_key()
@@ -202,7 +257,14 @@ class AsterWebSocketManager:
             raise
 
     async def _listen(self):
-        """Listen for WebSocket messages."""
+        """
+        监听WebSocket消息
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 持续监听WebSocket连接，处理接收到的消息并调用相应的处理函数
+        """
         try:
             async for message in self.websocket:
                 if not self.running:
@@ -233,7 +295,15 @@ class AsterWebSocketManager:
                 self.logger.log(f"WebSocket listen error: {e}", "ERROR")
 
     async def _handle_message(self, data: Dict[str, Any]):
-        """Handle incoming WebSocket messages."""
+        """
+        处理接收到的WebSocket消息
+        
+        输入参数:
+            data: 接收到的消息数据字典
+        
+        输出: 无
+        作用: 根据消息类型分发到相应的处理函数，主要处理订单更新和监听密钥过期事件
+        """
         try:
             event_type = data.get('e', '')
 
@@ -253,7 +323,15 @@ class AsterWebSocketManager:
                 self.logger.log(f"Error handling WebSocket message: {e}", "ERROR")
 
     async def _handle_order_update(self, order_data: Dict[str, Any]):
-        """Handle order update messages."""
+        """
+        处理订单更新消息
+        
+        输入参数:
+            order_data: 订单更新数据字典
+        
+        输出: 无
+        作用: 解析订单更新消息，提取订单信息并调用订单更新回调函数
+        """
         try:
             order_info = order_data.get('o', {})
 
@@ -299,7 +377,14 @@ class AsterWebSocketManager:
                 self.logger.log(f"Error handling order update: {e}", "ERROR")
 
     async def disconnect(self):
-        """Disconnect from WebSocket."""
+        """
+        断开WebSocket连接
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 关闭WebSocket连接，停止保活任务，清理相关资源
+        """
         self.running = False
 
         # Cancel keepalive task
@@ -316,15 +401,31 @@ class AsterWebSocketManager:
                 self.logger.log("WebSocket disconnected", "INFO")
 
     def set_logger(self, logger):
-        """Set the logger instance."""
+        """
+        设置日志记录器实例
+        
+        输入参数:
+            logger: 日志记录器实例
+        
+        输出: 无
+        作用: 为WebSocket管理器设置日志记录器，用于记录连接状态和错误信息
+        """
         self.logger = logger
 
 
 class AsterClient(BaseExchangeClient):
-    """Aster exchange client implementation."""
+    """Aster交易所客户端实现"""
 
     def __init__(self, config: Dict[str, Any]):
-        """Initialize Aster client."""
+        """
+        初始化Aster客户端
+        
+        输入参数:
+            config: 配置字典，包含交易配置信息
+        
+        输出: 无
+        作用: 初始化Aster交易所客户端，设置API密钥、基础URL和日志记录器
+        """
         super().__init__(config)
 
         # Aster credentials from environment
@@ -342,14 +443,29 @@ class AsterClient(BaseExchangeClient):
         self._order_update_handler = None
 
     def _validate_config(self) -> None:
-        """Validate Aster configuration."""
+        """
+        验证Aster配置
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 检查必需的环境变量是否已设置，确保API密钥和密钥已正确配置
+        """
         required_env_vars = ['ASTER_API_KEY', 'ASTER_SECRET_KEY']
         missing_vars = [var for var in required_env_vars if not os.getenv(var)]
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {missing_vars}")
 
     def _generate_signature(self, params: Dict[str, Any]) -> str:
-        """Generate HMAC SHA256 signature for Aster API authentication."""
+        """
+        生成Aster API认证所需的HMAC SHA256签名
+        
+        输入参数:
+            params: 参数字典，包含API请求参数
+        
+        输出: str - HMAC SHA256签名字符串
+        作用: 为API请求生成认证签名，确保请求的安全性
+        """
         # Use urlencode to properly format the query string
         query_string = urlencode(params)
 
@@ -365,7 +481,18 @@ class AsterClient(BaseExchangeClient):
     async def _make_request(
         self, method: str, endpoint: str, params: Dict[str, Any] = None, data: Dict[str, Any] = None
     ) -> Dict[str, Any]:
-        """Make authenticated request to Aster API."""
+        """
+        向Aster API发送认证请求
+        
+        输入参数:
+            method: HTTP请求方法 (GET, POST, DELETE)
+            endpoint: API端点路径
+            params: URL查询参数字典
+            data: 请求体数据字典
+        
+        输出: Dict[str, Any] - API响应数据
+        作用: 发送带认证签名的HTTP请求到Aster API，处理不同请求方法的签名生成
+        """
         if params is None:
             params = {}
         if data is None:
@@ -417,7 +544,14 @@ class AsterClient(BaseExchangeClient):
                     return result
 
     async def connect(self) -> None:
-        """Connect to Aster WebSocket."""
+        """
+        连接到Aster WebSocket
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 建立与Aster WebSocket的连接，初始化WebSocket管理器并开始监听订单更新
+        """
         # Initialize WebSocket manager
         self.ws_manager = AsterWebSocketManager(
             config=self.config,
@@ -439,7 +573,14 @@ class AsterClient(BaseExchangeClient):
             raise
 
     async def disconnect(self) -> None:
-        """Disconnect from Aster."""
+        """
+        断开与Aster的连接
+        
+        输入参数: 无
+        
+        输出: 无
+        作用: 关闭WebSocket连接，清理相关资源
+        """
         try:
             if hasattr(self, 'ws_manager') and self.ws_manager:
                 await self.ws_manager.disconnect()
@@ -447,15 +588,38 @@ class AsterClient(BaseExchangeClient):
             self.logger.log(f"Error during Aster disconnect: {e}", "ERROR")
 
     def get_exchange_name(self) -> str:
-        """Get the exchange name."""
+        """
+        获取交易所名称
+        
+        输入参数: 无
+        
+        输出: str - 交易所名称
+        作用: 返回当前交易所的名称标识
+        """
         return "aster"
 
     def setup_order_update_handler(self, handler) -> None:
-        """Setup order update handler for WebSocket."""
+        """
+        设置WebSocket订单更新处理器
+        
+        输入参数:
+            handler: 订单更新处理函数
+        
+        输出: 无
+        作用: 设置用于处理WebSocket订单更新消息的回调函数
+        """
         self._order_update_handler = handler
 
     async def _handle_websocket_order_update(self, order_data: Dict[str, Any]):
-        """Handle order updates from WebSocket."""
+        """
+        处理来自WebSocket的订单更新
+        
+        输入参数:
+            order_data: 订单更新数据字典
+        
+        输出: 无
+        作用: 处理WebSocket接收到的订单更新消息，调用设置的订单更新处理器
+        """
         try:
             if self._order_update_handler:
                 self._order_update_handler(order_data)
@@ -464,7 +628,15 @@ class AsterClient(BaseExchangeClient):
 
     @query_retry(default_return=(0, 0))
     async def fetch_bbo_prices(self, contract_id: str) -> Tuple[Decimal, Decimal]:
-        """Fetch best bid and ask prices from Aster."""
+        """
+        从Aster获取最佳买卖价格
+        
+        输入参数:
+            contract_id: 合约ID
+        
+        输出: Tuple[Decimal, Decimal] - (最佳买价, 最佳卖价)
+        作用: 获取指定合约的最佳买价和卖价，用于订单价格计算
+        """
         result = await self._make_request('GET', '/fapi/v1/ticker/bookTicker', {'symbol': contract_id})
 
         best_bid = Decimal(result.get('bidPrice', 0))
@@ -473,7 +645,15 @@ class AsterClient(BaseExchangeClient):
         return best_bid, best_ask
 
     async def get_order_price(self, direction: str) -> Decimal:
-        """Get the price of an order with Aster using official SDK."""
+        """
+        获取订单价格
+        
+        输入参数:
+            direction: 订单方向 ('buy' 或 'sell')
+        
+        输出: Decimal - 订单价格
+        作用: 根据订单方向和当前市场价格计算合适的订单价格，确保订单能够成交
+        """
         best_bid, best_ask = await self.fetch_bbo_prices(self.config.contract_id)
         if best_bid <= 0 or best_ask <= 0:
             self.logger.log("Invalid bid/ask prices", "ERROR")
@@ -488,7 +668,17 @@ class AsterClient(BaseExchangeClient):
         return order_price
 
     async def place_open_order(self, contract_id: str, quantity: Decimal, direction: str) -> OrderResult:
-        """Place an open order with Aster."""
+        """
+        下开仓订单
+        
+        输入参数:
+            contract_id: 合约ID
+            quantity: 订单数量
+            direction: 订单方向 ('buy' 或 'sell')
+        
+        输出: OrderResult - 订单结果对象
+        作用: 在Aster交易所下开仓订单，使用限价单确保订单能够成交
+        """
         attempt = 0
         while True:
             attempt += 1
@@ -549,7 +739,15 @@ class AsterClient(BaseExchangeClient):
                 return OrderResult(success=False, error_message='Unknown order status: ' + order_status)
 
     async def _get_active_close_orders(self, contract_id: str) -> int:
-        """Get active close orders for a contract using official SDK."""
+        """
+        获取活跃的平仓订单数量
+        
+        输入参数:
+            contract_id: 合约ID
+        
+        输出: int - 活跃平仓订单数量
+        作用: 统计指定合约的活跃平仓订单数量，用于订单管理
+        """
         active_orders = await self.get_active_orders(contract_id)
         active_close_orders = 0
         for order in active_orders:
@@ -558,7 +756,18 @@ class AsterClient(BaseExchangeClient):
         return active_close_orders
 
     async def place_close_order(self, contract_id: str, quantity: Decimal, price: Decimal, side: str) -> OrderResult:
-        """Place a close order with Aster."""
+        """
+        下平仓订单
+        
+        输入参数:
+            contract_id: 合约ID
+            quantity: 订单数量
+            price: 订单价格
+            side: 订单方向 ('buy' 或 'sell')
+        
+        输出: OrderResult - 订单结果对象
+        作用: 在Aster交易所下平仓订单，根据市场价格调整订单价格确保成交
+        """
         attempt = 0
         active_close_orders = await self._get_active_close_orders(contract_id)
         while True:
@@ -628,7 +837,17 @@ class AsterClient(BaseExchangeClient):
                 return OrderResult(success=False, error_message='Unknown order status: ' + order_status)
 
     async def place_market_order(self, contract_id: str, quantity: Decimal, direction: str) -> OrderResult:
-        """Place a market order with Aster."""
+        """
+        下市价单
+        
+        输入参数:
+            contract_id: 合约ID
+            quantity: 订单数量
+            direction: 订单方向 ('buy' 或 'sell')
+        
+        输出: OrderResult - 订单结果对象
+        作用: 在Aster交易所下市价单，立即以市场价格成交
+        """
         # Validate direction
         if direction.lower() not in ['buy', 'sell']:
             return OrderResult(success=False, error_message=f'Invalid direction: {direction}')
@@ -667,7 +886,15 @@ class AsterClient(BaseExchangeClient):
             )
 
     async def cancel_order(self, order_id: str) -> OrderResult:
-        """Cancel an order with Aster."""
+        """
+        取消订单
+        
+        输入参数:
+            order_id: 订单ID
+        
+        输出: OrderResult - 订单结果对象
+        作用: 取消指定ID的订单，返回已成交数量信息
+        """
         try:
             result = await self._make_request('DELETE', '/fapi/v1/order', {
                 'symbol': self.config.contract_id,
@@ -684,7 +911,15 @@ class AsterClient(BaseExchangeClient):
 
     @query_retry()
     async def get_order_info(self, order_id: str) -> Optional[OrderInfo]:
-        """Get order information from Aster."""
+        """
+        获取订单信息
+        
+        输入参数:
+            order_id: 订单ID
+        
+        输出: Optional[OrderInfo] - 订单信息对象，如果订单不存在则返回None
+        作用: 根据订单ID查询订单的详细信息，包括状态、价格、数量等
+        """
         result = await self._make_request('GET', '/fapi/v1/order', {
             'symbol': self.config.contract_id,
             'orderId': order_id
@@ -710,7 +945,15 @@ class AsterClient(BaseExchangeClient):
 
     @query_retry(default_return=[])
     async def get_active_orders(self, contract_id: str) -> List[OrderInfo]:
-        """Get active orders for a contract from Aster."""
+        """
+        获取活跃订单列表
+        
+        输入参数:
+            contract_id: 合约ID
+        
+        输出: List[OrderInfo] - 活跃订单信息列表
+        作用: 获取指定合约的所有活跃订单（未成交或部分成交的订单）
+        """
         result = await self._make_request('GET', '/fapi/v1/openOrders', {'symbol': contract_id})
 
         orders = []
@@ -729,7 +972,14 @@ class AsterClient(BaseExchangeClient):
 
     @query_retry(reraise=True)
     async def get_account_positions(self) -> Decimal:
-        """Get account positions from Aster."""
+        """
+        获取账户持仓数量
+        
+        输入参数: 无
+        
+        输出: Decimal - 持仓数量
+        作用: 获取当前账户在指定合约上的持仓数量
+        """
         result = await self._make_request('GET', '/fapi/v2/positionRisk', {'symbol': self.config.contract_id})
 
         for position in result:
@@ -740,7 +990,14 @@ class AsterClient(BaseExchangeClient):
         return Decimal(0)
 
     async def get_contract_attributes(self) -> Tuple[str, Decimal]:
-        """Get contract ID and tick size for a ticker."""
+        """
+        获取合约属性信息
+        
+        输入参数: 无
+        
+        输出: Tuple[str, Decimal] - (合约ID, 最小价格变动单位)
+        作用: 根据配置的ticker获取对应的合约ID和最小价格变动单位，并验证订单数量是否满足最小要求
+        """
         ticker = self.config.ticker
         if len(ticker) == 0:
             self.logger.log("Ticker is empty", "ERROR")

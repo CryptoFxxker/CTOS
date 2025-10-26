@@ -188,7 +188,7 @@ class BackpackDriver(TradingSyscalls):
     """
 
     def __init__(self, account_client=None, public_client=None, mode="perp", default_quote="USDC", account_id=0):
-        self.cex = 'Backpack'
+        self.cex = 'bp'
         self.quote_ccy = 'USDC'
         self.account_id = account_id
         """
