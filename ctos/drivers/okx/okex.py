@@ -504,7 +504,7 @@ class OkexSpot:
         if not order_ids and symbol:
             order_ids = self.get_open_orders(symbol=symbol, onlyOrderId=True)[0]
         for order_id in order_ids:
-            _, e = self.revoke_order(order_id)
+            _, e = self.revoke_order(order_id=order_id, symbol=symbol)
             if e:
                 error.append((order_id, e))
             else:
