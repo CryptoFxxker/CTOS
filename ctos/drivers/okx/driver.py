@@ -63,6 +63,14 @@ except ImportError:
     
     def list_accounts(exchange='okx'):
         return ['main', 'sub1', 'sub2']  # 默认账户列表
+    
+# Import account config reader
+try:
+    from configs.config_reader import get_ctos_config
+except ImportError:
+    # 如果无法导入，使用备用方案
+    def get_ctos_config():
+        return None
 
 def get_account_name_by_id(account_id=0, exchange='okx'):
     """
@@ -116,6 +124,12 @@ def init_CexClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
         # 使用账户获取器获取认证信息
         credentials = get_okx_credentials(account_name)
         
+        # 加载代理配置
+        configs = get_ctos_config()
+        proxies = None
+        if configs and 'proxies' in configs:
+            proxies = configs.get('proxies') if configs else None
+        
         if show:
             print(f"使用OKX账户: {account_name} (ID: {account_id})")
             print(f"认证字段: {list(credentials.keys())}")
@@ -125,7 +139,8 @@ def init_CexClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
             access_key=credentials['api_key'], 
             secret_key=credentials['api_secret'], 
             passphrase=credentials['passphrase'], 
-            host=None
+            host=None,
+            proxies=proxies
         )
     except Exception as e:
         print(f"获取OKX账户 {account_name} 认证信息失败: {e}")

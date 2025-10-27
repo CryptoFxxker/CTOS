@@ -1,0 +1,7 @@
+
+proxies:
+  http: http://127.0.0.1:7890
+  https: http://127.0.0.1:7890
+  # socks5: socks5://127.0.0.1:7891
+
+# Additional proxy configurations can be added below
