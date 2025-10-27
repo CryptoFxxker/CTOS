@@ -1,9 +1,12 @@
+btc,sol,eth,xrp,bnb,doge,aave
+2,1,1,1,1,1,1
+ltc,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin,hype,link
+btc,eth,bnb,xrp,sol,hype,aave
+4,1,1,1,1,1,1
+doge,link,wld,apt,ltc,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin
 btc,bnb,eth,sol
 4,3,2,2
 doge,hype,link,aave,xrp,wld,apt,ltc,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin
-btc,sol,eth,xrp,bnb,doge,aave
-1,1,1,0.5,1.5,1,1
-ltc,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin,hype,link
 btc,bnb,doge,hype,link,aave,sol
 2,2,1,1,1,1,1
 eth,sol,ltc,trump,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,xrp,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin

@@ -19,6 +19,7 @@ from numpy.linalg import lstsq
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import euclidean_distances, cosine_similarity
 from sklearn.cluster import SpectralClustering
+from matplotlib import cm
 
 
 
@@ -2045,10 +2046,52 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     plt.close('all')  # 关闭所有图形
     gc.collect()  # 强制垃圾回收
 
-    print(len([x for x in goodGroup_return - bad_average_return if x >= 0]),
-          len([x for x in goodGroup_return if x >= 0]),
-          len([x for x in goodGroup_return - bad_average_return if x < 0])
-          )
+    # ---------- 新增：绘制stack_profile和btc_trend不同系数的平均值图表 ----------
+    fig_avg, ax_avg = plt.subplots(1, 1, figsize=(16, 8))
+    # 定义系数列表，0.15 到 1.5，步长 0.15
+    coefficients = [round(x, 2) for x in np.arange(0.15, 1.5 + 0.01, 0.15)]
+    # 自动生成配色数量适应系数数量
+    color_map = cm.get_cmap('rainbow', len(coefficients))
+    colors = [color_map(i) for i in range(len(coefficients))]
+    # 计算并绘制每条曲线
+    for i, coeff in enumerate(coefficients):
+        # 计算平均值：(stack_profile + btc_trend * coefficient) / 2
+        avg_curve = (stack_profile + btc_trend * coeff) / 2
+        
+        ax_avg.plot(date_range, avg_curve, 
+                   color=colors[i], linewidth=2.5, alpha=0.8,
+                   label=f'Avg (Stack + BTC×{coeff})')
+    
+    # 单独绘制原始曲线作为参考
+    ax_avg.plot(date_range, stack_profile, 
+               color='green', linewidth=2, alpha=0.6, linestyle='--',
+               label='Stack Profile (原始)')
+    ax_avg.plot(date_range, btc_trend, 
+               color='orange', linewidth=2, alpha=0.6, linestyle='--',
+               label='BTC Trend (原始)')
+    
+    # 设置图表属性
+    ax_avg.set_title(f'Stack Profile & BTC Trend 平均值曲线对比 - {time_gap.upper()}', fontsize=14)
+    ax_avg.set_xlabel('时间', fontsize=12)
+    ax_avg.set_ylabel('数值', fontsize=12)
+    ax_avg.grid(alpha=0.3)
+    ax_avg.legend(loc='upper left', fontsize=10)
+    
+    # 保存新图表
+    out_avg = str(out_dir / f'avg_curves_{prex}_{time_gap}.png')
+    plt.savefig(out_avg, dpi=150)
+    plt.close(fig_avg)
+    gc.collect()
+    
+    # 同步到 /var/www/html/ 目录
+    if HOST_IP.find(SERVER_IP) != -1:
+        os.system(f'cp {out_avg} /var/www/html/')
+    else:
+        os.system(f'scp {out_avg} root@{SERVER_IP}:/var/www/html/')
+    
+    print(f"📊 平均值曲线图表已保存: {out_avg}")
+    print(f"📤 已同步到 /var/www/html/ 目录")
+    
 
 
 def get_good_bad_coin_group(length=5):
