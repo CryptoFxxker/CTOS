@@ -4,6 +4,7 @@ import json
 import socket
 import os
 import inspect
+import math
 
 try:
     import pyfiglet
