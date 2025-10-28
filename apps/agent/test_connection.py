@@ -29,7 +29,7 @@ def test_no_proxy():
     print(f"Session proxies: {client.session.proxies}")
     
     # 测试连接
-    print("\n测试连接到 162.105.88.184:11434...")
+    print(f"\n测试连接到 {client.base_url}...")
     try:
         is_connected = client._check_connection()
         print(f"连接结果: {'✓ 成功' if is_connected else '✗ 失败'}")

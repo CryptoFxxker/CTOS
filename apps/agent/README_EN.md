@@ -88,12 +88,24 @@ for model in models:
 
 ## Configuration Options
 
+### Environment Variables
+
+```bash
+# Set Ollama server address
+export OLLAMA_BASE_URL="http://localhost:11434"
+
+# Set model name
+export OLLAMA_MODEL="deepseek-r1:32b"
+```
+
+### Code Configuration
+
 ```python
 OllamaClient(
-    base_url="http://162.105.88.184:11434",  # server address
-    model="deepseek-r1:32b",                  # model name
-    use_proxy=False,                          # use proxy
-    proxies=None                              # custom proxy config
+    base_url="http://localhost:11434",  # server address (default from env)
+    model="deepseek-r1:32b",            # model name (default from env)
+    use_proxy=False,                     # use proxy
+    proxies=None                         # custom proxy config
 )
 ```
 
@@ -126,5 +138,5 @@ Check `test_connection.py` and `test_chat.py` for more usage examples.
 
 ---
 
-**Note**: Default connection to 162.105.88.184:11434, please modify server address according to your needs.
+**Note**: Default reads configuration from environment variables. Please set `OLLAMA_BASE_URL` to point to your Ollama server.
 

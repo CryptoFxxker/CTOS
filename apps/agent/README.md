@@ -88,12 +88,24 @@ for model in models:
 
 ## 配置选项
 
+### 环境变量配置
+
+```bash
+# 设置 Ollama 服务器地址
+export OLLAMA_BASE_URL="http://localhost:11434"
+
+# 设置模型名称
+export OLLAMA_MODEL="deepseek-r1:32b"
+```
+
+### 代码配置
+
 ```python
 OllamaClient(
-    base_url="http://162.105.88.184:11434",  # 服务器地址
-    model="deepseek-r1:32b",                  # 模型名称
-    use_proxy=False,                          # 是否使用代理
-    proxies=None                              # 自定义代理配置
+    base_url="http://localhost:11434",  # 服务器地址（默认从环境变量读取）
+    model="deepseek-r1:32b",            # 模型名称（默认从环境变量读取）
+    use_proxy=False,                     # 是否使用代理
+    proxies=None                         # 自定义代理配置
 )
 ```
 
@@ -126,5 +138,5 @@ python test_chat.py
 
 ---
 
-**注意**：默认连接到 162.105.88.184:11434，请根据实际情况修改服务器地址。
+**注意**：默认从环境变量读取配置，请设置 `OLLAMA_BASE_URL` 环境变量指向你的 Ollama 服务器。
 

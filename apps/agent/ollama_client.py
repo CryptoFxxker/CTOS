@@ -4,11 +4,16 @@ Ollama 客户端类
 """
 
 import json
+import os
 import requests
 from typing import Optional, Dict, Any, Iterator
 import logging
 
 logger = logging.getLogger(__name__)
+
+# 从环境变量读取配置，如果没有设置则使用默认值
+DEFAULT_OLLAMA_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
+DEFAULT_MODEL = os.getenv('OLLAMA_MODEL', 'deepseek-r1:32b')
 
 
 class OllamaClient:
@@ -16,8 +21,8 @@ class OllamaClient:
     
     def __init__(
         self, 
-        base_url: str = "http://162.105.88.184:11434", 
-        model: str = "deepseek-r1:32b",
+        base_url: Optional[str] = None, 
+        model: Optional[str] = None,
         use_proxy: bool = False,
         proxies: Optional[Dict[str, str]] = None
     ):
@@ -25,14 +30,14 @@ class OllamaClient:
         初始化 Ollama 客户端
         
         Args:
-            base_url: Ollama 服务器的基础 URL，默认 http://162.105.88.184:11434
-            model: 要使用的模型名称，默认 deepseek-r1:32b
+            base_url: Ollama 服务器的基础 URL，默认从环境变量 OLLAMA_BASE_URL 读取
+            model: 要使用的模型名称，默认从环境变量 OLLAMA_MODEL 读取
             use_proxy: 是否使用代理，默认 False（不走代理）
             proxies: 代理配置字典，格式如 {"http": "http://proxy:port", "https": "https://proxy:port"}
                      如果为 None 且 use_proxy=True，将使用系统环境变量中的代理设置
         """
-        self.base_url = base_url.rstrip('/')
-        self.model = model
+        self.base_url = (base_url or DEFAULT_OLLAMA_URL).rstrip('/')
+        self.model = model or DEFAULT_MODEL
         self.use_proxy = use_proxy
         
         self.session = requests.Session()
