@@ -91,12 +91,16 @@ for model in models:
 ### Environment Variables
 
 ```bash
-# Set Ollama server address
+# Set Ollama server address (http:// prefix is optional, will be added automatically)
+export OLLAMA_BASE_URL="localhost:11434"
+# Or full format
 export OLLAMA_BASE_URL="http://localhost:11434"
 
 # Set model name
 export OLLAMA_MODEL="deepseek-r1:32b"
 ```
+
+**Note**: If the URL doesn't have `http://` or `https://` prefix, it will be added automatically.
 
 ### Code Configuration
 

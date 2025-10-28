@@ -16,6 +16,46 @@ DEFAULT_OLLAMA_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
 DEFAULT_MODEL = os.getenv('OLLAMA_MODEL', 'deepseek-r1:32b')
 
 
+def validate_and_fix_url(url: str) -> str:
+    """
+    验证和修复 URL，确保有协议前缀
+    
+    Args:
+        url: 输入的 URL
+    
+    Returns:
+        str: 修复后的 URL
+    """
+    url = url.strip()
+    
+    # 如果没有协议前缀，添加 http://
+    if not url.startswith(('http://', 'https://')):
+        # 检查是否包含端口号
+        if ':' in url and '/' not in url.split(':')[1]:
+            # 有端口号，添加 http://
+            url = f"http://{url}"
+        elif '/' not in url and ':' in url:
+            # 有端口号但格式不对，添加 http://
+            url = f"http://{url}"
+        else:
+            # 没有端口号，添加 http:// 和默认端口
+            url = f"http://{url}"
+    
+    return url
+
+
+def get_default_url() -> str:
+    """
+    获取默认 URL，带验证和修复
+    
+    Returns:
+        str: 验证后的默认 URL
+    """
+    url = os.getenv('OLLAMA_BASE_URL')
+    if url:
+        return validate_and_fix_url(url)
+    return DEFAULT_OLLAMA_URL
+
 class OllamaClient:
     """Ollama 客户端类，用于与 ollama 服务器交互"""
     
@@ -36,7 +76,13 @@ class OllamaClient:
             proxies: 代理配置字典，格式如 {"http": "http://proxy:port", "https": "https://proxy:port"}
                      如果为 None 且 use_proxy=True，将使用系统环境变量中的代理设置
         """
-        self.base_url = (base_url or DEFAULT_OLLAMA_URL).rstrip('/')
+        # 验证和修复 URL
+        if base_url:
+            base_url = validate_and_fix_url(base_url)
+        else:
+            base_url = get_default_url()
+        
+        self.base_url = base_url.rstrip('/')
         self.model = model or DEFAULT_MODEL
         self.use_proxy = use_proxy
         

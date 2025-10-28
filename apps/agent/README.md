@@ -91,12 +91,16 @@ for model in models:
 ### 环境变量配置
 
 ```bash
-# 设置 Ollama 服务器地址
+# 设置 Ollama 服务器地址（可以不写 http://，会自动添加）
+export OLLAMA_BASE_URL="localhost:11434"
+# 或者完整格式
 export OLLAMA_BASE_URL="http://localhost:11434"
 
 # 设置模型名称
 export OLLAMA_MODEL="deepseek-r1:32b"
 ```
+
+**提示**：如果 URL 没有 `http://` 或 `https://` 前缀，会自动添加 `http://`
 
 ### 代码配置
 
