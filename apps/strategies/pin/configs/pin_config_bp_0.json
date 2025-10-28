@@ -9,8 +9,8 @@
   "base_amount": 10.0,
   "base_quantity": 0.0,
   "increasing_factor": 1.2,
-  "profit_threshold": 0.01,
-  "check_interval": 300,
+  "profit_threshold": 0.001,
+  "check_interval": 60,
   "force_refresh": false,
   "MODE": "ACTIVATED",
   "description": "接针策略配置示例 - Backpack账户0"
