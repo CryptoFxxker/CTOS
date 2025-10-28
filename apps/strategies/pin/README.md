@@ -1,4 +1,8 @@
-# 接针策略 (Pin Catching Strategy)
+# 接针策略 (Pin Catching Strategy) 【无敌接针王】
+
+> **Language / 语言**: [简体中文](README.md) | [English](README_EN.md)
+
+![Strategy Diagram](image_cn.png)
 
 ## 概述
 
