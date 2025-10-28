@@ -40,6 +40,8 @@ class SimpleMartinSystem:
         self.running = False
         self.monitor_thread = None
         self.initialized = False
+        self.last_status_print = 0  # 上次打印状态的时间戳
+        self.status_print_counter = 0  # 状态打印计数器
         
     def load_config(self):
         """加载配置文件"""
@@ -63,6 +65,7 @@ class SimpleMartinSystem:
             ],
             "global_settings": {
                 "monitor_interval": 30,
+                "status_print_interval": 3,  # 每3次循环打印一次状态
                 "emergency_stop": False,
                 "log_level": "INFO"
             }
@@ -155,7 +158,7 @@ class SimpleMartinSystem:
                 price = self.get_current_price(engine, coin)
                 if price is None:
                     return None, "无法获取价格"
-            
+            print(f"place_martin_order: {coin}, {direction}, {amount}, {price}")
             orders, err = engine.place_incremental_orders(
                 usdt_amount=amount,
                 coin=coin.lower(),
@@ -251,6 +254,7 @@ class SimpleMartinSystem:
             if self.should_stop_loss(strategy, current_price):
                 print(f"🚨 {BeijingTime()} | [{coin}] 触发止损，禁用策略")
                 strategy["enabled"] = False
+                self.save_config()  # 立即保存配置
                 return
             
             # 检查减仓
@@ -258,6 +262,7 @@ class SimpleMartinSystem:
             if should_reduce:
                 print(f"💰 {BeijingTime()} | [{coin}] 触发减仓，减少 {reduce_level} 层")
                 strategy["positions"] = strategy["positions"][:-reduce_level]
+                self.save_config()  # 立即保存配置
                 return
             
             # 检查加仓
@@ -281,16 +286,42 @@ class SimpleMartinSystem:
                     }
                     strategy["positions"].append(position)
                     print(f"✅ {BeijingTime()} | [{coin}] 加仓成功，订单ID: {order_id}")
+                    self.save_config()  # 立即保存配置
                 else:
                     print(f"❌ {BeijingTime()} | [{coin}] 加仓失败: {err}")
             
-            # 打印状态
-            positions_count = len(strategy["positions"])
-            total_pnl = strategy["total_pnl"]
-            print(f"📊 {BeijingTime()} | [{coin}] 价格: {current_price:.4f}, 持仓: {positions_count}, 盈亏: {total_pnl:.2f}")
-            
         except Exception as e:
             print(f"❌ {BeijingTime()} | [{coin}] 策略执行异常: {e}")
+    
+    def print_strategies_status(self):
+        """轮动打印所有策略的状态"""
+        print(f"\n{'='*80}")
+        print(f"📊 策略状态报告 - {BeijingTime()}")
+        print('='*80)
+        
+        for strategy in self.config["strategies"]:
+            if strategy["enabled"]:
+                coin = strategy["coin"]
+                positions_count = len(strategy["positions"])
+                total_pnl = strategy["total_pnl"]
+                last_price = strategy["last_price"]
+                total_invested = sum(pos["amount"] for pos in strategy["positions"])
+                
+                status_symbol = "🟢" if positions_count > 0 else "⚪"
+                pnl_symbol = "📈" if total_pnl >= 0 else "📉"
+                
+                print(f"\n{status_symbol} [{coin}] [{strategy['exchange']}-{strategy['account_id']}]")
+                print(f"   当前价格: {last_price:10.4f} | 持仓层数: {positions_count:2d}/{strategy['max_positions']:2d}")
+                print(f"   投入资金: {total_invested:10.2f} USDT")
+                print(f"   {pnl_symbol} 总盈亏: {total_pnl:+10.2f} USDT ({total_pnl/total_invested*100 if total_invested > 0 else 0:+.2f}%)")
+                
+                if positions_count > 0:
+                    print(f"   持仓详情:")
+                    for i, pos in enumerate(strategy["positions"], 1):
+                        pnl_pct = (pos["pnl"] / pos["amount"]) * 100 if pos["amount"] > 0 else 0
+                        print(f"      第{i}层: 价格={pos['price']:10.4f}, 金额={pos['amount']:7.2f}, 盈亏={pos['pnl']:+8.2f} ({pnl_pct:+6.2f}%)")
+        
+        print(f"\n{'='*80}\n")
     
     def run_strategies(self):
         """运行所有策略"""
@@ -302,9 +333,20 @@ class SimpleMartinSystem:
                     print(f"🚨 {BeijingTime()} | 紧急停止触发")
                     break
                 
+                # 执行所有策略
                 for strategy in self.config["strategies"]:
                     if strategy["enabled"]:
                         self.execute_strategy(strategy)
+                
+                # 保存配置（确保订单等信息持久化）
+                self.save_config()
+                
+                # 定期打印策略状态
+                self.status_print_counter += 1
+                status_interval = self.config["global_settings"].get("status_print_interval", 3)
+                if self.status_print_counter >= status_interval:
+                    self.print_strategies_status()
+                    self.status_print_counter = 0
                 
                 time.sleep(self.config["global_settings"]["monitor_interval"])
                 
@@ -315,6 +357,8 @@ class SimpleMartinSystem:
                 print(f"❌ {BeijingTime()} | 策略运行异常: {e}")
                 time.sleep(5)
         
+        # 退出前保存配置
+        self.save_config()
         self.running = False
         print(f"🏁 {BeijingTime()} | 策略执行结束")
     
