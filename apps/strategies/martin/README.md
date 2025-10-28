@@ -1,5 +1,8 @@
 # 简化版单币种马丁策略系统
-![](image.png)
+
+> **Language / 语言**: [简体中文](README.md) | [English](README_EN.md)
+
+![Strategy Diagram](image.png)
 
 ## 系统概述
 
