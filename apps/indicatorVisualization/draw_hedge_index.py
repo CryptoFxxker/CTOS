@@ -2343,7 +2343,7 @@ if __name__ == '__main__':
     }
     last_run = {g: 0 for g in update_interval}   # 初始化
     worst_performance_coins, best_performance_coins = get_good_bad_coin_group(18)
-    threading.Thread(target=scan_loop, daemon=True).start()
+    # threading.Thread(target=scan_loop, daemon=True).start()
     # threading.Thread(target=hedge_optimization_worker, daemon=True).start()
     # for idx, gap in enumerate(['1m','5m','15m','1h','4h','1d']):
     #     data_frame = {c: fetch_and_process(c, gap) for c in COINS}

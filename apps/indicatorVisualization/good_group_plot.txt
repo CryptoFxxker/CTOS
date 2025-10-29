@@ -1,6 +1,6 @@
 btc,sol,eth,xrp,bnb,doge,aave
 2,1,1,1,1,1,1
-ltc,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin,hype,link
+ltc,pepe,pengu,apt,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin,hype,link
 btc,eth,bnb,xrp,sol,hype,aave
 4,1,1,1,1,1,1
 doge,link,wld,apt,ltc,pepe,pengu,wif,bonk,shib,jup,ondo,kaito,crv,uni,jto,virtual,ldo,s,ada,op,sui,bera,avax,near,ip,ton,arb,tia,dot,xlm,tao,pyth,w,hbar,fartcoin
