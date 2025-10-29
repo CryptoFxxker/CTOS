@@ -64,7 +64,7 @@ PROJECT_ROOT = add_project_paths()
 print('PROJECT_ROOT: ', PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
 
 
-from ctos.drivers.okx.util import align_decimal_places, round_dynamic, round_to_two_digits, rate_price2order, cal_amount, BeijingTime
+from ctos.drivers.simulateokx.util import align_decimal_places, round_dynamic, round_to_two_digits, rate_price2order, cal_amount, BeijingTime
 from ctos.core.runtime.ExecutionEngine import pick_exchange
 
 
@@ -74,14 +74,16 @@ def main():
     
     # # 读取 Args 
     argparser = argparse.ArgumentParser(description="API Example Strategy")
-    argparser.add_argument("--mode", type=str, default="real", help="实仓/模拟")
+    argparser.add_argument("--mode", type=str, default="simulate", help="实仓/模拟")
     args = argparser.parse_args()
     mode = args.mode
     
     # 支持多交易所多账户 - 此处仅演示单账户
     cex = 'okx'
-    account = 0 # 默认读取 account.yaml 中第 0 个账户配置
-    
+    account = 1 # 默认读取 account.yaml 中第 0 个账户配置 第 1 个账户为虚拟盘api
+    if mode == "real":
+        account = 0 # 默认读取 account.yaml 中第 0 个账户配置 第 0 个账户为实盘api
+        
     # 初始化交易引擎
     # 命名策略名称
     example_strategy = "api_example"
@@ -129,8 +131,9 @@ def main():
         # 获取 关注币种 的余额
         start_time = time.time()
         usdt_balance = engine.cex_driver.fetch_balance('USDT')
+        btc_balance = engine.cex_driver.fetch_balance('BTC')
         end_time = time.time()
-        print(f"Take time {end_time - start_time} seconds. USDT balance:{usdt_balance}")
+        print(f"Take time {end_time - start_time} seconds. USDT balance:{usdt_balance}, BTC balance:{btc_balance}")
         print("-----")
         
         # 获取 关注交易对/全部 的仓位信息
