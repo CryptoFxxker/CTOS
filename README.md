@@ -331,6 +331,12 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
    conda env create -f environment-win.yml --name ctos
    ```
 
+   如需要设置代理，将
+   ```bash
+   cp configs/example_ctos.yaml configs/ctos.yaml
+   ```
+   修改需要的代理IP地址及端口号即可
+
 
 3. **配置 API Key**
 
@@ -377,6 +383,16 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
    结果会写入 `var/logs/` 并存储在 `var/data/`。
 
 👉 流程一目了然：**获取代码 → 安装环境 → 填 API Key → 配置 → 实盘上线**
+
+7. **模拟盘**
+
+   目前支持OKX模拟盘，模拟盘API交易需要在模拟盘上创建APIKey：
+   **登录欧易账户—>交易—>模拟交易—>个人中心—>创建模拟盘APIKey—>填 API Key->配置->模拟盘交易**
+   
+   可运行该测试脚本测试 CTOS 所提供的 API接口
+   ```bash
+   python apps/strategies/examples/api_example.py --mode simulate
+   ```
 
 ---
 
