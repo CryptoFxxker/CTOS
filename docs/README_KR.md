@@ -1,5 +1,6 @@
-🌐 Languages: [English](../README_EN.md) | [中文](../README.md) | [日本語](README_JP.md) | [한국어](README_KR.md)
+🌐 Languages: [English](./README_EN.md) | [中文](../README.md) | [日本語](./README_JP.md) | [한국어](./README_KR.md)
 ![](ctoslogo.png)
+![](balance_trend.png)
 ## CTOS: 암호화폐 거래 운영체제 (Linux 설계 철학 참조)
 
 **범위:** 중앙화 거래소(CEX) 대상 정량 거래 (초기 OKX, Backpack, Binance 지원).
@@ -12,6 +13,19 @@
 * **신뢰성:** 커널/런타임/드라이버의 계층 설계로 테스트 가능성과 안전성 향상.
 * **관찰 가능성:** 구조화된 로그, 메트릭, 재현 가능한 백테스트 기능.
 * **높은 견고성** 모든 거래소의 주문 가격과 수량 정밀도를 통일하고, 금액 지정 주문, 자동 변환, 전 과정에서 걱정 없이 사용.
+
+## 📚 목차
+
+- [CTOS: 암호화폐 거래 운영체제 (Linux 설계 철학 참조)](#ctos-암호화폐-거래-운영체제-linux-설계-철학-참조)
+  - [왜 CTOS인가?](#왜-ctos인가)
+  - [보안 특성](#️-보안-특성)
+  - [성능 특성](#-성능-특성)
+  - [CTOS 설계 목표 (초보자 친화적)](#-ctos-설계-목표-초보자-친화적)
+  - [빠른 시작 (실무 플로우)](#빠른-시작-실무-플로우)
+  - [개념 매핑 (Linux → CTOS)](#개념-매핑-linux--ctos)
+  - [프로젝트 디렉토리 구조](#프로젝트-디렉토리-구조)
+
+> 위의 목차를 클릭하여 해당 섹션으로 빠르게 이동할 수 있습니다.
 
 ---
 
@@ -68,9 +82,7 @@ ctos/
 │     ├─ backpack/             # Backpack 거래소 드라이버
 │     │  ├─ driver.py          # Backpack 메인 드라이버
 │     │  └─ util.py            # Backpack 유틸리티 함수
-│     ├─ binance/              # Binance 거래소 드라이버
-│     └─ base_uniswapv3/       # Base 체인 Uniswap V3 드라이버
-│        └─ driver.py          # Base Uniswap V3 메인 드라이버
+│     └─ binance/              # Binance 거래소 드라이버
 ├─ apps/                       # 애플리케이션 계층
 │  ├─ strategies/              # 거래 전략
 │  │  ├─ grid/                 # 그리드 전략
@@ -96,7 +108,6 @@ ctos/
 - **`ctos/drivers/okx/driver.py`** - OKX 거래소 드라이버, 동적 계정 매핑 지원
 - **`ctos/drivers/backpack/driver.py`** - Backpack 거래소 드라이버, 동적 계정 매핑 지원
 - **`ctos/drivers/binance/driver.py`** - Binance 거래소 드라이버
-- **`ctos/drivers/base_uniswapv3/driver.py`** - Base 체인 Uniswap V3 드라이버, DeFi 작업 지원
 
 #### 설정 관리
 - **`configs/account.yaml`** - 계정 설정 파일, 각 거래소의 API 키를 저장
@@ -160,7 +171,6 @@ ctos/
 | **OKX** | `drivers/okx/driver.py` | 동적 계정 매핑 | 완전한 선물 거래 지원 |
 | **Backpack** | `drivers/backpack/driver.py` | 동적 계정 매핑 | 네이티브 영구 계약 지원 |
 | **Binance** | `drivers/binance/driver.py` | 기본 지원 | 세계 최대 거래소 |
-| **Base Uniswap V3** | `drivers/base_uniswapv3/driver.py` | 지갑 기반 | DeFi 유동성 제공과 거래 |
 
 ### 🎯 동적 계정 관리
 
@@ -241,23 +251,21 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 ```
 
 ### 🔄 데이터 플로우
-1. **전략** → **실행 엔진** → **시스템 콜** → **거래소 드라이버** → **거래소 API/DeFi 프로토콜**
-2. **거래소 API/DeFi 프로토콜** → **거래소 드라이버** → **시스템 콜** → **실행 엔진** → **시스템 모니터**
+1. **전략** → **실행 엔진** → **시스템 콜** → **거래소 드라이버** → **거래소 API**
+2. **거래소 API** → **거래소 드라이버** → **시스템 콜** → **실행 엔진** → **시스템 모니터**
 3. **시스템 모니터** → **이상 감지** → **자동 수정** → **실행 엔진** → **거래소 드라이버**
-4. **크로스체인 작업** → **Base Uniswap V3** → **ETH-WETH 변환** → **유동성 제공**
 
 ---
 
 ## 🌟 시스템 특성
 
 ### 🔥 핵심 기능
-- **통합 거래 인터페이스** - 하나의 API로 OKX, Backpack, Binance 3대 거래소와 Base Uniswap V3 DeFi 지원
+- **통합 거래 인터페이스** - 하나의 API로 OKX, Backpack, Binance 3대 거래소 지원
 - **동적 계정 관리** - 다중 계정 전환 지원, 설정 기반 자동 매핑
 - **스마트 포지션 모니터링** - quantityUSD 기반 정밀 모니터링, 자동 수정 지원
 - **다차원 이상 감지** - 가격, 포지션, 수익, 리스크의 포괄적 모니터링
 - **자동 수정 메커니즘** - 이상 감지 시 자동 주문 수정
 - **완전한 로그 시스템** - 구조화된 로그, 작업 기록, 이상 보고서
-- **DeFi 통합** - Base 체인 Uniswap V3 유동성 제공과 ETH-WETH 변환 지원
 
 ### 🛡️ 보안 특성
 - **리스크 컨트롤** - 내장 리스크 관리 모듈, 다중 리스크 지표 모니터링 지원

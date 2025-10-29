@@ -1,5 +1,6 @@
-🌐 Languages: [English](README_EN.md) | [中文](README.md) | [日本語](scripts/README_JP.md) | [한국어](scripts/README_KR.md)
+🌐 Languages: [English](./README_EN.md) | [中文](../README.md) | [日本語](./README_JP.md) | [한국어](./README_KR.md)
 ![](ctoslogo.png)
+![](balance_trend.png)
 ## CTOS: Crypto Trading Operating System (Linux-inspired)
 
 **Scope:** Quantitative trading on centralized exchanges (CEX) (initially supporting OKX, Backpack, Binance).
@@ -12,6 +13,19 @@
 * **Reliability:** Layered design of kernel/runtime/drivers improves testability and safety.
 * **Observability:** Structured logs, metrics, and reproducible backtesting capabilities.
 * **High Robustness:** Aligns order price and quantity precision across all exchanges, supports amount-based ordering with automatic conversion, worry-free throughout.
+
+## 📚 Table of Contents
+
+- [CTOS: Crypto Trading Operating System (Linux-inspired)](#ctos-crypto-trading-operating-system-linux-inspired)
+  - [Why CTOS?](#why-ctos)
+  - [Security Features](#️-security-features)
+  - [Performance Features](#-performance-features)
+  - [CTOS Design Goals (For Beginners)](#-ctos-design-goals-for-beginners)
+  - [Quick Start (Practical Workflow)](#quick-start-practical-workflow)
+  - [Concept Mapping (Linux → CTOS)](#concept-mapping-linux--ctos)
+  - [Project Directory Structure](#project-directory-structure)
+
+> Click the table of contents above to quickly jump to the corresponding section.
 
 ---
 
@@ -160,7 +174,6 @@ ctos/
 | **OKX** | `drivers/okx/driver.py` | Dynamic account mapping | Complete futures trading support |
 | **Backpack** | `drivers/backpack/driver.py` | Dynamic account mapping | Native perpetual contract support |
 | **Binance** | `drivers/binance/driver.py` | Basic support | World's largest exchange |
-| **Base Uniswap V3** | `drivers/base_uniswapv3/driver.py` | Wallet-based | DeFi liquidity provision and trading |
 
 ### 🎯 Dynamic Account Management
 
@@ -241,23 +254,21 @@ Account mapping is based on `configs/account.yaml` configuration file:
 ```
 
 ### 🔄 Data Flow
-1. **Strategy** → **Execution Engine** → **System Calls** → **Exchange Driver** → **Exchange API/DeFi Protocol**
-2. **Exchange API/DeFi Protocol** → **Exchange Driver** → **System Calls** → **Execution Engine** → **System Monitor**
+1. **Strategy** → **Execution Engine** → **System Calls** → **Exchange Driver** → **Exchange API**
+2. **Exchange API** → **Exchange Driver** → **System Calls** → **Execution Engine** → **System Monitor**
 3. **System Monitor** → **Anomaly Detection** → **Auto Correction** → **Execution Engine** → **Exchange Driver**
-4. **Cross-chain Operations** → **Base Uniswap V3** → **ETH-WETH Conversion** → **Liquidity Provision**
 
 ---
 
 ## 🌟 System Features
 
 ### 🔥 Core Functions
-- **Unified Trading Interface** - One API supports OKX, Backpack, Binance exchanges and Base Uniswap V3 DeFi
+- **Unified Trading Interface** - One API supports OKX, Backpack, Binance three major exchanges
 - **Dynamic Account Management** - Support multi-account switching, auto-mapping based on configuration
 - **Smart Position Monitoring** - Precise monitoring based on quantityUSD, supports auto-correction
 - **Multi-dimensional Anomaly Detection** - Comprehensive monitoring of price, position, profit, risk
 - **Auto-correction Mechanism** - Automatically place orders to correct anomalies when detected
 - **Complete Logging System** - Structured logs, operation records, anomaly reports
-- **DeFi Integration** - Support for Base chain Uniswap V3 liquidity provision and ETH-WETH conversion
 
 ### 🛡️ Security Features
 - **Risk Control** - Built-in risk management module, supports multiple risk indicator monitoring
@@ -266,12 +277,10 @@ Account mapping is based on `configs/account.yaml` configuration file:
 - **Auto Circuit Breaker** - Automatically stop trading in case of anomalies
 
 ### 🚀 Performance Features
-- **High Precision Calculation** - Unified handling of precision differences across exchanges and DeFi protocols
+- **High Precision Calculation** - Unified handling of precision differences across exchanges
 - **Smart Order Placement** - Automatic handling of price and quantity precision conversion
 - **Incremental Trading** - Support incremental order placement, avoiding duplicate operations
 - **Real-time Monitoring** - Support continuous monitoring and scheduled tasks
-- **Gas Optimization** - Dynamic gas price adjustment for optimal transaction execution
-- **Cross-chain Support** - Seamless integration between CEX and DeFi operations
 
 ---
 
@@ -301,16 +310,6 @@ Account mapping is based on `configs/account.yaml` configuration file:
 ---
 ---
 
-## Runtime & Safety
-
-* **Risk gates:** pre‑trade checks (price bands, max leverage/notional, max cancel rate).
-* **Kill‑switch:** breach → halt strategies, revoke orders, notify.
-* **Determinism:** strategy in/out logged; replayable in backtests.
-* **Observability:** structured logs + metrics (latency, fills, slippage, rejects).
-
----
-
-
 ## Quick Start (Practical Workflow)
 > ⚠️ If you encounter network connection issues, please ensure you have configured a VPN environment to smoothly access exchange APIs.
 
@@ -338,6 +337,12 @@ Account mapping is based on `configs/account.yaml` configuration file:
    ```bash
    conda env create -f environment-win.yml --name ctos
    ```
+
+   If you need to set up a proxy:
+   ```bash
+   cp configs/example_ctos.yaml configs/ctos.yaml
+   ```
+   Then modify the proxy IP address and port number as needed.
 
 3. **Configure API Keys**
 
@@ -384,6 +389,17 @@ Account mapping is based on `configs/account.yaml` configuration file:
 
 👉 The flow is clear: **get code → install environment → fill API keys → configure → live deployment**
 
+7. **Simulation Trading**
+
+   Currently supports OKX simulation trading. To use simulation trading API, you need to create an API Key on the simulation platform:
+   **Login to OKX account → Trading → Simulated Trading → Personal Center → Create Simulation API Key → Fill in API Key → Configure → Simulation Trading**
+   
+   You can run this test script to test the API interfaces provided by CTOS:
+   ```bash
+   python apps/strategies/examples/api_example.py --mode simulate
+   ```
+
+---
 
 ## Roadmap
 
@@ -418,18 +434,11 @@ Account mapping is based on `configs/account.yaml` configuration file:
   🚀 Strategy system is fully deployed and operational!
 
 * **🎉 Milestone 4 (2025.10.11)**
-  ✅ TOPDOGINDEX-based main strategy achieved 30%+ profit across all positions during the major crypto market crash on 2025.10.11! Excellent real-world validation results!
+  * ✅ TOPDOGINDEX-based main strategy achieved 30%+ profit across all positions during the major crypto market crash on 2025.10.11! Excellent real-world validation results!
 
-### 📊 Strategy System Overview
 
-| Strategy Category | Strategy Name | Running Accounts | Strategy Features | Status |
-|------------------|---------------|------------------|-------------------|--------|
-| **Index-based Strategies** | Main Strategy | 0, 3 | High volatility + frequent trades, leveraged progressive hedging grid | ✅ Running |
-| | Small Volatility Martin Strategy | 2, 4 | Low volatility + frequent trades, leveraged exponential explosion hedging grid | ✅ Running |
-| **Auxiliary Strategies** | Dynamic Grid Strategy | 0, 3 | ±3.88/1.88 orders for specified coins, dynamic adjustment | ✅ Running |
-| | Sniper Soaring Strategy | 0, 3, 4 | Sell 3U when exceeding BTC by 1%, buy BTC/BNB | ✅ Running |
-| | Rank Strategy | 2 | Long top 50% gainers, short bottom 50% | 🚧 Development |
-| **New Coin Flow Strategies** | Sniper Large Cap New Coins | 1 | Short new coins + dynamic grid, $10 stop loss | 🚧 Development |
+* **🎉 Milestone 5 (2025.10.29)**
+  * ✅ OKX simulation trading feature for strategy real-time simulation is now live. Welcome everyone to develop based on the simulation trading feature! The experience is identical to real trading. Currently, you only need to modify the OKX driver source to simulateokx in ctos/core/runtime/AccountManager.py. TODO: We will improve this functionality later to enable seamless switching directly through configuration file annotations.
 
 ### 🎯 Core Strategy Features
 
@@ -443,9 +452,9 @@ Account mapping is based on `configs/account.yaml` configuration file:
 
 ## Security & Compliance
 
-* **Principle of Least Privilege:** API keys should only have necessary trading permissions; withdrawal must always remain disabled.
-* **Key Security:** Use `configs/secrets.yaml` (excluded from version control), or system key management, environment variables.
-* **Risk Controls First:** Pre-trade checks, circuit breakers, kill-switch, rate limiting and logging.
+* **Minimum Permissions:** API Key should only have necessary permissions; withdrawals must always be disabled.
+* **Key Security:** Use `configs/secrets.yaml` (not included in version control), or system key management, environment variables.
+* **Risk Control First:** Pre-trade checks, circuit breakers, Kill-switch, rate limiting and logging.
 * **Reproducible Backtests:** All strategy inputs/outputs and market snapshots must be replayable.
 
 ---
