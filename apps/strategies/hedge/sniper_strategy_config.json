@@ -1,0 +1,21 @@
+{
+  "account_ids": [
+    0
+  ],
+  "cexes": [
+    "okx"
+  ],
+  "sanction_line": [
+    0.01
+  ],
+  "sanction_money": [
+    5
+  ],
+  "target_pool": [
+    [
+      "btc"    
+    ]
+  ],
+  "check_interval": 30,
+  "sleep_duration": 60
+}
