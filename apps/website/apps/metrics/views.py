@@ -64,7 +64,7 @@ def indicator_detail(request, indicator_id):
 
 @csrf_exempt
 def get_chart_image(request, indicator_id):
-    """获取图表图片的AJAX接口"""
+    """获取图表图片的AJAX接口 - 从 static/images 目录读取"""
     if request.method != 'POST':
         return JsonResponse({"error": "只支持POST请求"}, status=405)
     
@@ -72,18 +72,36 @@ def get_chart_image(request, indicator_id):
         data = json.loads(request.body)
         timeframe = data.get('timeframe', '1m')
         coin = data.get('coin', 'btc')
-        # 构建图片路径（采用相对路径，确保在Django项目下可以准确定位）
-        chart_dir = Path(__file__).resolve().parent.parent.parent.parent / "indicatorVisualization" / "chart_for_group"
+        
+        # 从 static/images 目录读取图片
+        # BASE_DIR 是 apps/website 目录
+        base_dir = Path(__file__).resolve().parent.parent.parent
+        images_dir = base_dir / "static" / "images"
+        
         if indicator_id == "topdogindex":
             # TOPDOGINDEX的comparison图片
-            chart_name = f"all_coin-{['1m', '5m', '15m', '1h', '4h', '1d'].index(timeframe)}"
-            image_path = chart_dir / f"comparison_chart_{chart_name}_{timeframe}.png"
+            # 文件名格式: comparison_chart_all_coin-{index}_{timeframe}.png
+            # index: 0->1m, 1->5m, 2->15m, 3->1h, 4->4h, 5->1d
+            timeframe_list = ['1m', '5m', '15m', '1h', '4h', '1d']
+            if timeframe not in timeframe_list:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"不支持的时间框架: {timeframe}"
+                }, status=400)
+            
+            index = timeframe_list.index(timeframe)
+            image_filename = f"comparison_chart_all_coin-{index}_{timeframe}.png"
+            image_path = images_dir / image_filename
+            
         elif indicator_id == "allcoin_trend":
             # 全币种趋势图
-            image_path = chart_dir / f"allcoin_trend_{timeframe}.png"
+            image_filename = f"allcoin_trend_{timeframe}.png"
+            image_path = images_dir / image_filename
+            
         elif indicator_id == "kline":
             # K线图（这里需要根据实际实现调整）
-            image_path = chart_dir / f"kline_{coin}_{timeframe}.png"
+            image_filename = f"kline_{coin}_{timeframe}.png"
+            image_path = images_dir / image_filename
         else:
             return JsonResponse({
                 "success": False,
@@ -94,11 +112,12 @@ def get_chart_image(request, indicator_id):
         if not image_path.exists():
             return JsonResponse({
                 "success": False,
-                "error": f"图片不存在: {image_path.name}"
+                "error": f"图片不存在: {image_filename}",
+                "searched_path": str(image_path)
             }, status=404)
         
-        # 返回图片的相对路径
-        relative_path = f"/static/images/{image_path.name}"
+        # 返回图片的静态文件路径（Django会自动处理 /static/ 路径）
+        relative_path = f"/static/images/{image_filename}"
         
         return JsonResponse({
             "success": True,

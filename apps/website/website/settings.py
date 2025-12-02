@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import socket
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,11 +26,24 @@ SECRET_KEY = 'django-insecure-97q4%oc!k(!(2n+(bl1*jf$reozhs=$v9lg*)1727z)mt-kqjz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "162.105.175.7",   # 你的服务器 IP
-]
+# 获取所有网络接口的 IP 地址
+def get_all_ips():
+    """获取所有网络接口的 IP 地址"""
+    ips = ["localhost", "127.0.0.1", "162.105.175.7", "10.1.1.4"]
+    try:
+        # 获取主机名
+        hostname = socket.gethostname()
+        ips.append(hostname)
+        # 获取所有 IP 地址
+        for addr in socket.getaddrinfo(hostname, None):
+            ip = addr[4][0]
+            if ip not in ips and not ip.startswith("127."):
+                ips.append(ip)
+    except:
+        pass
+    return ips
+
+ALLOWED_HOSTS = get_all_ips()
 
 # Application definition
 
