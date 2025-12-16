@@ -8,12 +8,22 @@ class TopdogindexManager {
         this.currentDisplayMode = 'grid'; // 'grid' 或 'single'
         this.autoRefreshInterval = null;
         this.refreshInterval = 10000; // 10秒
+        // 定义时间框架的顺序（从短到长）
+        this.timeframeOrder = {
+            '1m': 1,
+            '5m': 2,
+            '15m': 3,
+            '1h': 4,
+            '4h': 5,
+            '1d': 6
+        };
+        this.sortTimeout = null; // 用于防抖排序
         this.init();
     }
 
     init() {
         this.bindEvents();
-        this.loadAllCharts();
+        this.loadAllCharts(false); // false 表示首次加载，不是刷新
         this.startAutoRefresh();
     }
 
@@ -23,7 +33,7 @@ class TopdogindexManager {
         if (timeframeSelect) {
             timeframeSelect.addEventListener('change', (e) => {
                 this.currentTimeframe = e.target.value;
-                this.loadAllCharts();
+                this.loadAllCharts(false); // false 表示切换时间框架，不是刷新
             });
         }
 
@@ -40,7 +50,7 @@ class TopdogindexManager {
         const refreshBtn = document.getElementById('refresh-btn');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
-                this.loadAllCharts();
+                this.loadAllCharts(true); // true 表示刷新模式
             });
         }
 
@@ -57,36 +67,42 @@ class TopdogindexManager {
         }
     }
 
-    async loadAllCharts() {
-        this.showLoading();
+    async loadAllCharts(isRefresh = true) {
+        // 不显示全屏loading，使用渐进式刷新
+        const chartsContainer = document.getElementById('charts-container');
+        
+        // 如果是首次加载，清空容器
+        if (!isRefresh) {
+            chartsContainer.innerHTML = '';
+        }
+        
+        const timeframesToLoad = this.currentTimeframe === 'all' 
+            ? this.timeframes 
+            : [this.currentTimeframe];
+        
+        // 并行加载所有图片，使用 Promise.all
+        const loadPromises = timeframesToLoad.map((timeframe, i) => {
+            const index = this.currentTimeframe === 'all' ? i : this.timeframes.indexOf(timeframe);
+            return this.loadChart(timeframe, index, isRefresh); // isRefresh 表示是否使用渐进式刷新
+        });
         
         try {
-            const chartsContainer = document.getElementById('charts-container');
-            chartsContainer.innerHTML = '';
-
-            if (this.currentTimeframe === 'all') {
-                // 显示所有时间框架的图表
-                for (let i = 0; i < this.timeframes.length; i++) {
-                    const timeframe = this.timeframes[i];
-                    await this.loadChart(timeframe, i);
-                }
-            } else {
-                // 只显示选中的时间框架
-                const index = this.timeframes.indexOf(this.currentTimeframe);
-                await this.loadChart(this.currentTimeframe, index);
-            }
-            
+            await Promise.all(loadPromises);
+            // 按照时间顺序排序图表卡片
+            this.sortChartsByTimeframe();
             this.updateDisplayMode();
-            this.hideLoading();
-            this.showNotification('图表加载完成', 'success');
+            if (isRefresh) {
+                this.showNotification('图表刷新完成', 'success');
+            }
         } catch (error) {
-            this.hideLoading();
-            this.showNotification(`加载失败: ${error.message}`, 'error');
+            this.showNotification(`部分图表加载失败`, 'warning');
         }
     }
 
-    async loadChart(timeframe, index) {
+    async loadChart(timeframe, index, progressive = false) {
         try {
+            // 添加时间戳防止缓存
+            const timestamp = new Date().getTime();
             const response = await fetch(`/metrics/${this.config.indicatorId}/api/chart/`, {
                 method: 'POST',
                 headers: {
@@ -94,19 +110,33 @@ class TopdogindexManager {
                     'X-CSRFToken': this.getCSRFToken()
                 },
                 body: JSON.stringify({
-                    timeframe: timeframe
+                    timeframe: timeframe,
+                    _t: timestamp // 时间戳参数
                 })
             });
 
             const data = await response.json();
             
             if (data.success) {
-                this.createChartCard(timeframe, data.image_path, index);
+                // 渐进式刷新：如果卡片已存在，更新图片；否则创建新卡片
+                if (progressive) {
+                    this.updateChartCard(timeframe, data.image_path, index);
+                } else {
+                    this.createChartCard(timeframe, data.image_path, index);
+                }
             } else {
-                this.createErrorCard(timeframe, data.error, index);
+                if (progressive) {
+                    this.updateChartCardError(timeframe, data.error, index);
+                } else {
+                    this.createErrorCard(timeframe, data.error, index);
+                }
             }
         } catch (error) {
-            this.createErrorCard(timeframe, error.message, index);
+            if (progressive) {
+                this.updateChartCardError(timeframe, error.message, index);
+            } else {
+                this.createErrorCard(timeframe, error.message, index);
+            }
         }
     }
 
@@ -115,15 +145,22 @@ class TopdogindexManager {
         
         const chartCard = document.createElement('div');
         chartCard.className = 'chart-card';
+        chartCard.setAttribute('data-timeframe', timeframe);
+        chartCard.setAttribute('data-index', index);
         chartCard.innerHTML = `
             <div class="chart-header">
                 <h3>TOPDOGINDEX - ${timeframe.toUpperCase()}</h3>
                 <span class="chart-index">#${index + 1}</span>
             </div>
             <div class="chart-content">
+                <div class="chart-loading-indicator">
+                    <div class="mini-spinner"></div>
+                    <span>加载中...</span>
+                </div>
                 <img src="${imagePath}" alt="TOPDOGINDEX ${timeframe}" 
                      class="chart-image" 
-                     onload="this.style.opacity=1"
+                     style="opacity: 0;"
+                     onload="this.style.opacity='1'; this.parentElement.querySelector('.chart-loading-indicator').style.display='none';"
                      onerror="this.parentElement.innerHTML='<div class=\\'error-message\\'>图片加载失败</div>'">
             </div>
             <div class="chart-footer">
@@ -133,6 +170,122 @@ class TopdogindexManager {
         `;
         
         chartsContainer.appendChild(chartCard);
+    }
+
+    updateChartCard(timeframe, imagePath, index) {
+        // 查找已存在的卡片
+        const chartsContainer = document.getElementById('charts-container');
+        let chartCard = chartsContainer.querySelector(`[data-timeframe="${timeframe}"]`);
+        
+        if (!chartCard) {
+            // 如果卡片不存在，创建新卡片
+            this.createChartCard(timeframe, imagePath, index);
+            return;
+        }
+        
+        // 卡片已存在，更新图片（渐进式刷新）
+        const chartContent = chartCard.querySelector('.chart-content');
+        const oldImage = chartCard.querySelector('.chart-image');
+        
+        // 显示加载指示器
+        let loadingIndicator = chartContent.querySelector('.chart-loading-indicator');
+        if (!loadingIndicator) {
+            loadingIndicator = document.createElement('div');
+            loadingIndicator.className = 'chart-loading-indicator';
+            loadingIndicator.innerHTML = '<div class="mini-spinner"></div><span>刷新中...</span>';
+            chartContent.insertBefore(loadingIndicator, oldImage);
+        }
+        loadingIndicator.style.display = 'flex';
+        
+        // 创建新图片（在后台加载）
+        const newImage = new Image();
+        newImage.className = 'chart-image';
+        newImage.alt = `TOPDOGINDEX ${timeframe}`;
+        newImage.style.opacity = '0';
+        newImage.style.transition = 'opacity 0.5s ease-in-out';
+        
+        // 图片加载完成后替换
+        newImage.onload = () => {
+            // 淡入新图片
+            newImage.style.opacity = '1';
+            // 淡出旧图片
+            if (oldImage) {
+                oldImage.style.opacity = '0';
+                setTimeout(() => {
+                    if (oldImage.parentNode) {
+                        oldImage.remove();
+                    }
+                }, 500);
+            }
+            // 隐藏加载指示器
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            // 更新时间戳
+            const timestampEl = chartCard.querySelector('.chart-timestamp');
+            if (timestampEl) {
+                timestampEl.textContent = new Date().toLocaleTimeString();
+            }
+            // 更新后重新排序（确保顺序正确）
+            this.sortChartsByTimeframe();
+        };
+        
+        newImage.onerror = () => {
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            this.updateChartCardError(timeframe, '图片加载失败', index);
+        };
+        
+        // 添加时间戳防止缓存
+        newImage.src = imagePath + (imagePath.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
+        
+        // 将新图片添加到容器（在旧图片后面）
+        chartContent.appendChild(newImage);
+    }
+
+    updateChartCardError(timeframe, error, index) {
+        const chartsContainer = document.getElementById('charts-container');
+        const chartCard = chartsContainer.querySelector(`[data-timeframe="${timeframe}"]`);
+        
+        if (chartCard) {
+            const chartContent = chartCard.querySelector('.chart-content');
+            const loadingIndicator = chartContent.querySelector('.chart-loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            // 如果图片加载失败，显示错误信息（但不替换整个卡片）
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<div class="error-icon">⚠️</div><p>刷新失败</p><small>${error}</small>`;
+            errorDiv.style.position = 'absolute';
+            errorDiv.style.top = '50%';
+            errorDiv.style.left = '50%';
+            errorDiv.style.transform = 'translate(-50%, -50%)';
+            errorDiv.style.background = 'rgba(255, 255, 255, 0.9)';
+            errorDiv.style.padding = '1rem';
+            errorDiv.style.borderRadius = '5px';
+            
+            // 移除旧的错误信息
+            const oldError = chartContent.querySelector('.error-message');
+            if (oldError) {
+                oldError.remove();
+            }
+            
+            chartContent.appendChild(errorDiv);
+            
+            // 3秒后自动移除错误信息
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.style.opacity = '0';
+                    errorDiv.style.transition = 'opacity 0.3s';
+                    setTimeout(() => errorDiv.remove(), 300);
+                }
+            }, 3000);
+        } else {
+            // 如果卡片不存在，创建错误卡片
+            this.createErrorCard(timeframe, error, index);
+        }
     }
 
     createErrorCard(timeframe, error, index) {
@@ -159,6 +312,35 @@ class TopdogindexManager {
         `;
         
         chartsContainer.appendChild(errorCard);
+    }
+
+    sortChartsByTimeframe() {
+        // 使用防抖，避免频繁排序
+        if (this.sortTimeout) {
+            clearTimeout(this.sortTimeout);
+        }
+        
+        this.sortTimeout = setTimeout(() => {
+            // 按照时间框架顺序对图表卡片进行排序
+            const chartsContainer = document.getElementById('charts-container');
+            const chartCards = Array.from(chartsContainer.querySelectorAll('.chart-card'));
+            
+            // 按照时间框架顺序排序
+            chartCards.sort((a, b) => {
+                const timeframeA = a.getAttribute('data-timeframe');
+                const timeframeB = b.getAttribute('data-timeframe');
+                const orderA = this.timeframeOrder[timeframeA] || 999;
+                const orderB = this.timeframeOrder[timeframeB] || 999;
+                return orderA - orderB;
+            });
+            
+            // 重新插入排序后的卡片
+            chartCards.forEach(card => {
+                chartsContainer.appendChild(card);
+            });
+            
+            this.sortTimeout = null;
+        }, 100); // 100ms 防抖延迟
     }
 
     updateDisplayMode() {
@@ -198,7 +380,7 @@ class TopdogindexManager {
     startAutoRefresh() {
         this.stopAutoRefresh(); // 确保没有重复的定时器
         this.autoRefreshInterval = setInterval(() => {
-            this.loadAllCharts();
+            this.loadAllCharts(true); // true 表示自动刷新模式
         }, this.refreshInterval);
         
         this.showNotification(`自动刷新已启动 (${this.refreshInterval/1000}秒间隔)`, 'info');
@@ -213,17 +395,13 @@ class TopdogindexManager {
     }
 
     showLoading() {
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'flex';
-        }
+        // 不再使用全屏loading，改为每个卡片独立显示加载状态
+        // 保留方法以兼容性，但不执行任何操作
     }
 
     hideLoading() {
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'none';
-        }
+        // 不再使用全屏loading
+        // 保留方法以兼容性，但不执行任何操作
     }
 
     showNotification(message, type = 'info') {

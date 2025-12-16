@@ -5,6 +5,14 @@ import json
 import os
 from pathlib import Path
 
+# 导入K线数据管理器
+try:
+    from .kline_data_manager import get_kline_manager
+    KLINE_MANAGER_AVAILABLE = True
+except ImportError as e:
+    print(f"K线数据管理器导入失败: {e}")
+    KLINE_MANAGER_AVAILABLE = False
+
 def metrics_home(request):
     """指标可视化主页 - 显示所有可用指标"""
     # 定义可用指标
@@ -52,10 +60,25 @@ def indicator_detail(request, indicator_id):
             "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"]
         })
     elif indicator_id == "kline":
+        # 定义主流币种列表（这些会显示在前面）
+        mainstream_coins = ["btc", "eth", "sol", "xrp", "bnb", "ada", "doge", "trx", "ltc", "shib", 
+                           "matic", "avax", "dot", "link", "uni"]
+        
+        # 尝试从K线管理器获取所有可用币种（主流币种在前）
+        coins = mainstream_coins
+        if KLINE_MANAGER_AVAILABLE:
+            try:
+                kline_manager = get_kline_manager()
+                # 使用新的方法获取币种列表（已包含主流币种排序）
+                coins = kline_manager.get_available_coins()
+            except Exception as e:
+                print(f"获取币种列表失败: {e}，使用默认主流币种")
+                coins = mainstream_coins
+        
         return render(request, "metrics/kline.html", {
             "indicator_id": indicator_id,
-            "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-            "coins": ["btc", "eth", "xrp", "bnb", "sol", "ada", "doge", "trx", "ltc", "shib"]
+            "timeframes": json.dumps(["1m", "5m", "15m", "1h", "4h", "1d"]),
+            "coins": json.dumps(coins)
         })
     else:
         return render(request, "metrics/error.html", {
@@ -125,6 +148,78 @@ def get_chart_image(request, indicator_id):
             "indicator_id": indicator_id,
             "timeframe": timeframe,
             "coin": coin
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+@csrf_exempt
+def get_kline_data(request):
+    """获取K线数据的API接口"""
+    if request.method != 'GET':
+        return JsonResponse({"error": "只支持GET请求"}, status=405)
+    
+    if not KLINE_MANAGER_AVAILABLE:
+        return JsonResponse({
+            "success": False,
+            "error": "K线数据管理器不可用"
+        }, status=500)
+    
+    try:
+        symbol = request.GET.get('symbol', 'btc')
+        timeframe = request.GET.get('timeframe', '1H')
+        limit = int(request.GET.get('limit', 200))
+        
+        # 限制limit范围
+        if limit < 1 or limit > 1000:
+            limit = 200
+        
+        kline_manager = get_kline_manager()
+        kline_data, error = kline_manager.get_kline_data(symbol, timeframe, limit)
+        
+        if error:
+            return JsonResponse({
+                "success": False,
+                "error": error
+            }, status=500)
+        
+        return JsonResponse({
+            "success": True,
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "limit": limit,
+            "data": kline_data,
+            "count": len(kline_data) if kline_data else 0
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+@csrf_exempt
+def get_available_symbols(request):
+    """获取可用交易对列表的API接口"""
+    if request.method != 'GET':
+        return JsonResponse({"error": "只支持GET请求"}, status=405)
+    
+    if not KLINE_MANAGER_AVAILABLE:
+        return JsonResponse({
+            "success": False,
+            "error": "K线数据管理器不可用"
+        }, status=500)
+    
+    try:
+        kline_manager = get_kline_manager()
+        symbols = kline_manager.get_available_symbols()
+        
+        return JsonResponse({
+            "success": True,
+            "symbols": symbols
         })
         
     except Exception as e:

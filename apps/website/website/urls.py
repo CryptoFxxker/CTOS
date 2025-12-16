@@ -25,7 +25,10 @@ urlpatterns = [
     path('', home, name='home'),
     path('accounts/', include('apps.accounts.urls')),
     path('metrics/', include('apps.metrics.urls')),
-    # path('trading/', include('apps.trading.urls')),
-    # path('strategies/', include('apps.strategies.urls')),
+    path('funds/', include('apps.funds.urls')),
+    path('auth/', include('apps.auth.urls')),
+    path('trading/', include('apps.trading.urls')),
+    path('strategies/', include('apps.strategies.urls')),
+    path('news/', include('apps.news.urls')),
     path('admin/', admin.site.urls),
 ]

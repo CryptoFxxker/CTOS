@@ -144,7 +144,7 @@ def account_list(request):
         return render(request, "accounts/list.html", {
             "accounts": [],
             "exchanges": [],
-            "error": f"加载账户信息失败: {str(e)}"
+            "error": f"加载账户信息失败"
         })
 
 @csrf_exempt

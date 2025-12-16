@@ -1,12 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>欢迎进入 CTOS Web GUI</h2>
-  <p>请选择一个功能模块：</p>
-  <ul>
-    <li><a href="/accounts/">账户信息</a></li>
-    <li><a href="/metrics/">指标可视化</a></li>
-    <li><a href="/trading/">账户交易</a></li>
-    <li><a href="/strategies/">策略执行</a></li>
-  </ul>
+  <div class="home-content">
+    {% if user.is_authenticated %}
+      <h2>欢迎回来，{{ user.username }}！</h2>
+      <p class="welcome-message">您已成功登录 CTOS Web GUI</p>
+    {% else %}
+      <h2>欢迎进入 CTOS Web GUI</h2>
+      <p class="welcome-message">请先登录以访问系统功能</p>
+      <div class="login-prompt">
+        <a href="{% url 'login' %}" class="btn btn-primary">立即登录</a>
+      </div>
+    {% endif %}
+    
+    <div class="modules-section">
+      <h3>功能模块</h3>
+      <ul class="module-list">
+        <li><a href="/accounts/">账户信息</a></li>
+        <li><a href="/metrics/">指标可视化</a></li>
+        <li><a href="/funds/">基金趋势</a></li>
+        <li><a href="/trading/">账户交易</a></li>
+        <li><a href="/strategies/">策略执行</a></li>
+        <li><a href="{% url 'news:list' %}">📰 资讯</a></li>
+        {% if user.is_authenticated and user.is_superuser %}
+        <li><a href="{% url 'admin_manage' %}">⚙️ 系统管理</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
 {% endblock %}

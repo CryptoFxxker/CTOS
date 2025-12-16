@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+{% load news_filters %}
+
+{% block content %}
+<div class="news-container">
+  <!-- 英雄区域 - 使用图床背景 -->
+  <div class="news-hero" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80') center/cover;">
+    <div class="hero-content">
+      <h1 class="hero-title">📰 资讯中心</h1>
+      <p class="hero-subtitle">信息收集系统 - 最新动态与深度分析</p>
+    </div>
+  </div>
+
+  <!-- 搜索和筛选栏 -->
+  <div class="news-filters">
+    <div class="filter-container">
+      <form method="get" class="search-form">
+        <input type="text" name="search" placeholder="🔍 搜索文章..." value="{{ search_query }}" class="search-input">
+        <button type="submit" class="search-btn">搜索</button>
+      </form>
+      
+      <div class="filter-tags">
+        <a href="{% url 'news:list' %}" class="filter-tag {% if not current_category and not current_tag %}active{% endif %}">全部</a>
+        {% for cat in categories %}
+        <a href="?category={{ cat }}" class="filter-tag {% if current_category == cat %}active{% endif %}">{{ cat }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 文章网格 -->
+  <div class="articles-grid">
+    {% for article in articles %}
+    <article class="article-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|mul:100 }}">
+      <div class="article-card-inner">
+        <!-- 封面图片 -->
+        <div class="article-cover" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%), url('{% if article.cover_image %}{{ article.cover_image }}{% else %}https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80{% endif %}') center/cover;">
+          <div class="article-category">{{ article.category }}</div>
+        </div>
+        
+        <!-- 文章内容 -->
+        <div class="article-content">
+          <h2 class="article-title">
+            <a href="{% url 'news:detail' article.slug %}">{{ article.title }}</a>
+          </h2>
+          
+          {% if article.excerpt %}
+          <p class="article-excerpt">{{ article.excerpt|truncatewords:30 }}</p>
+          {% else %}
+          <p class="article-excerpt">{{ article.content|striptags|truncatewords:30 }}</p>
+          {% endif %}
+          
+          <div class="article-meta">
+            <div class="meta-item">
+              <span class="meta-icon">👤</span>
+              <span>{{ article.author.username }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">📅</span>
+              <span>{{ article.published_at|date:"Y-m-d" }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">👁️</span>
+              <span>{{ article.views }}</span>
+            </div>
+          </div>
+          
+          {% if article.get_tags_list %}
+          <div class="article-tags">
+            {% for tag in article.get_tags_list %}
+              {% if forloop.counter <= 3 %}
+              <span class="tag">{{ tag }}</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+          <a href="{% url 'news:detail' article.slug %}" class="article-read-more">
+            阅读更多 →
+          </a>
+        </div>
+      </div>
+    </article>
+    {% empty %}
+    <div class="no-articles">
+      <div class="no-articles-icon">📭</div>
+      <h3>暂无文章</h3>
+      <p>还没有发布任何资讯文章</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 分页 -->
+  {% if page_obj.has_other_pages %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-btn">← 上一页</a>
+    {% endif %}
+    
+    <span class="page-info">第 {{ page_obj.number }} 页 / 共 {{ page_obj.paginator.num_pages }} 页</span>
+    
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-btn">下一页 →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- AOS动画库 -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,
+    easing: 'ease-in-out',
+    once: true
+  });
+</script>
+{% endblock %}
+
