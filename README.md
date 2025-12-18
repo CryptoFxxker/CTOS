@@ -436,7 +436,7 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 
 
 * **🎉 里程碑 5（2025.10.29）**
-  * ✅ 基于OKX模拟盘功能的策略实时模拟功能上线，欢迎广大朋友来基于模拟盘功能开发！与实机体验没有差异，目前只需要在ctos/core/runtime/AccountManager.py中修改okx的驱动来源为simulateokx即可。todo:后续会改进更加方便的功能，争取直接在配置文件标注即可无缝切换。
+  * ✅ 基于OKX模拟盘功能的策略实时模拟功能上线，欢迎广大朋友来基于模拟盘功能开发！与实机体验没有差异，目前只需要在ctos/core/runtime/AccountManager.py中修改okx的驱动来源为simulateokx即可。TODO:后续会改进更加方便的功能，争取直接在配置文件标注即可无缝切换。
 
 
 ### 🎯 策略核心特性

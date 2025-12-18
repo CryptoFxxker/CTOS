@@ -16,6 +16,8 @@ performance*.png
 account.yaml
 ctos.yaml
 good_group*.txt
+api.txt
+fund_data.db
 *GridPositions.json
 # OS
 .DS_Store

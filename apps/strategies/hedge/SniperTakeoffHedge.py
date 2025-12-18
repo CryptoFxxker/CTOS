@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import traceback
 from pathlib import Path
 
 def add_project_paths(project_name="ctos"):
@@ -268,10 +269,17 @@ class SniperTakeoffHedge:
             else:
                 coinPrices_for_openPosition = None
 
-        open_position_price = {x['symbol']: x['markPrice'] for x in engine.cex_driver.get_position()[0]}
         if not coinPrices_for_openPosition:
+            try:
+                data = engine.cex_driver.get_position()[0]
+                open_position_price = {}
+                for x in data:
+                    open_position_price[x['symbol']] = x['markPrice']
+            except Exception as e:
+                print(f"[{cex_name}-{engine.account}] error: {e}")
+                open_position_price = {}
             print(f"✓ 没有找到 {file_path} 文件，重新获取开仓价格", open_position_price, coin_names)
-            coinPrices_for_openPosition = {k.lower(): open_position_price.get(engine.cex_driver._norm_symbol(k.lower())[0]) for k in coin_names}
+            coinPrices_for_openPosition = {k.lower(): open_position_price.get(engine.cex_driver._norm_symbol(k.lower())[0], None) for k in coin_names}
             save_para(coinPrices_for_openPosition, file_path)
         current_time = BeijingTime(format='%H:%M:%S')
         print(f"\r🕐 当前时间为 {current_time}，需要测试下是不是有的币要加关税了...", end='')
@@ -290,45 +298,51 @@ class SniperTakeoffHedge:
         target_pool = {'btc'}  # 5 个候选
         # target_pool = {'btc', 'eth', 'sol', 'doge', 'xrp'}  # 5 个候选
 
-        for coin_name in coin_names:  # 遍历你所有关注的币
+        for idx, coin_name in enumerate(coin_names):  # 遍历你所有关注的币
             time.sleep(0.1)
-            symbol_full, _, _ = engine.cex_driver._norm_symbol(coin_name)
-            position = coin_positions.get(symbol_full, None)
-            if position is None:
-                price = engine.cex_driver.get_price_now(coin_name)
-            else:
-                price = position['markPrice']
-            now_price_for_all_coins[coin_name] = price
-            exchange_limits_info, eli_err = engine.cex_driver.exchange_limits(symbol=symbol_full)
-            if eli_err:
-                print('CEX DRIVER.exchange_limits error ', eli_err)
+            try:
+                symbol_full, _, _ = engine.cex_driver._norm_symbol(coin_name)
+                position = coin_positions.get(symbol_full, None)
+                if position is None:
+                    price = engine.cex_driver.get_price_now(coin_name)
+                else:
+                    price = position['markPrice']
+                now_price_for_all_coins[coin_name] = price
+                exchange_limits_info, eli_err = engine.cex_driver.exchange_limits(symbol=symbol_full)
+                if eli_err:
+                    print('CEX DRIVER.exchange_limits error ', eli_err)
+                    continue
+                min_order_size = exchange_limits_info['min_order_size']
+                contract_value = exchange_limits_info['contract_value']
+
+                min_buy = min_order_size * contract_value * price
+                min_money_to_buy_amounts[coin_name] = min_buy
+                if coin_name.lower() not in coinPrices_for_openPosition:
+                    coinPrices_for_openPosition[coin_name.lower()] = price
+                last_time_price = coinPrices_for_openPosition[coin_name.lower()]
+                # print(f"[{idx}] price: {price}, last_time_price: {last_time_price}, btc_now_price: {btc_now_price}, coinPrices_for_openPosition['btc']: {coinPrices_for_openPosition['btc']}")
+                exceed = (price / last_time_price) - (btc_now_price / coinPrices_for_openPosition['btc'])
+
+                coin_exceed_btc_increase_rates[coin_name] = exceed
+
+                prepared = exceed / 0.01 * sanction_money  # 每涨 1 个点，准备 3 USDT
+                consle_show = f'🕐\r 当前时间为 {current_time}，{symbol_full}要加关税了啊! 超了btc {exceed:.4f}这么多个点！(当前价:{price:.4f}, 参考价:{coinPrices_for_openPosition[coin_name.lower()]:.4f})'
+                if len(consle_show) <120:  
+                    consle_show = consle_show + ' ' * (120 - len(consle_show))
+                print(f"\r{consle_show}", end='')
+                if exceed > sanction_line and prepared > min_buy * 1.01:
+                    print(f"\r✅✅✅ 当前时间为 {current_time}，{coin_name}真的要加关税了啊!! 超了btc {exceed:.4f}这么多个点！", end='\t\t')
+                    time.sleep(2)
+                    selected[coin_name] = {
+                        'price': price,
+                        'prepared': prepared,
+                        'min_buy': min_buy,
+                        'exceed': exceed
+                    }
+
+            except Exception as e:
+                print(f"[{idx}- {coin_name}] error: {e}")
                 continue
-            min_order_size = exchange_limits_info['min_order_size']
-            contract_value = exchange_limits_info['contract_value']
-
-            min_buy = min_order_size * contract_value * price
-            min_money_to_buy_amounts[coin_name] = min_buy
-            if coin_name.lower() not in coinPrices_for_openPosition:
-                coinPrices_for_openPosition[coin_name.lower()] = price
-            last_time_price = coinPrices_for_openPosition[coin_name.lower()]
-            exceed = (price / last_time_price) - (btc_now_price / coinPrices_for_openPosition['btc'])
-
-            coin_exceed_btc_increase_rates[coin_name] = exceed
-
-            prepared = exceed / 0.01 * sanction_money  # 每涨 1 个点，准备 3 USDT
-            consle_show = f'🕐\r 当前时间为 {current_time}，{symbol_full}要加关税了啊! 超了btc {exceed:.4f}这么多个点！(当前价:{price:.4f}, 参考价:{coinPrices_for_openPosition[coin_name.lower()]:.4f})'
-            if len(consle_show) <120:  
-                consle_show = consle_show + ' ' * (120 - len(consle_show))
-            print(f"\r{consle_show}", end='')
-            if exceed > sanction_line and prepared > min_buy * 1.01:
-                print(f"\r✅✅✅ 当前时间为 {current_time}，{coin_name}真的要加关税了啊!! 超了btc {exceed:.4f}这么多个点！", end='\t\t')
-                time.sleep(2)
-                selected[coin_name] = {
-                    'price': price,
-                    'prepared': prepared,
-                    'min_buy': min_buy,
-                    'exceed': exceed
-                }
         # -------------- 选出 good 币（含 BTC）并按资金可行性轮换 -----------------
         good_candidates = {c: v for c, v in coin_exceed_btc_increase_rates.items() if c.lower() in target_pool}
         sell_list = []
@@ -371,20 +385,21 @@ class SniperTakeoffHedge:
                 # coinPrices_for_openPosition[good_coin] = now_price_for_all_coins[good_coin]
                 for coin, _, price in sell_list:
                     coinPrices_for_openPosition[coin] = price
-                coinPrices_for_openPosition['btc'] = btc_now_price
+                if coinPrices_for_openPosition['btc'] > btc_now_price:
+                    coinPrices_for_openPosition['btc'] = btc_now_price
                 save_para(coinPrices_for_openPosition, file_path)
 
                 # ---------- 真正执行：卖 → 买 ----------
                 for coin, adj, price in sell_list:
                     order_id, err_msg = engine.place_incremental_orders(adj * 1.02, coin, 'sell', soft=False)
                     if err_msg:
-                        print(f"❌ 订单创建失败: {err_msg}")
+                        print(f"{BeijingTime()} {cex_name.upper()}_{engine.account} ❌ 订单创建失败: {err_msg}")
                         continue
                     engine.monitor.record_operation("SellOther", '关税轮换', {"symbol": coin, "price": price, "money": adj, "order_id": order_id[0]})
 
                 order_id, err_msg = engine.place_incremental_orders(buy_amt * 1.02, good_coin, 'buy', soft=False)
                 if err_msg:
-                    print(f"❌ 订单创建失败: {err_msg}")
+                    print(f"{BeijingTime()} {cex_name.upper()}_{engine.account} ❌ 订单创建失败: {err_msg}")
                     continue
                 engine.monitor.record_operation("BuyGood", '关税轮换', {"symbol": good_coin,  "price": now_price_for_all_coins[good_coin], "money": buy_amt, "order_id": order_id[0]})
 
@@ -398,38 +413,101 @@ class SniperTakeoffHedge:
             print("\r💡 good_pool 中无满足资金条件的币，本轮跳过", end='')
             time.sleep(1)
 
+    def _format_error_info(self, error, cex_name, account_id, idx):
+        """
+        格式化错误信息，包含详细的错误位置和堆栈跟踪
+        
+        Args:
+            error: 异常对象
+            cex_name: 交易所名称
+            account_id: 账户ID
+            idx: 账户索引
+            
+        Returns:
+            str: 格式化后的错误信息
+        """
+        error_type = type(error).__name__
+        error_message = str(error)
+        
+        # 获取堆栈跟踪
+        tb_lines = traceback.format_exc().split('\n')
+        
+        # 提取关键信息
+        error_location = "未知位置"
+        error_file = "未知文件"
+        error_line = "未知行号"
+        
+        # 从堆栈跟踪中提取文件位置信息
+        for line in tb_lines:
+            if 'File "' in line and '.py"' in line:
+                # 提取文件名和行号
+                parts = line.split('File "')
+                if len(parts) > 1:
+                    file_part = parts[1].split('", line ')
+                    if len(file_part) == 2:
+                        error_file = file_part[0]
+                        error_line = file_part[1].split(',')[0]
+                        # 只保留文件名，不包含完整路径
+                        error_file = os.path.basename(error_file)
+                        error_location = f"{error_file}:{error_line}"
+                        break
+        
+        # 构建错误信息
+        # 只显示最后15行堆栈跟踪，避免输出过长
+        stack_trace = '\n'.join(tb_lines[-15:])
+        
+        error_info = f"""
+            {BeijingTime()} ❌ 策略执行出错
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            📍 错误位置: {cex_name}-{account_id} (索引: {idx})
+            📁 文件位置: {error_location}
+            🔴 错误类型: {error_type}
+            💬 错误信息: {error_message}
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            📋 完整堆栈跟踪:
+            {stack_trace}
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"""
+        return error_info
 
     def run_sniperTakeoffHedge(self):
         # 主循环
         balances = [engine.cex_driver.fetch_balance() for engine in self.engines]
         while True:
-            # try:
-            if True:
+            try:
                 for idx in range(len(self.engines)):
-                    engine = self.engines[idx]
-                    cex_name = self.cexes[idx]
-                    account_id = self.account_ids[idx]
-                    sanction_line = self.sanction_line[idx]
-                    sanction_money = self.sanction_money[idx]
-                    coinPrices_for_openPosition = self.coinPrices_for_openPositions[idx]
-                    print(f"\r{BeijingTime()} 🔍 检查 {cex_name}-{account_id} 的飞升情况...", end='')
-                    
-                    # 获取该账户的关注币种
-                    account_coins = self.coin_names_all.get(f"{cex_name}_{account_id}", self.coin_names_all[f"{cex_name}_{account_id}"])
-                    
-                    # 执行狙击飞升对冲策略
-                    self.sniperTakeoffHedge(
-                        engine=engine,
-                        cex_name=cex_name,
-                        coin_names=account_coins,
-                        sanction_line=sanction_line,
-                        sanction_money=sanction_money,
-                        coinPrices_for_openPosition=coinPrices_for_openPosition  # 自动从文件加载或获取当前价格
-                    )
-                    # 更新余额信息      
-                    current_balance = engine.cex_driver.fetch_balance()
-                    balance_change = current_balance - balances[idx]
-                    balances[idx] = current_balance
+                    try:
+                        engine = self.engines[idx]
+                        cex_name = self.cexes[idx]
+                        account_id = self.account_ids[idx]
+                        sanction_line = self.sanction_line[idx]
+                        sanction_money = self.sanction_money[idx]
+                        coinPrices_for_openPosition = self.coinPrices_for_openPositions[idx]
+                        print(f"\r{BeijingTime()} 🔍 检查 {cex_name}-{account_id} 的飞升情况...", end='')
+                        
+                        # 获取该账户的关注币种
+                        account_coins = self.coin_names_all.get(f"{cex_name}_{account_id}", self.coin_names_all[f"{cex_name}_{account_id}"])
+                        
+                        # 执行狙击飞升对冲策略
+                        self.sniperTakeoffHedge(
+                            engine=engine,
+                            cex_name=cex_name,
+                            coin_names=account_coins,
+                            sanction_line=sanction_line,
+                            sanction_money=sanction_money,
+                            coinPrices_for_openPosition=coinPrices_for_openPosition  # 自动从文件加载或获取当前价格
+                        )
+                        # 更新余额信息      
+                        current_balance = engine.cex_driver.fetch_balance()
+                        balance_change = current_balance - balances[idx]
+                        balances[idx] = current_balance
+                    except Exception as account_error:
+                        # 单个账户出错，记录详细信息但继续处理其他账户
+                        error_info = self._format_error_info(account_error, cex_name, account_id, idx)
+                        print(f"\n{error_info}")
+                        time.sleep(5)  # 账户级错误等待时间
+                        continue
+                
                 time_to_sleep = self.sleep_duration
                 while time_to_sleep > 0:
                     uptime = int(time.time() - self.start_time)
@@ -438,16 +516,26 @@ class SniperTakeoffHedge:
                     mm = (uptime % 3600) // 60
                     ss = uptime % 60
                     uptime_str = f"{dd}天{hh:02d}时{mm:02d}分"
-                    output_string = f"{BeijingTime()} 💰 {cex_name}-{account_id} Watch {len(coinPrices_for_openPosition)} coins, 当前余额: {'-'.join(str(round(balance, 2)) for balance in balances)} USDT (变化: {balance_change:+.2f}) | 已运行: {uptime_str}"
+                    # 使用最后一个账户的信息（如果存在）
+                    if len(self.engines) > 0:
+                        last_idx = len(self.engines) - 1
+                        last_cex = self.cexes[last_idx]
+                        last_account = self.account_ids[last_idx]
+                        last_coins = self.coinPrices_for_openPositions[last_idx]
+                        output_string = f"{BeijingTime()} 💰 {last_cex}-{last_account} Watch {len(last_coins)} coins, 当前余额: {'-'.join(str(round(balance, 2)) for balance in balances)} USDT | 已运行: {uptime_str}"
+                    else:
+                        output_string = f"{BeijingTime()} 💰 当前余额: {'-'.join(str(round(balance, 2)) for balance in balances)} USDT | 已运行: {uptime_str}"
                     if len(output_string) < 120:
                         output_string = output_string + ' ' * (120 - len(output_string))    
                     print(f"\r{output_string}", end='')
                     time.sleep(1)
                     time_to_sleep -= 1
                 
-            # except Exception as e:
-            #     print(f"{BeijingTime()} ❌ 策略执行出错: {e}")
-            #     time.sleep(10)  # 出错时等待更长时间
+            except Exception as e:
+                # 主循环级别的错误
+                error_info = self._format_error_info(e, "主循环", "N/A", "N/A")
+                print(f"\n{error_info}")
+                time.sleep(10)  # 出错时等待更长时间
             
             # 主循环间隔
             # print(f"\r{BeijingTime()} ⏰ 等待下一轮检查...", end='')

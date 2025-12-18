@@ -278,6 +278,7 @@ class OkexSpot:
                 # 如果API返回的代码不是'0'，记录错误消息
                 return None
         except Exception as e:
+            print('Error fetch_balance: ', e)
             # 捕捉并记录任何其他异常
             return None
 

@@ -283,7 +283,7 @@ def plot_asset_trend():
     if HOST_IP.find(SERVER_IP) != -1:
         os.system(f'cp {local_asset} ~/mysite/static/images/')
     else:
-        os.system(f'scp {local_asset} root@{SERVER_IP}:/root/mysite/static/images/')
+        os.system(f'scp {local_asset} azureuser@{SERVER_IP}:~/Quantify/ctos/apps/website/static/images/')
     plt.close()
 
 
@@ -2087,7 +2087,8 @@ def main1(top10_coins=['btc', 'eth', 'xrp', 'bnb', 'sol', 'ada', 'doge', 'trx', 
     if HOST_IP.find(SERVER_IP) != -1:
         os.system(f'cp {out_avg} /var/www/html/')
     else:
-        os.system(f'scp {out_avg} root@{SERVER_IP}:/var/www/html/')
+        # os.system(f'scp {out_avg} root@{SERVER_IP}:/var/www/html/')
+        pass
     
     print(f"📊 平均值曲线图表已保存: {out_avg}")
     print(f"📤 已同步到 /var/www/html/ 目录")
@@ -2122,7 +2123,7 @@ def get_good_bad_coin_group(length=5):
     with open(str(local_bp), 'w') as f:
         f.write(','.join(best_performance_coins))
     # 保持原有同步逻辑，但使用本地文件路径
-    os.system(f'scp {str(local_bp)} root@{SERVER_IP}:/root/Quantify/okx')
+    # os.system(f'scp {str(local_bp)} root@{SERVER_IP}:/root/Quantify/okx')
     return worst_performance_coins, best_performance_coins
 
 
@@ -2300,7 +2301,7 @@ def hedge_optimization_worker():
             if HOST_IP.find(SERVER_IP) != -1:
                 os.system(f'cp {result_file} ~/mysite/static/images/')
             else:
-                os.system(f'scp {result_file} root@{SERVER_IP}:/root/mysite/static/images/')
+                os.system(f'scp {result_file} azureuser@{SERVER_IP}:~/Quantify/ctos/apps/website/static/images/')
         
     except Exception as e:
         print(f"❌ 对冲优化过程中出错: {e}")
@@ -2397,7 +2398,7 @@ if __name__ == '__main__':
             if HOST_IP.find(SERVER_IP) != -1:
                 os.system(f'cp {local} ~/mysite/static/images/{remote}')
             else:
-                os.system(f'scp {local} root@{SERVER_IP}:/root/mysite/static/images/{remote}')
+                os.system(f'scp {local} azureuser@{SERVER_IP}:~/Quantify/ctos/apps/website/static/images/comparison_chart_{chart_name}_{gap}.png')
 
             last_run[gap] = now              # 更新时间戳
             print(f"[{gap}] 更新完成，用时 {round(time.time()-now,2)} 秒")

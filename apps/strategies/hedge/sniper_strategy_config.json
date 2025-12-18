@@ -1,17 +1,31 @@
 {
   "account_ids": [
-    0
+    0,
+    4,
+    5
   ],
   "cexes": [
+    "okx",
+    "okx",
     "okx"
   ],
   "sanction_line": [
+    0.01,
+    0.01,
     0.01
   ],
   "sanction_money": [
-    5
+    5,
+    10,
+    40
   ],
   "target_pool": [
+    [
+      "btc"    
+    ],
+    [
+      "btc"    
+    ],
     [
       "btc"    
     ]

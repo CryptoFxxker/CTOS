@@ -103,7 +103,12 @@
     "soon",
     "aero",
     "2z",
-    "mmt"
+    "mmt",
+    "mon",
+    "zec",
+    "recall",
+    "night",
+    "cc"
   ],
   "all_coins": [
     "btc",
@@ -207,7 +212,13 @@
     "fartcoin",
     "soon",
     "aero",
-    "2z"
+    "2z",
+    "mmt",
+    "mon",
+    "zec",
+    "recall",
+    "night",
+    "cc"
   ],
   "last_updated": 1761279770.7553477,
   "description": "okx-0 关注币种配置"

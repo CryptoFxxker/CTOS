@@ -121,7 +121,7 @@ class ExecutionEngine:
         for x in position_infos:
             if float(x['quantity']) != 0:
                 all_pos_info[x['symbol']] = x
-        print('all_pos_info.keys: ', all_pos_info.keys())
+        # print('all_pos_info.keys: ', all_pos_info.keys())
         
         # 如果启用异步模式，使用并发处理
         if async_mode:
@@ -154,8 +154,12 @@ class ExecutionEngine:
             return self.soft_orders_to_focus
         
         # 原有同步逻辑
+        times = 0
         for coin, usdt_amount in zip(coins, usdt_amounts):
+            times += 1
             try:
+                if times > 50:
+                    time.sleep(1)
                 symbol_full, _, _ = self.cex_driver._norm_symbol(coin)
                 # exchange = init_CexClient(coin)
                 if stack_mode:

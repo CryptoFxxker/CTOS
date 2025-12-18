@@ -11,11 +11,6 @@ import sys
 def _add_bpx_path():
     """添加bpx包路径到sys.path，支持多种运行方式"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    bpx_path = os.path.join(current_dir, 'bpx')
-    
-    # 添加当前目录的bpx路径
-    if bpx_path not in sys.path:
-        sys.path.insert(0, bpx_path)
     
     # 添加项目根目录的bpx路径（如果存在）
     project_root = os.path.abspath(os.path.join(current_dir, '../../..'))

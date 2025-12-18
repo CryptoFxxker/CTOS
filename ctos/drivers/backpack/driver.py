@@ -41,12 +41,14 @@ try:
     from .bpx.public import Public    # type: ignore
     from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places   # type: ignore
 except Exception:
+    print(f'[1] Error importing bpx clients: {e}')
     try:
         # When the full package is available in sys.path
         from ctos.drivers.backpack.bpx.account import Account  # type: ignore
         from ctos.drivers.backpack.bpx.public import Public    # type: ignore
         from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places    # type: ignore
     except Exception as e:
+        print(f'[2] Error importing bpx clients: {e}')
         # As a last resort, add the local folder so `bpx` can be found when running this file directly
         backpack_dir = os.path.dirname(__file__)
         if backpack_dir not in sys.path:
@@ -55,7 +57,7 @@ except Exception:
             from bpx.account import Account  # type: ignore
             from bpx.public import Public    # type: ignore
         except Exception as e2:
-            print(f'Error importing bpx clients: {e2}')
+            print(f'[3] Error importing bpx clients: {e2}')
             print(f'Current sys.path: {sys.path}...')  # 只显示前3个路径
             sys.exit(1)
 
