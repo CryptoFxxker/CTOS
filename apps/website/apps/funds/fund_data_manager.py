@@ -765,91 +765,116 @@ class FundDataManager:
         
         print(f"[账户 {self.account_id}] 采集线程退出")
     
-    def get_trend_data(self, period: str) -> List[Dict]:
-        """
-        获取走势数据，自适应前端展示需求
-        
-        Args:
-            period: 周期 ('1d', '7d', '1m', '6m', 'all')
             
-        Returns:
-            走势数据列表，每个元素包含 timestamp, value, pnl
-        """
-        try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            
-            # 根据周期选择合适的数据源和采样策略
-            if period == '1d':
-                # 1天：使用1分钟数据，最多1440个点（24小时*60分钟）
-                # 如果数据点太多，每10分钟采样一次
-                period_source = '1m'
-                hours_back = 24
-                start_time = (get_beijing_time() - timedelta(hours=hours_back)).strftime("%Y-%m-%d %H:%M:%S")
-                
-                cursor.execute('''
-                    SELECT timestamp, balance 
-                    FROM fund_balance 
-                    WHERE account_id = ? AND period = ? AND timestamp >= ?
-                    ORDER BY timestamp ASC
-                ''', (self.account_id, period_source, start_time))
-                
-                rows = cursor.fetchall()
-                original_count = len(rows)
-                
-                # 如果数据点太多（>144），采样到144个点
-                # 重要：保留最新的数据点，而不是只保留前面的
-                if len(rows) > 144:
-                    # 计算采样步长
-                    step = len(rows) // 144
-                    if step > 1:
-                        # 使用步长采样，但确保最后一个数据点被包含
-                        sampled = rows[::step]
-                        # 如果最后一个数据点不在采样结果中，添加它
-                        if sampled[-1] != rows[-1]:
-                            sampled.append(rows[-1])
-                        rows = sampled
-                    else:
-                        # 如果步长为1，保留最后144个数据点（包含最新的）
-                        rows = rows[-144:]
-                    print(f"[1天周期] 数据点从 {original_count} 采样到 {len(rows)} 个，保留最新数据点: {rows[-1][0] if rows else 'N/A'}")
-                elif len(rows) > 0:
-                    print(f"[1天周期] 使用所有 {len(rows)} 个数据点（未采样），最新数据点: {rows[-1][0]}")
-                
-            elif period == '7d':
-                # 7天：使用10分钟数据，最多1008个点（7天*24小时*6个10分钟）
-                # 如果数据点太多，每天采样一次
-                period_source = '10m'
-                days_back = 7
-                start_time = (get_beijing_time() - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
-                
-                cursor.execute('''
-                    SELECT timestamp, balance 
-                    FROM fund_balance 
-                    WHERE account_id = ? AND period = ? AND timestamp >= ?
-                    ORDER BY timestamp ASC
-                ''', (self.account_id, period_source, start_time))
-                
-                rows = cursor.fetchall()
-                
+            dt = None
                 # 如果数据点太多，采样到168个点（7天*24小时）
-                # 重要：保留最新的数据点
                 if len(rows) > 168:
                     step = len(rows) // 168
                     if step > 1:
                         sampled = rows[::step]
                         # 确保最后一个数据点被包含
                         if sampled[-1] != rows[-1]:
-                            sampled.append(rows[-1])
                         rows = sampled
                     else:
                         # 保留最后168个数据点（包含最新的）
                         rows = rows[-168:]
+            for fmt in formats:
+                try:
+            
+            if dt is None:
+                # 如果所有格式都失败，使用当前时间
+                return get_beijing_time()
+            
+            # 如果时间戳没有时区信息，假设它是北京时间
+                # 1月：优先使用1小时数据，如果都是0或不足则使用1天数据
+            else:
+                # 如果有时区信息，转换为北京时间
+                start_time = (get_beijing_time() - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
+                dt = dt.astimezone(BEIJING_TZ)
+            
+            return dt
+        except Exception as e:
+            print(f"解析时间戳失败 {timestamp_str}: {e}")
+            return get_beijing_time()
+    
+    def get_trend_data(self, period: str) -> List[Dict]:
+        """
+        获取走势数据，确保时间刻度覆盖整个周期长度
+        
+        Args:
+            period: 周期 ('1d', '7d', '1m', '6m', 'all')
+                # 检查1小时数据是否有效（过滤掉0值，检查是否有有效数据）
+            
+        Returns:
+            走势数据列表，每个元素包含 timestamp (北京时间), value, pnl
+                # 如果1小时数据不足或都是0，尝试使用1天数据
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+                    period_source_fallback = '1d'
+            cursor = conn.cursor()
+            # 根据周期选择合适的数据源、时间范围和目标数据点数量
+                    ''', (self.account_id, period_source_fallback, start_time))
+                # 1天：使用1分钟数据，目标144个点（每小时6个点）
+                period_source = '1m'
+                hours_back = 24
+                target_count = 144
+                        # 如果1天数据也不足，使用1小时数据（即使有0值）
+                
+                cursor.execute('''
+                    # 使用有效的1小时数据
+                    WHERE account_id = ? AND period = ? AND timestamp >= ?
+                    ORDER BY timestamp ASC
+                ''', (self.account_id, period_source, start_time))
+                
+                # 如果数据点太多，采样到30个点（每天一个）
+                if len(rows) > 30:
+                    step = len(rows) // 30
+                    rows = rows[::step] if step > 1 else rows[:30]
+                rows = cursor.fetchall()
+                original_count = len(rows)
+                
+                # 均匀采样，确保时间刻度覆盖24小时
+                if len(rows) > target_count:
+                    rows = self._uniform_sample(rows, target_count)
+                    # 如果数据点较少，直接使用所有数据
+                    print(f"[1月周期] 使用 {len(rows)} 个数据点（未采样）")
+                else:
+                    print(f"[1月周期] 警告：没有找到数据")
+                
+                # 调试：打印前几个和后几个数据点的值
+                if len(rows) > 0:
+                    print(f"[1月周期] 前3个数据点: {rows[:3]}")
+                        print(f"[1月周期] 警告：所有数据点的值都相同 ({values[0]})，这会导致图表显示为直线")
+                    print(f"[1天周期] 数据点从 {original_count} 采样到 {len(rows)} 个")
+                elif len(rows) > 0:
+                
+            elif period == '7d':
+                days_back = 7
+                target_count = 168
+                start_time = (now_beijing - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
+                
+                cursor.execute('''
+                    SELECT timestamp, balance 
+                    FROM fund_balance 
+                    WHERE account_id = ? AND period = ? AND timestamp >= ?
+                    ORDER BY timestamp ASC
+                ''', (self.account_id, period_source, start_time))
+                # 半年：使用1天数据，最多180个点（6个月*30天）
+                
+                rows = cursor.fetchall()
+                start_time = (get_beijing_time() - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
+                
+                # 均匀采样，确保时间刻度覆盖7天
+                    rows = self._uniform_sample(rows, target_count)
+                    print(f"[7天周期] 数据点从 {original_count} 采样到 {len(rows)} 个")
+                elif len(rows) > 0:
                 
             elif period == '1m':
-                # 1月：优先使用1小时数据，如果都是0或不足则使用1天数据
+                # 1月：优先使用1小时数据，如果不足则使用1天数据，目标30个点（每天1个点）
                 days_back = 30
-                start_time = (get_beijing_time() - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
+                target_count = 30
+                # 全部：使用1天数据，获取所有可用数据
                 
                 # 先尝试使用1小时数据
                 period_source = '1h'
@@ -862,77 +887,56 @@ class FundDataManager:
                 
                 rows = cursor.fetchall()
                 
-                # 检查1小时数据是否有效（过滤掉0值，检查是否有有效数据）
+                # 检查1小时数据是否有效（过滤掉0值）
+            # 转换为前端需要的格式
                 rows_valid = [row for row in rows if float(row[1]) > 0]
                 
-                # 如果1小时数据不足或都是0，尝试使用1天数据
+                # 如果1小时数据不足，尝试使用1天数据
                 if len(rows_valid) < 5:
-                    print(f"[1月周期] 1小时数据不足({len(rows)}个点，有效数据{len(rows_valid)}个)，尝试使用1天数据...")
-                    period_source_fallback = '1d'
-                    cursor.execute('''
                         SELECT timestamp, balance 
                         FROM fund_balance 
                         WHERE account_id = ? AND period = ? AND timestamp >= ? AND balance > 0
                         ORDER BY timestamp ASC
-                    ''', (self.account_id, period_source_fallback, start_time))
+                timestamp = row[0]
+                    ''', (self.account_id, period_source, start_time))
                     rows_fallback = cursor.fetchall()
                     if len(rows_fallback) > len(rows_valid):
                         rows = rows_fallback
                         print(f"[1月周期] 使用1天数据，找到 {len(rows)} 个有效数据点")
+                    "timestamp": timestamp,
                     else:
-                        # 如果1天数据也不足，使用1小时数据（即使有0值）
                         rows = rows if len(rows) > 0 else rows_fallback
                         print(f"[1月周期] 使用1小时数据，找到 {len(rows)} 个数据点（包含0值）")
                 else:
-                    # 使用有效的1小时数据
                     rows = rows_valid
-                    print(f"[1月周期] 使用1小时数据，找到 {len(rows)} 个有效数据点")
                 
-                # 如果数据点太多，采样到30个点（每天一个）
-                if len(rows) > 30:
-                    step = len(rows) // 30
-                    rows = rows[::step] if step > 1 else rows[:30]
-                    print(f"[1月周期] 采样后保留 {len(rows)} 个数据点")
+                # 均匀采样，确保时间刻度覆盖30天
+                original_count = len(rows)
+                    rows = self._uniform_sample(rows, target_count)
+                    print(f"[1月周期] 数据点从 {original_count} 采样到 {len(rows)} 个")
                 elif len(rows) > 0:
-                    # 如果数据点较少，直接使用所有数据
-                    print(f"[1月周期] 使用 {len(rows)} 个数据点（未采样）")
-                else:
-                    print(f"[1月周期] 警告：没有找到数据")
-                
-                # 调试：打印前几个和后几个数据点的值
-                if len(rows) > 0:
-                    print(f"[1月周期] 前3个数据点: {rows[:3]}")
-                    print(f"[1月周期] 后3个数据点: {rows[-3:]}")
-                    # 检查是否有值变化
-                    values = [float(row[1]) for row in rows]
-                    unique_values = len(set(values))
-                    print(f"[1月周期] 唯一值数量: {unique_values}/{len(values)}")
-                    if unique_values == 1:
-                        print(f"[1月周期] 警告：所有数据点的值都相同 ({values[0]})，这会导致图表显示为直线")
-                
             elif period == '6m':
-                # 半年：使用1天数据，最多180个点（6个月*30天）
+                # 半年：使用1天数据，目标180个点（每天1个点）
                 period_source = '1d'
                 days_back = 180
-                start_time = (get_beijing_time() - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
+                target_count = 180
+                start_time = (now_beijing - timedelta(days=days_back)).strftime("%Y-%m-%d %H:%M:%S")
                 
                 cursor.execute('''
                     SELECT timestamp, balance 
-                    FROM fund_balance 
-                    WHERE account_id = ? AND period = ? AND timestamp >= ?
-                    ORDER BY timestamp ASC
-                ''', (self.account_id, period_source, start_time))
-                
-                rows = cursor.fetchall()
+                # 均匀采样，确保时间刻度覆盖180天
+                if len(rows) > target_count:
+                    rows = self._uniform_sample(rows, target_count)
+                elif len(rows) > 0:
+                    print(f"[半年周期] 使用所有 {len(rows)} 个数据点（未采样）")
                 
             else:  # all
-                # 全部：使用1天数据，获取所有可用数据
+                # 全部：使用1天数据，获取所有可用数据，不采样
                 period_source = '1d'
                 
                 cursor.execute('''
                     SELECT timestamp, balance 
                     FROM fund_balance 
-                    WHERE account_id = ? AND period = ?
                     ORDER BY timestamp ASC
                 ''', (self.account_id, period_source))
                 
@@ -940,23 +944,19 @@ class FundDataManager:
             
             conn.close()
             
-            # 转换为前端需要的格式
+            # 转换为前端需要的格式，确保时间戳是北京时间
             if not rows:
                 print(f"[{period}周期] 没有找到数据")
                 return []
             
-            print(f"[{period}周期] 找到 {len(rows)} 个数据点")
-            
             trend_data = []
             start_value = float(rows[0][1]) if rows else 0.0
             
-            for row in rows:
-                timestamp = row[0]
+                timestamp_str = row[0]
                 value = float(row[1])
                 pnl = value - start_value
                 
                 trend_data.append({
-                    "timestamp": timestamp,
                     "value": round(value, 2),
                     "pnl": round(pnl, 2)
                 })
