@@ -40,6 +40,14 @@ def metrics_home(request):
             "type": "kline",
             "charts": 1,
             "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"]
+        },
+        {
+            "id": "gold_spread",
+            "name": "黄金价差分析",
+            "description": "XAUT 和 PAXG 的价差、价格和资金费率分析",
+            "type": "multi_chart",
+            "charts": 3,
+            "timeframes": ["6h", "12h", "24h", "48h", "72h"]
         }
     ]
     
@@ -79,6 +87,11 @@ def indicator_detail(request, indicator_id):
             "indicator_id": indicator_id,
             "timeframes": json.dumps(["1m", "5m", "15m", "1h", "4h", "1d"]),
             "coins": json.dumps(coins)
+        })
+    elif indicator_id == "gold_spread":
+        return render(request, "metrics/gold_spread.html", {
+            "indicator_id": indicator_id,
+            "timeframes": json.dumps(["6h", "12h", "24h", "48h", "72h"])
         })
     else:
         return render(request, "metrics/error.html", {
@@ -124,6 +137,22 @@ def get_chart_image(request, indicator_id):
         elif indicator_id == "kline":
             # K线图（这里需要根据实际实现调整）
             image_filename = f"kline_{coin}_{timeframe}.png"
+            image_path = images_dir / image_filename
+        elif indicator_id == "gold_spread":
+            # 黄金价差分析图
+            # 文件名格式: gold_spread_chart.png, gold_price_chart.png, gold_funding_chart.png
+            chart_type = data.get('chart_type', 'spread')  # spread, price, funding
+            if chart_type == "spread":
+                image_filename = "gold_spread_chart.png"
+            elif chart_type == "price":
+                image_filename = "gold_price_chart.png"
+            elif chart_type == "funding":
+                image_filename = "gold_funding_chart.png"
+            else:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"未知图表类型: {chart_type}"
+                }, status=400)
             image_path = images_dir / image_filename
         else:
             return JsonResponse({
@@ -220,6 +249,46 @@ def get_available_symbols(request):
         return JsonResponse({
             "success": True,
             "symbols": symbols
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)
+
+@csrf_exempt
+def get_gold_spread_data(request):
+    """获取黄金价差数据的API接口"""
+    if request.method != 'GET':
+        return JsonResponse({"error": "只支持GET请求"}, status=405)
+    
+    if not KLINE_MANAGER_AVAILABLE:
+        return JsonResponse({
+            "success": False,
+            "error": "K线数据管理器不可用"
+        }, status=500)
+    
+    try:
+        hours = int(request.GET.get('hours', 24))
+        # 限制hours范围
+        if hours < 1 or hours > 168:  # 最多7天
+            hours = 24
+        
+        kline_manager = get_kline_manager()
+        data, error = kline_manager.get_gold_spread_data(hours=hours)
+        
+        if error:
+            return JsonResponse({
+                "success": False,
+                "error": error
+            }, status=500)
+        
+        return JsonResponse({
+            "success": True,
+            "hours": hours,
+            "data": data,
+            "count": len(data) if data else 0
         })
         
     except Exception as e:

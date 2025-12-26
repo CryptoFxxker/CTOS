@@ -7,4 +7,5 @@ urlpatterns = [
     path("<str:indicator_id>/api/chart/", views.get_chart_image, name="get_chart_image"),
     path("api/kline/data/", views.get_kline_data, name="get_kline_data"),
     path("api/kline/symbols/", views.get_available_symbols, name="get_available_symbols"),
+    path("api/gold_spread/data/", views.get_gold_spread_data, name="get_gold_spread_data"),
 ]

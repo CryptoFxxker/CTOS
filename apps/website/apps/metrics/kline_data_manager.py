@@ -6,6 +6,7 @@ K线数据管理模块
 import os
 import sys
 import time
+import json
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Tuple
 from pathlib import Path
@@ -343,6 +344,69 @@ class KlineDataManager:
                 seen.add(coin)
         
         return coins
+    
+    def get_gold_spread_data(self, hours: int = 24) -> Tuple[Optional[List[Dict]], Optional[str]]:
+        """
+        获取黄金价差历史数据（XAUT vs PAXG）
+        
+        Args:
+            hours: 获取最近N小时的数据，默认24小时
+            
+        Returns:
+            (data_list, error_message)
+            data_list格式: [
+                {
+                    'timestamp': float,  # 时间戳（秒）
+                    'okx_price': float,
+                    'bp_price': float,
+                    'spread': float,
+                    'okx_funding_rate': float (可选),
+                    'bp_funding_rate': float (可选),
+                    'funding_rate_diff': float (可选)
+                },
+                ...
+            ]
+        """
+        try:
+            # 定位到 quote_bot_history 目录
+            current_file = Path(__file__).resolve()
+            project_root = current_file.parents[3]  # 向上3级到项目根目录
+            history_dir = project_root / "apps" / "gold_telegram_bot" / "quote_bot_history"
+            
+            if not history_dir.exists():
+                return None, f"历史数据目录不存在: {history_dir}"
+            
+            # 计算截止时间
+            cutoff_time = time.time() - hours * 3600
+            all_points = []
+            
+            # 获取所有历史数据文件
+            files = sorted(history_dir.glob("history_*.json"), reverse=True)
+            
+            for file_path in files:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        points = data.get("data_points", [])
+                        
+                        # 过滤出时间范围内的数据
+                        filtered = [p for p in points if p.get("timestamp", 0) >= cutoff_time]
+                        all_points.extend(filtered)
+                        
+                        # 如果最早的数据已经超过时间范围，可以提前退出
+                        if all_points and min(p.get("timestamp", 0) for p in all_points) < cutoff_time:
+                            break
+                except Exception as e:
+                    print(f"读取历史数据文件失败 {file_path}: {e}")
+                    continue
+            
+            # 按时间排序
+            all_points.sort(key=lambda x: x.get("timestamp", 0))
+            
+            return all_points, None
+            
+        except Exception as e:
+            return None, f"获取黄金价差数据失败: {str(e)}"
 
 
 # 全局实例
