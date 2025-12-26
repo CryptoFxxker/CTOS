@@ -8,12 +8,40 @@ import os
 import requests
 from typing import Optional, Dict, Any, Iterator
 import logging
+from pathlib import Path
+
+# 导入配置读取器
+try:
+    from configs.config_reader import ConfigReader
+except ImportError:
+    # 如果无法导入，尝试添加路径
+    import sys
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    from configs.config_reader import ConfigReader
 
 logger = logging.getLogger(__name__)
 
 # 从环境变量读取配置，如果没有设置则使用默认值
 DEFAULT_OLLAMA_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
 DEFAULT_MODEL = os.getenv('OLLAMA_MODEL', 'deepseek-r1:32b')
+
+
+def load_ollama_config() -> Dict[str, Any]:
+    """
+    从配置文件加载 Ollama 配置
+    
+    Returns:
+        dict: Ollama 配置信息
+    """
+    config_reader = ConfigReader()
+    config = config_reader.load_yaml('ollama.yaml')
+    
+    if config is None:
+        logger.warning("无法加载 ollama.yaml 配置文件，使用默认配置或环境变量")
+        return {}
+    
+    return config.get('ollama', {})
 
 
 def validate_and_fix_url(url: str) -> str:
@@ -47,14 +75,45 @@ def validate_and_fix_url(url: str) -> str:
 def get_default_url() -> str:
     """
     获取默认 URL，带验证和修复
+    优先级：环境变量 > 配置文件 > 默认值
     
     Returns:
         str: 验证后的默认 URL
     """
+    # 优先从环境变量读取
     url = os.getenv('OLLAMA_BASE_URL')
     if url:
         return validate_and_fix_url(url)
+    
+    # 其次从配置文件读取
+    config = load_ollama_config()
+    url = config.get('base_url')
+    if url:
+        return validate_and_fix_url(url)
+    
     return DEFAULT_OLLAMA_URL
+
+
+def get_default_model() -> str:
+    """
+    获取默认模型名称
+    优先级：环境变量 > 配置文件 > 默认值
+    
+    Returns:
+        str: 默认模型名称
+    """
+    # 优先从环境变量读取
+    model = os.getenv('OLLAMA_MODEL')
+    if model:
+        return model
+    
+    # 其次从配置文件读取
+    config = load_ollama_config()
+    model = config.get('model')
+    if model:
+        return model
+    
+    return DEFAULT_MODEL
 
 class OllamaClient:
     """Ollama 客户端类，用于与 ollama 服务器交互"""
@@ -77,13 +136,16 @@ class OllamaClient:
                      如果为 None 且 use_proxy=True，将使用系统环境变量中的代理设置
         """
         # 验证和修复 URL
+        # 优先级：参数 > 环境变量 > 配置文件 > 默认值
         if base_url:
             base_url = validate_and_fix_url(base_url)
         else:
             base_url = get_default_url()
         
         self.base_url = base_url.rstrip('/')
-        self.model = model or DEFAULT_MODEL
+        
+        # 优先级：参数 > 环境变量 > 配置文件 > 默认值
+        self.model = model or get_default_model()
         self.use_proxy = use_proxy
         
         self.session = requests.Session()

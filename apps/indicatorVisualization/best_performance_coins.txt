@@ -1,1 +1,1 @@
-ldo,w,aave,bera,sui,tia,arb,jto,op,ip,bonk,zk,bat,virtual,hype,wif,pengu,fartcoin
+hype,icp,arb,jto,op,bat,uni,near,s,pengu,tia,wif,ip,apt,virtual,zk,bera,fartcoin

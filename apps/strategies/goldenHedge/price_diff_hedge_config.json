@@ -1,0 +1,13 @@
+{
+  "okx_account_id": 0,
+  "bp_account_id": 0,
+  "okx_symbol": "xaut",
+  "bp_symbol": "paxg",
+  "check_interval": 30,
+  "data_batch_size": 3000,
+  "order_amount": 1000.0,
+  "total_hedge_amount": 100000.0,
+  "price_diff_mean": null,
+  "price_diff_threshold": 0.5,
+  "description": "价差对冲策略：基于XAUT/PAXG价差均值进行对冲交易"
+}
