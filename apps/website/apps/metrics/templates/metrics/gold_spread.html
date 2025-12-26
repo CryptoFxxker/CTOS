@@ -48,7 +48,7 @@
         <h3>价差走势 (PAXG - XAUT)</h3>
       </div>
       <div class="chart-content">
-        <img id="spread-chart-image" src="/static/images/gold_spread_chart.png" alt="价差走势图" class="chart-image" onerror="this.src='/static/images/placeholder.png'">
+        <img id="spread-chart-image" src="/static/images/spread_chart.png" alt="价差走势图" class="chart-image" onerror="this.src='/static/images/placeholder.png'">
       </div>
       <div class="chart-footer">
         <span class="chart-timestamp">最后更新: <span id="spread-last-update">-</span></span>
@@ -61,7 +61,7 @@
         <h3>价格走势 (XAUT & PAXG)</h3>
       </div>
       <div class="chart-content">
-        <img id="price-chart-image" src="/static/images/gold_price_chart.png" alt="价格走势图" class="chart-image" onerror="this.src='/static/images/placeholder.png'">
+        <img id="price-chart-image" src="/static/images/price_chart.png" alt="价格走势图" class="chart-image" onerror="this.src='/static/images/placeholder.png'">
       </div>
       <div class="chart-footer">
         <span class="chart-timestamp">最后更新: <span id="price-last-update">-</span></span>
@@ -74,7 +74,7 @@
         <h3>资金费率差走势 (BP - OKX)</h3>
       </div>
       <div class="chart-content">
-        <img id="funding-chart-image" src="/static/images/gold_funding_chart.png" alt="资金费率差走势图" class="chart-image" onerror="this.src='/static/images/placeholder.png'">
+        <img id="funding-chart-image" src="/static/images/funding_chart.png" alt="资金费率差走势图" class="chart-image" onerror="this.src='/static/images/placeholder.png'">
       </div>
       <div class="chart-footer">
         <span class="chart-timestamp">最后更新: <span id="funding-last-update">-</span></span>
@@ -237,7 +237,7 @@
 <script>
 (function() {
   const config = {
-    timeframes: JSON.parse('{{ timeframes|escapejs }}'),
+    timeframes: {{ timeframes_json|safe }},
     indicatorId: '{{ indicator_id }}',
     autoRefreshInterval: 30000  // 30秒
   };
@@ -253,17 +253,18 @@
     const priceImg = document.getElementById('price-chart-image');
     const fundingImg = document.getElementById('funding-chart-image');
     
-    spreadImg.src = `/static/images/gold_spread_chart.png?t=${Date.now()}`;
-    priceImg.src = `/static/images/gold_price_chart.png?t=${Date.now()}`;
-    fundingImg.src = `/static/images/gold_funding_chart.png?t=${Date.now()}`;
+    spreadImg.src = `/static/images/spread_chart.png?t=${Date.now()}`;
+    priceImg.src = `/static/images/price_chart.png?t=${Date.now()}`;
+    fundingImg.src = `/static/images/funding_chart.png?t=${Date.now()}`;
     
     // 更新时间戳
     document.getElementById('spread-last-update').textContent = timestamp;
     document.getElementById('price-last-update').textContent = timestamp;
     document.getElementById('funding-last-update').textContent = timestamp;
     
-    // 获取统计数据
-    fetch(`/metrics/api/gold_spread/data/?hours=${parseInt(timeframe)}`)
+    // 获取统计数据（将 "6h" 转换为 6）
+    const hours = parseInt(timeframe.replace('h', ''));
+    fetch(`/metrics/api/gold_spread/data/?hours=${hours}`)
       .then(response => response.json())
       .then(data => {
         if (data.success && data.data && data.data.length > 0) {

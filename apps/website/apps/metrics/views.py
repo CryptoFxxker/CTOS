@@ -89,9 +89,11 @@ def indicator_detail(request, indicator_id):
             "coins": json.dumps(coins)
         })
     elif indicator_id == "gold_spread":
+        timeframes_list = ["6h", "12h", "24h", "48h", "72h"]
         return render(request, "metrics/gold_spread.html", {
             "indicator_id": indicator_id,
-            "timeframes": json.dumps(["6h", "12h", "24h", "48h", "72h"])
+            "timeframes": timeframes_list,
+            "timeframes_json": json.dumps(timeframes_list)
         })
     else:
         return render(request, "metrics/error.html", {
@@ -140,14 +142,14 @@ def get_chart_image(request, indicator_id):
             image_path = images_dir / image_filename
         elif indicator_id == "gold_spread":
             # 黄金价差分析图
-            # 文件名格式: gold_spread_chart.png, gold_price_chart.png, gold_funding_chart.png
+            # 文件名格式: spread_chart.png, price_chart.png, funding_chart.png
             chart_type = data.get('chart_type', 'spread')  # spread, price, funding
             if chart_type == "spread":
-                image_filename = "gold_spread_chart.png"
+                image_filename = "spread_chart.png"
             elif chart_type == "price":
-                image_filename = "gold_price_chart.png"
+                image_filename = "price_chart.png"
             elif chart_type == "funding":
-                image_filename = "gold_funding_chart.png"
+                image_filename = "funding_chart.png"
             else:
                 return JsonResponse({
                     "success": False,
