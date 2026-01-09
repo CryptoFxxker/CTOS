@@ -1220,7 +1220,31 @@ main {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* 广告容器样式 */
+.ad-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.ad-iframe {
+  width: 100%;
+  height: 200px;
+  border: none;
+  display: block;
+  max-width: 100%;
+}
+
 /* 响应式设计 */
+@media (max-width: 768px) {
+  .ad-iframe {
+    height: 150px;
+  }
+}
 @media (max-width: 1200px) {
   /* 中等屏幕：单页模式改为2x3布局 */
   .charts-container.charts-single {
