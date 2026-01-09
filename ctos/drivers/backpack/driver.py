@@ -40,7 +40,7 @@ try:
     from .bpx.account import Account  # type: ignore
     from .bpx.public import Public    # type: ignore
     from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places   # type: ignore
-except Exception:
+except Exception as e:
     print(f'[1] Error importing bpx clients: {e}')
     try:
         # When the full package is available in sys.path
