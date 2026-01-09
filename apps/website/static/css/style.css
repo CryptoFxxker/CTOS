@@ -1229,20 +1229,62 @@ main {
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+/* 使用宽高比容器保持 16:9 比例（原始尺寸 1280x720） */
+.ad-container::before {
+  content: '';
+  display: block;
+  padding-bottom: 56.25%; /* 16:9 宽高比 (9/16 = 0.5625 = 56.25%) */
 }
 
 .ad-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 200px;
+  height: 100%;
   border: none;
   display: block;
-  max-width: 100%;
+  min-height: 400px; /* 最小高度确保内容可见 */
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .ad-container::before {
+    padding-bottom: 56.25%; /* 移动端也保持 16:9 比例 */
+  }
+  
   .ad-iframe {
-    height: 150px;
+    min-height: 300px; /* 移动端最小高度 */
+  }
+}
+
+/* 如果浏览器支持 aspect-ratio，使用更现代的方法 */
+@supports (aspect-ratio: 16 / 9) {
+  .ad-container::before {
+    display: none;
+  }
+  
+  .ad-container {
+    aspect-ratio: 16 / 9;
+  }
+  
+  .ad-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+  }
+  
+  @media (max-width: 768px) {
+    .ad-iframe {
+      min-height: 300px;
+    }
   }
 }
 @media (max-width: 1200px) {
