@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="article-detail-container" data-aos="fade-in">
+  <!-- 文章头部 - 使用图床背景 -->
+  <div class="article-header" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%), url('{% if article.cover_image %}{{ article.cover_image }}{% else %}https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80{% endif %}') center/cover;">
+    <div class="article-header-content">
+      <div class="breadcrumb-nav">
+        <a href="{% url 'news:list' %}">资讯中心</a>
+        <span class="separator">/</span>
+        <span>{{ article.category }}</span>
+      </div>
+      
+      <h1 class="article-title-main">{{ article.title }}</h1>
+      
+      <div class="article-header-meta">
+        <div class="meta-group">
+          <span class="meta-item">
+            <span class="meta-icon">👤</span>
+            {{ article.author.username }}
+          </span>
+          <span class="meta-item">
+            <span class="meta-icon">📅</span>
+            {{ article.published_at|date:"Y年m月d日" }}
+          </span>
+          <span class="meta-item">
+            <span class="meta-icon">👁️</span>
+            {{ article.views }} 次浏览
+          </span>
+        </div>
+        
+        {% if article.get_tags_list %}
+        <div class="article-tags-header">
+          {% for tag in article.get_tags_list %}
+          <span class="tag-large">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 文章内容 -->
+  <div class="article-body" data-aos="fade-up" data-aos-delay="200">
+    <div class="article-content-wrapper">
+      <div class="article-content-main">
+        {% if article.excerpt %}
+        <div class="article-excerpt-box" data-aos="zoom-in" data-aos-delay="300">
+          <div class="excerpt-icon">💡</div>
+          <p class="excerpt-text">{{ article.excerpt }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="article-text" data-aos="fade-up" data-aos-delay="400">
+          {{ article.content|safe }}
+        </div>
+      </div>
+      
+      <!-- 侧边栏 -->
+      <aside class="article-sidebar" data-aos="fade-left" data-aos-delay="500">
+        <!-- 导航文章 -->
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">文章导航</h3>
+          {% if prev_article %}
+          <div class="nav-article prev">
+            <div class="nav-label">上一篇</div>
+            <a href="{% url 'news:detail' prev_article.slug %}" class="nav-title">{{ prev_article.title }}</a>
+          </div>
+          {% endif %}
+          
+          {% if next_article %}
+          <div class="nav-article next">
+            <div class="nav-label">下一篇</div>
+            <a href="{% url 'news:detail' next_article.slug %}" class="nav-title">{{ next_article.title }}</a>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- 相关文章 -->
+        {% if related_articles %}
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">相关文章</h3>
+          <div class="related-articles">
+            {% for related in related_articles %}
+            <div class="related-article-item">
+              <a href="{% url 'news:detail' related.slug %}" class="related-title">{{ related.title }}</a>
+              <div class="related-meta">{{ related.published_at|date:"Y-m-d" }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+  
+  <!-- 返回按钮 -->
+  <div class="article-footer" data-aos="fade-up" data-aos-delay="600">
+    <a href="{% url 'news:list' %}" class="back-to-list-btn">
+      <span class="btn-icon">←</span>
+      <span>返回资讯列表</span>
+    </a>
+  </div>
+</div>
+
+<!-- AOS 动画库 -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,
+    easing: 'ease-out-cubic',
+    once: true,
+    offset: 100
+  });
+</script>
+
+<!-- 滚动进度条 -->
+<div class="scroll-progress-bar"></div>
+<script>
+  // 滚动进度条
+  window.addEventListener('scroll', function() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercent = (scrollTop / scrollHeight) * 100;
+    document.querySelector('.scroll-progress-bar').style.width = scrollPercent + '%';
+  });
+</script>
+{% endblock %}
+

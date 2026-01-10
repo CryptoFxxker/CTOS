@@ -20,18 +20,14 @@
     <div class="control-group">
       <label for="coin-select">币种:</label>
       <select id="coin-select">
-        {% for coin in coins %}
-        <option value="{{ coin }}" {% if coin == "btc" %}selected{% endif %}>{{ coin|upper }}</option>
-        {% endfor %}
+        <!-- 选项将通过JavaScript动态生成 -->
       </select>
     </div>
     
     <div class="control-group">
       <label for="timeframe-select">时间框架:</label>
       <select id="timeframe-select">
-        {% for timeframe in timeframes %}
-        <option value="{{ timeframe }}" {% if timeframe == "1h" %}selected{% endif %}>{{ timeframe|upper }}</option>
-        {% endfor %}
+        <!-- 选项将通过JavaScript动态生成 -->
       </select>
     </div>
     
@@ -56,7 +52,7 @@
         <h3 id="chart-title">K线图 - BTC 1H</h3>
       </div>
       <div class="chart-content">
-        <img id="chart-image" src="" alt="K线图" class="chart-image">
+        <canvas id="kline-chart" style="width: 100%; height: 500px;"></canvas>
       </div>
       <div class="chart-footer">
         <span class="chart-timestamp">最后更新: <span id="last-update">-</span></span>
@@ -64,12 +60,52 @@
     </div>
   </div>
 
-  <div class="loading-overlay" id="loading-overlay">
+  <div class="loading-overlay" id="loading-overlay" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
     <div class="loading-spinner"></div>
     <p>正在加载图表...</p>
   </div>
 </div>
 
+<style>
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.refresh-indicator {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
 <script src="{% static 'js/kline.js' %}"></script>
 <script>
   // 传递配置给JavaScript

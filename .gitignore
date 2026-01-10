@@ -14,7 +14,10 @@ performance*.png
 *.log
 .first_run_flag
 account.yaml
+ctos.yaml
 good_group*.txt
+api.txt
+fund_data.db
 *GridPositions.json
 # OS
 .DS_Store

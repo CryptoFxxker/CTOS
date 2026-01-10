@@ -1,0 +1,67 @@
+# used to distinguish log files for multiple accounts, optional
+
+ACCOUNT_NAME=
+
+# EdgeX Account Credentials (REQUIRED for API access)
+# Find these in your EdgeX account under "API Management"
+EDGEX_ACCOUNT_ID=your_account_id_here
+EDGEX_STARK_PRIVATE_KEY=your_stark_private_key_here
+
+# Backpack Account Credentials (REQUIRED for API access)
+# Find these in your Backpack account under "Portfolio" -> "Settings" -> "API Keys"
+BACKPACK_PUBLIC_KEY=your_api_key
+BACKPACK_SECRET_KEY=your_api_secret
+
+# Paradex Configuration 
+# user icon -> "Wallet" -> "Ethereum Address" and "Copy Paradex Private key"
+PARADEX_L1_ADDRESS=your_generated_l1_address_here
+PARADEX_L2_PRIVATE_KEY=your_generated_l2_private_key_here
+PARADEX_ENVIRONMENT=prod # or testnet
+
+# GRVT Configuration
+# Get these from your GRVT account settings
+GRVT_TRADING_ACCOUNT_ID=your_trading_account_id_here
+GRVT_PRIVATE_KEY=your_private_key_here
+GRVT_API_KEY=your_api_key_here
+GRVT_ENVIRONMENT=prod # or testnet/staging/dev 
+
+# Aster Configuration
+ASTER_API_KEY=your_aster_api_key
+ASTER_SECRET_KEY=your_aster_secret_key
+
+# Lighter Configuration
+API_KEY_PRIVATE_KEY=your_api_key_private_key_here
+LIGHTER_ACCOUNT_INDEX=0
+LIGHTER_API_KEY_INDEX=0
+
+# Extended Configuration
+EXTENDED_API_KEY=your_extended_api_key
+EXTENDED_STARK_KEY_PUBLIC=your_stark_public_key
+EXTENDED_STARK_KEY_PRIVATE=your_stark_private_key
+EXTENDED_VAULT=extended_vault_id
+
+# Apex Configuration
+# Generate API_KEY, API_KEY_PASSPHRASE, API_KEY_SECRET by clicking <Generate API> on key management page
+# Generate OMNI_KEY_SEED by clicking <Omni Key> on key management page
+APEX_API_KEY=your_apex_api_key
+APEX_API_KEY_PASSPHRASE=your_apex_api_key_passphrase
+APEX_API_KEY_SECRET=your_apex_api_key_secret
+APEX_OMNI_KEY_SEED=your_apex_omni_key_seed
+
+# Notification (optional)
+# guide: https://www.feishu.cn/hc/zh-CN/articles/185289387886-%E6%B6%88%E6%81%AF%E5%8A%A9%E6%89%8B-%E6%9C%BA%E5%99%A8%E4%BA%BA
+LARK_TOKEN=
+
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+# Logging
+LOG_TO_CONSOLE=true
+LOG_TO_FILE=true
+LOG_FILE=trading_log.csv
+
+TIMEZONE=Asia/Shanghai
+
+# EdgeX API Endpoints
+EDGEX_BASE_URL=https://pro.edgex.exchange
+EDGEX_WS_URL=wss://quote.edgex.exchange

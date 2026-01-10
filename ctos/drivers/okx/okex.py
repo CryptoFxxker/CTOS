@@ -55,13 +55,14 @@ except Exception as e:
 class OkexSpot:
     """OKEX Spot REST API client."""
 
-    def __init__(self, symbol, access_key, secret_key, passphrase, host=None):
+    def __init__(self, symbol, access_key, secret_key, passphrase, host=None, proxies=None):
         self.symbol = symbol
         self._host = host or "https://www.okx.com"
         self._access_key = access_key
         self._secret_key = secret_key
         self._passphrase = passphrase
         self.account_type = 'MAIN'
+        self.proxies = proxies
 
     def request(self, method, uri, params=None, body=None, headers=None, auth=False):
         """Initiate network request
@@ -107,7 +108,7 @@ class OkexSpot:
             headers["OK-ACCESS-TIMESTAMP"] = str(timestamp)
             headers["OK-ACCESS-PASSPHRASE"] = self._passphrase
         result = requests.request(
-            method, url, data=body, headers=headers, timeout=10
+            method, url, data=body, headers=headers, timeout=10, proxies=self.proxies
         ).json()
         if result.get("code") and result.get("code") != "0":
             return None, result
@@ -277,6 +278,7 @@ class OkexSpot:
                 # 如果API返回的代码不是'0'，记录错误消息
                 return None
         except Exception as e:
+            print('Error fetch_balance: ', e)
             # 捕捉并记录任何其他异常
             return None
 
@@ -504,7 +506,7 @@ class OkexSpot:
         if not order_ids and symbol:
             order_ids = self.get_open_orders(symbol=symbol, onlyOrderId=True)[0]
         for order_id in order_ids:
-            _, e = self.revoke_order(order_id)
+            _, e = self.revoke_order(order_id=order_id, symbol=symbol)
             if e:
                 error.append((order_id, e))
             else:

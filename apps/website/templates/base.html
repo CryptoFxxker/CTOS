@@ -15,9 +15,22 @@
       <a href="{% url 'home' %}">主页</a>
       <a href="/accounts/">账户信息</a>
       <a href="/metrics/">指标可视化</a>
+      <a href="/funds/">基金趋势</a>
       <a href="/trading/">账户交易</a>
       <a href="/strategies/">策略执行</a>
+      <a href="{% url 'news:list' %}">资讯</a>
     </nav>
+    <div class="user-auth">
+      {% if user.is_authenticated %}
+        <span class="username">欢迎，{{ user.username }}</span>
+        {% if user.is_superuser %}
+          <a href="{% url 'admin_manage' %}" class="admin-link" title="系统管理">⚙️ 管理</a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="logout-link">退出</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="login-link">登录</a>
+      {% endif %}
+    </div>
   </header>
 
   <main>

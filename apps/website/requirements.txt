@@ -1,0 +1,18 @@
+# Django Web Framework
+Django>=4.2.0,<5.0.0
+
+# WSGI Server (生产环境)
+gunicorn>=21.2.0
+
+# YAML 配置文件解析（AccountReader 需要）
+PyYAML>=6.0.0
+
+# 时区处理
+pytz>=2023.3
+
+# Markdown 解析
+markdown>=3.4.0
+
+# 其他依赖根据项目实际需要添加
+# 注意：AccountManager 和 Exchange Drivers 是项目内部模块，不需要单独安装
+

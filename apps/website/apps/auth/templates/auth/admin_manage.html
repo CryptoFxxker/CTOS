@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="admin-manage-container">
+  <div class="admin-header">
+    <h2>系统管理</h2>
+    <p>邀请码和用户管理</p>
+  </div>
+
+  <!-- 统计信息 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ stats.total_invite_codes }}</div>
+        <div class="stat-label">总邀请码数</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ stats.active_invite_codes }}</div>
+        <div class="stat-label">可用邀请码</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ stats.total_users }}</div>
+        <div class="stat-label">总用户数</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🆕</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ stats.recent_users }}</div>
+        <div class="stat-label">7日内新用户</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 标签页 -->
+  <div class="admin-tabs">
+    <button class="tab-btn active" data-tab="invite-codes">邀请码管理</button>
+    <button class="tab-btn" data-tab="users">用户管理</button>
+  </div>
+
+  <!-- 邀请码管理标签页 -->
+  <div class="tab-content active" id="invite-codes-tab">
+    <div class="panel-header">
+      <h3>邀请码列表</h3>
+      <button class="btn btn-primary" id="create-invite-btn">
+        <span>➕</span> 创建邀请码
+      </button>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>邀请码</th>
+            <th>创建者</th>
+            <th>创建时间</th>
+            <th>过期时间</th>
+            <th>使用次数</th>
+            <th>状态</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="invite-codes-tbody">
+          {% for invite in invite_codes %}
+          <tr data-invite-id="{{ invite.id }}">
+            <td><code class="invite-code">{{ invite.code }}</code></td>
+            <td>{{ invite.created_by.username|default:"系统" }}</td>
+            <td>{{ invite.created_at|date:"Y-m-d H:i" }}</td>
+            <td>{{ invite.expires_at|date:"Y-m-d H:i"|default:"永不过期" }}</td>
+            <td>{{ invite.used_count }}/{{ invite.max_uses }}</td>
+            <td>
+              {% if invite.is_valid %}
+                <span class="status-badge status-active">✅ 可用</span>
+              {% elif invite.is_expired %}
+                <span class="status-badge status-cancelled">❌ 已过期</span>
+              {% elif invite.is_exhausted %}
+                <span class="status-badge status-cancelled">❌ 已用完</span>
+              {% else %}
+                <span class="status-badge status-cancelled">❌ 已禁用</span>
+              {% endif %}
+            </td>
+            <td>{{ invite.note|default:"-" }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon" onclick="viewInviteUsers({{ invite.id }})" title="查看使用者">
+                  👥
+                </button>
+                <button class="btn-icon" onclick="editInviteCode({{ invite.id }})" title="编辑">
+                  ✏️
+                </button>
+                <button class="btn-icon" onclick="deleteInviteCode({{ invite.id }}, '{{ invite.code }}')" title="删除">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="no-data">暂无邀请码</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 用户管理标签页 -->
+  <div class="tab-content" id="users-tab">
+    <div class="panel-header">
+      <h3>用户列表</h3>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>邮箱</th>
+            <th>注册时间</th>
+            <th>最后登录</th>
+            <th>状态</th>
+            <th>使用的邀请码</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email|default:"-" }}</td>
+            <td>{{ user.date_joined|date:"Y-m-d H:i" }}</td>
+            <td>{{ user.last_login|date:"Y-m-d H:i"|default:"从未登录" }}</td>
+            <td>
+              {% if user.is_active %}
+                <span class="status-badge status-active">✅ 活跃</span>
+              {% else %}
+                <span class="status-badge status-cancelled">❌ 禁用</span>
+              {% endif %}
+              {% if user.is_superuser %}
+                <span class="status-badge status-pending">👑 超级用户</span>
+              {% endif %}
+            </td>
+            <td>
+              {% for invite in user.used_invite_codes.all %}
+                <code class="invite-code-small">{{ invite.code }}</code>
+              {% empty %}
+                -
+              {% endfor %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/admin/auth/user/{{ user.id }}/change/" class="btn-icon" title="编辑（Admin）">
+                  ✏️
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="no-data">暂无用户</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 创建/编辑邀请码模态框 -->
+<div id="invite-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modal-title">创建邀请码</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="invite-form">
+        <input type="hidden" id="invite-id" name="invite_id">
+        
+        <div class="form-group">
+          <label for="max-uses">最大使用次数 *</label>
+          <input type="number" id="max-uses" name="max_uses" min="1" value="1" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="days">有效期（天数）</label>
+          <input type="number" id="days" name="days" min="1" placeholder="留空表示永不过期">
+          <small>留空表示永不过期</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="note">备注</label>
+          <textarea id="note" name="note" rows="3" placeholder="可选，用于记录邀请码用途"></textarea>
+        </div>
+        
+        <div class="form-group" id="active-group" style="display: none;">
+          <label>
+            <input type="checkbox" id="is-active" name="is_active" checked>
+            启用邀请码
+          </label>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 查看使用者模态框 -->
+<div id="users-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>邀请码使用者</h3>
+      <button class="modal-close" onclick="closeUsersModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="users-list">
+        <p>加载中...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/admin_manage.js' %}"></script>
+{% endblock %}
+

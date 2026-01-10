@@ -11,12 +11,6 @@ import sys
 def _add_bpx_path():
     """添加bpx包路径到sys.path，支持多种运行方式"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    bpx_path = os.path.join(current_dir, 'bpx')
-    
-    # 添加当前目录的bpx路径
-    if bpx_path not in sys.path:
-        sys.path.insert(0, bpx_path)
-    
     # 添加项目根目录的bpx路径（如果存在）
     project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
     root_bpx_path = os.path.join(project_root, 'bpx')
@@ -53,6 +47,7 @@ try:
     from configs.account_reader import get_okx_credentials, list_accounts
 except ImportError:
     # 如果无法导入，使用备用方案
+    print('Error from account_reader import ', e)
     def get_okx_credentials(account='main'):
         from ctos.drivers.okx.Config import ACCESS_KEY, SECRET_KEY, PASSPHRASE
         return {
@@ -63,6 +58,15 @@ except ImportError:
     
     def list_accounts(exchange='okx'):
         return ['main', 'sub1', 'sub2']  # 默认账户列表
+    
+# Import account config reader
+try:
+    from configs.config_reader import get_ctos_config
+except ImportError:
+    print('Error from config_reader import ', e)
+    # 如果无法导入，使用备用方案
+    def get_ctos_config():
+        return None
 
 def get_account_name_by_id(account_id=0, exchange='okx'):
     """
@@ -115,7 +119,12 @@ def init_CexClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
     try:
         # 使用账户获取器获取认证信息
         credentials = get_okx_credentials(account_name)
-        
+        # 加载代理配置
+        configs = get_ctos_config()
+        print(f"configs: {configs}")
+        proxies = None
+        if configs is not None and 'proxies' in configs:
+            proxies = configs.get('proxies') if configs else None
         if show:
             print(f"使用OKX账户: {account_name} (ID: {account_id})")
             print(f"认证字段: {list(credentials.keys())}")
@@ -125,7 +134,8 @@ def init_CexClient(symbol="ETH-USDT-SWAP", account_id=0, show=False):
             access_key=credentials['api_key'], 
             secret_key=credentials['api_secret'], 
             passphrase=credentials['passphrase'], 
-            host=None
+            host=None,
+            proxies=proxies
         )
     except Exception as e:
         print(f"获取OKX账户 {account_name} 认证信息失败: {e}")

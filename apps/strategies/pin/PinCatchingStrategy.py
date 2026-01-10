@@ -432,6 +432,7 @@ def manage_pin_strategy(engine, sym: str, data: dict, open_orders: List[str], pr
         # 接到针了，检查盈利并平仓
         closed = calculate_profit_and_close(engine, sym, data, config)
         if closed:
+            print(f" [{engine.cex_driver.cex}-{engine.account}] [{sym}] 平仓成功")
             # 平仓成功，重置状态
             data["pin_caught"] = False
             data["caught_orders"] = []
@@ -715,7 +716,7 @@ def pin_catching_strategy(engines=None, exchs=None, force_refresh=None, configs=
             try:
                 with open(symbols_file_path, "r", encoding="utf-8") as f:
                     focus_symbols = set(json.load(f))
-                print(f"✓ 加载关注币种: {exch}-{engine.account}")
+                print(f"✓ 加载关注币种: {exch}-{engine.account}", focus_symbols)
             except Exception as e:
                 print(f"✗ 读取关注币种文件失败 {symbols_file_path}: {e}")
                 focus_symbols = set()
@@ -759,6 +760,7 @@ def pin_catching_strategy(engines=None, exchs=None, force_refresh=None, configs=
         for sym in list(PinPositions.keys()):
             if sym not in focus_symbols:
                 # 撤销该币种的订单
+                print(f" [{engine.cex_driver.cex}-{engine.account}] [{sym}] 撤销该币种的订单")
                 orders = PinPositions[sym].get("orders", [])
                 cancel_all_orders(engine, sym, orders)
                 remove_syms.append(sym)
@@ -777,16 +779,16 @@ def pin_catching_strategy(engines=None, exchs=None, force_refresh=None, configs=
                 if config["MODE"] == "DEACTIVATED":
                     print(f"{BeijingTime()} | [{config['exchange']}-{config['account']}] 策略曾出现故障，已禁用，跳过处理")
                     continue
-                
+                print(f"\r [{engine.cex_driver.cex}-{engine.account}] 获取所有订单\r", end='')
                 # 获取全局所有订单
                 try:
                     open_orders, err = engine.cex_driver.get_open_orders(symbol=None, onlyOrderId=True, keep_origin=False)
                     if err:
-                        print(f"获取订单失败: {err}")
+                        print(f"\r [{engine.cex_driver.cex}-{engine.account}] 获取订单失败: {err}\r", end='')
                         time.sleep(sleep_time)
                         continue
                 except Exception as e:
-                    print(f"获取订单失败: {e}")
+                    print(f"\r [{engine.cex_driver.cex}-{engine.account}] 获取订单失败: {e}\r", end='')
                     engine.monitor.record_operation("OrderGetFail", str(e), {"err": str(e), "time": BeijingTime()})
                     time.sleep(sleep_time)
                     continue
@@ -818,11 +820,6 @@ def pin_catching_strategy(engines=None, exchs=None, force_refresh=None, configs=
                             pos = {}
                         else:
                             pos = poses[sym]
-                        
-                        # 跳过小额持仓
-                        if abs(float(pos.get("quantityUSD", 0))) < 10 and abs(float(pos.get("quantityUSD", 0))) > 0:
-                            time.sleep(sleep_time)
-                            continue
                         
                         exchange_limits_info, err = engine.cex_driver.exchange_limits(symbol=sym)
                         if err:

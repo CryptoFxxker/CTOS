@@ -1,5 +1,6 @@
-🌐 Languages: [English](../README_EN.md) | [中文](../README.md) | [日本語](README_JP.md) | [한국어](README_KR.md)
+🌐 Languages: [English](./README_EN.md) | [中文](../README.md) | [日本語](./README_JP.md) | [한국어](./README_KR.md)
 ![](ctoslogo.png)
+![](balance_trend.png)
 ## CTOS: 암호화폐 거래 운영체제 (Linux 설계 철학 참조)
 
 **범위:** 중앙화 거래소(CEX) 대상 정량 거래 (초기 OKX, Backpack, Binance 지원).
@@ -12,6 +13,19 @@
 * **신뢰성:** 커널/런타임/드라이버의 계층 설계로 테스트 가능성과 안전성 향상.
 * **관찰 가능성:** 구조화된 로그, 메트릭, 재현 가능한 백테스트 기능.
 * **높은 견고성** 모든 거래소의 주문 가격과 수량 정밀도를 통일하고, 금액 지정 주문, 자동 변환, 전 과정에서 걱정 없이 사용.
+
+## 📚 목차
+
+- [CTOS: 암호화폐 거래 운영체제 (Linux 설계 철학 참조)](#ctos-암호화폐-거래-운영체제-linux-설계-철학-참조)
+  - [왜 CTOS인가?](#왜-ctos인가)
+  - [보안 특성](#️-보안-특성)
+  - [성능 특성](#-성능-특성)
+  - [CTOS 설계 목표 (초보자 친화적)](#-ctos-설계-목표-초보자-친화적)
+  - [빠른 시작 (실무 플로우)](#빠른-시작-실무-플로우)
+  - [개념 매핑 (Linux → CTOS)](#개념-매핑-linux--ctos)
+  - [프로젝트 디렉토리 구조](#프로젝트-디렉토리-구조)
+
+> 위의 목차를 클릭하여 해당 섹션으로 빠르게 이동할 수 있습니다.
 
 ---
 
@@ -68,9 +82,7 @@ ctos/
 │     ├─ backpack/             # Backpack 거래소 드라이버
 │     │  ├─ driver.py          # Backpack 메인 드라이버
 │     │  └─ util.py            # Backpack 유틸리티 함수
-│     ├─ binance/              # Binance 거래소 드라이버
-│     └─ base_uniswapv3/       # Base 체인 Uniswap V3 드라이버
-│        └─ driver.py          # Base Uniswap V3 메인 드라이버
+│     └─ binance/              # Binance 거래소 드라이버
 ├─ apps/                       # 애플리케이션 계층
 │  ├─ strategies/              # 거래 전략
 │  │  ├─ grid/                 # 그리드 전략
@@ -96,7 +108,6 @@ ctos/
 - **`ctos/drivers/okx/driver.py`** - OKX 거래소 드라이버, 동적 계정 매핑 지원
 - **`ctos/drivers/backpack/driver.py`** - Backpack 거래소 드라이버, 동적 계정 매핑 지원
 - **`ctos/drivers/binance/driver.py`** - Binance 거래소 드라이버
-- **`ctos/drivers/base_uniswapv3/driver.py`** - Base 체인 Uniswap V3 드라이버, DeFi 작업 지원
 
 #### 설정 관리
 - **`configs/account.yaml`** - 계정 설정 파일, 각 거래소의 API 키를 저장
@@ -160,7 +171,6 @@ ctos/
 | **OKX** | `drivers/okx/driver.py` | 동적 계정 매핑 | 완전한 선물 거래 지원 |
 | **Backpack** | `drivers/backpack/driver.py` | 동적 계정 매핑 | 네이티브 영구 계약 지원 |
 | **Binance** | `drivers/binance/driver.py` | 기본 지원 | 세계 최대 거래소 |
-| **Base Uniswap V3** | `drivers/base_uniswapv3/driver.py` | 지갑 기반 | DeFi 유동성 제공과 거래 |
 
 ### 🎯 동적 계정 관리
 
@@ -241,23 +251,21 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 ```
 
 ### 🔄 데이터 플로우
-1. **전략** → **실행 엔진** → **시스템 콜** → **거래소 드라이버** → **거래소 API/DeFi 프로토콜**
-2. **거래소 API/DeFi 프로토콜** → **거래소 드라이버** → **시스템 콜** → **실행 엔진** → **시스템 모니터**
+1. **전략** → **실행 엔진** → **시스템 콜** → **거래소 드라이버** → **거래소 API**
+2. **거래소 API** → **거래소 드라이버** → **시스템 콜** → **실행 엔진** → **시스템 모니터**
 3. **시스템 모니터** → **이상 감지** → **자동 수정** → **실행 엔진** → **거래소 드라이버**
-4. **크로스체인 작업** → **Base Uniswap V3** → **ETH-WETH 변환** → **유동성 제공**
 
 ---
 
 ## 🌟 시스템 특성
 
 ### 🔥 핵심 기능
-- **통합 거래 인터페이스** - 하나의 API로 OKX, Backpack, Binance 3대 거래소와 Base Uniswap V3 DeFi 지원
+- **통합 거래 인터페이스** - 하나의 API로 OKX, Backpack, Binance 3대 거래소 지원
 - **동적 계정 관리** - 다중 계정 전환 지원, 설정 기반 자동 매핑
 - **스마트 포지션 모니터링** - quantityUSD 기반 정밀 모니터링, 자동 수정 지원
 - **다차원 이상 감지** - 가격, 포지션, 수익, 리스크의 포괄적 모니터링
 - **자동 수정 메커니즘** - 이상 감지 시 자동 주문 수정
 - **완전한 로그 시스템** - 구조화된 로그, 작업 기록, 이상 보고서
-- **DeFi 통합** - Base 체인 Uniswap V3 유동성 제공과 ETH-WETH 변환 지원
 
 ### 🛡️ 보안 특성
 - **리스크 컨트롤** - 내장 리스크 관리 모듈, 다중 리스크 지표 모니터링 지원
@@ -266,12 +274,10 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 - **자동 서킷 브레이커** - 이상 시 자동 거래 중단
 
 ### 🚀 성능 특성
-- **고정밀 계산** - 거래소 간과 DeFi 프로토콜 간의 정밀도 차이를 통일 처리
+- **고정밀 계산** - 거래소 간의 정밀도 차이를 통일 처리
 - **스마트 주문** - 가격과 수량 정밀도 변환의 자동 처리
 - **증분 거래** - 증분 주문 지원, 중복 작업 방지
 - **실시간 모니터링** - 연속 모니터링과 스케줄 작업 지원
-- **Gas 최적화** - 최적의 트랜잭션 실행을 위한 동적 Gas 가격 조정
-- **크로스체인 지원** - CEX와 DeFi 작업의 원활한 통합
 
 ---
 
@@ -328,6 +334,12 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
    conda env create -f environment-win.yml --name ctos
    ```
 
+   프록시를 설정해야 하는 경우:
+   ```bash
+   cp configs/example_ctos.yaml configs/ctos.yaml
+   ```
+   필요한 프록시 IP 주소와 포트 번호를 수정하세요.
+
 3. **API 키 설정**
 
    ```bash
@@ -373,6 +385,16 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 
 👉 플로우는 명확합니다: **코드 가져오기 → 환경 설치 → API 키 입력 → 설정 → 실거래 시작**
 
+7. **시뮬레이션 거래**
+
+   현재 OKX 시뮬레이션 거래를 지원합니다. 시뮬레이션 거래 API를 사용하려면 시뮬레이션 플랫폼에서 APIKey를 생성해야 합니다:
+   **OKX 계정 로그인 → 거래 → 시뮬레이션 거래 → 개인 센터 → 시뮬레이션 거래 APIKey 생성 → API Key 입력 → 설정 → 시뮬레이션 거래**
+   
+   CTOS가 제공하는 API 인터페이스를 테스트하는 스크립트를 실행할 수 있습니다:
+   ```bash
+   python apps/strategies/examples/api_example.py --mode simulate
+   ```
+
 ---
 
 ## 로드맵
@@ -408,18 +430,11 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
   🚀 전략 시스템이 완전히 배포되어 운영 중!
 
 * **🎉 마일스톤 4 (2025.10.11)**
-  ✅ TOPDOGINDEX 기반 주력 전략이 2025.10.11 암호화폐 대폭락에서 전체 포지션 30% 이상의 수익을 달성! 실거래 검증 결과가 우수!
+  * ✅ TOPDOGINDEX 기반 주력 전략이 2025.10.11 암호화폐 대폭락에서 전체 포지션 30% 이상의 수익을 달성! 실거래 검증 결과가 우수!
 
-### 📊 전략 시스템 개요
 
-| 전략 카테고리 | 전략명 | 실행 계정 | 전략 특징 | 상태 |
-|-------------|--------|----------|----------|------|
-| **지수면 전략** | 주력 전략 | 0, 3 | 고변동성+빈번한 거래, 레버리지 누진 헤지 그리드 | ✅ 실행 중 |
-| | 소변동성 마틴 전략 | 2, 4 | 저변동성+빈번한 거래, 레버리지 지수 폭발 헤지 그리드 | ✅ 실행 중 |
-| **보조면 전략** | 동적 그리드 전략 | 0, 3 | 지정 코인 ±3.88/1.88 주문, 동적 조정 | ✅ 실행 중 |
-| | 스나이퍼 상승 전략 | 0, 3, 4 | BTC 1% 초과 시 3U 매도, BTC/BNB 매수 | ✅ 실행 중 |
-| | Rank 전략 | 2 | 상위 50% 상승 시 롱, 하위 50% 시 숏 | 🚧 개발 중 |
-| **신코인 플로우 전략** | 스나이퍼 대시총 신코인 | 1 | 신코인 숏+동적 그리드, 10달러 손절 | 🚧 개발 중 |
+* **🎉 마일스톤 5 (2025.10.29)**
+  * ✅ OKX 시뮬레이션 거래 기능을 기반으로 한 전략 실시간 시뮬레이션 기능이 출시되었습니다. 시뮬레이션 거래 기능을 기반으로 개발하기를 환영합니다! 실제 거래 경험과 차이가 없습니다. 현재는 ctos/core/runtime/AccountManager.py에서 okx의 드라이버 소스를 simulateokx로 변경하기만 하면 사용할 수 있습니다. TODO: 나중에 더 편리한 기능을 개선하여 설정 파일에 직접 주석을 달기만 하면 원활하게 전환할 수 있도록 할 예정입니다.
 
 ### 🎯 핵심 전략 특징
 
@@ -435,8 +450,8 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 
 ## 보안과 컴플라이언스
 
-* **최소 권한**: API 키는 필요한 거래 권한만 활성화하고, 출금은 항상 비활성화.
-* **키 보안**: `configs/secrets.yaml` (버전 관리에 포함되지 않음)을 사용하거나, 시스템 키 관리, 환경 변수.
+* **최소 권한**: API Key는 필요한 권한만 활성화하고, 출금은 항상 비활성화합니다.
+* **키 보안**: `configs/secrets.yaml` (버전 관리에 포함되지 않음)을 사용하거나, 시스템 키 관리, 환경 변수를 사용합니다.
 * **리스크 컨트롤 우선**: 주문 전 체크, 차단, Kill-switch, 속도 제한과 로그 기록.
 * **백테스트 재현 가능**: 모든 전략 입력/출력과 시장 스냅샷이 재생 가능.
 

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="construction-container">
+  <div class="construction-content">
+    <div class="construction-icon">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="55" stroke="#667eea" stroke-width="4" fill="none" opacity="0.2"/>
+        <path d="M60 30 L60 70 M40 50 L80 50 M50 40 L50 60 M70 40 L70 60" stroke="#667eea" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="60" cy="60" r="8" fill="#667eea"/>
+      </svg>
+    </div>
+    
+    <h1>账户交易</h1>
+    <p class="construction-message">为了安全问题，此功能还在建设中</p>
+    <p class="construction-subtitle">我们正在努力完善交易功能，敬请期待</p>
+    
+    <div class="construction-info">
+      <p>功能上线后，您将能够：</p>
+      <ul>
+        <li>查看实时交易数据</li>
+        <li>执行交易操作</li>
+        <li>管理交易订单</li>
+        <li>查看交易历史</li>
+      </ul>
+    </div>
+    
+    <div class="back-link">
+      <a href="{% url 'home' %}" class="btn btn-primary">返回主页</a>
+    </div>
+  </div>
+</div>
+
+<style>
+.construction-container {
+  max-width: 800px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.construction-content {
+  text-align: center;
+  background: white;
+  padding: 3rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.construction-icon {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.construction-content h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.construction-message {
+  font-size: 1.3rem;
+  color: #667eea;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.construction-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.construction-info {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 10px;
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.construction-info p {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.construction-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.construction-info li {
+  padding: 0.75rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #555;
+  line-height: 1.6;
+}
+
+.construction-info li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.back-link {
+  margin-top: 2rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+  .construction-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .construction-content h1 {
+    font-size: 2rem;
+  }
+  
+  .construction-message {
+    font-size: 1.1rem;
+  }
+}
+</style>
+{% endblock %}
+

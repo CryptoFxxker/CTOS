@@ -10,6 +10,21 @@
       "add_position_rate": 0.05,
       "reduce_position_rate": 0.1,
       "stop_loss_rate": 0.3,
+      "enabled": false,
+      "positions": [],
+      "total_pnl": 0.0,
+      "last_price": 0.0
+    },
+    {
+      "coin": "XAUT",
+      "exchange": "okx",
+      "account_id": 0,
+      "base_amount": 5.0,
+      "martin_multiplier": 1.5,
+      "max_positions": 8,
+      "add_position_rate": 0.05,
+      "reduce_position_rate": 0.1,
+      "stop_loss_rate": 0.3,
       "enabled": true,
       "positions": [],
       "total_pnl": 0.0,
@@ -25,7 +40,7 @@
       "add_position_rate": 0.03,
       "reduce_position_rate": 0.08,
       "stop_loss_rate": 0.25,
-      "enabled": true,
+      "enabled": false,
       "positions": [],
       "total_pnl": 0.0,
       "last_price": 0.0
@@ -33,6 +48,7 @@
   ],
   "global_settings": {
     "monitor_interval": 30,
+    "status_print_interval": 3,
     "emergency_stop": false,
     "log_level": "INFO"
   }

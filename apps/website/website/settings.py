@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import socket
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,11 +27,30 @@ SECRET_KEY = 'django-insecure-97q4%oc!k(!(2n+(bl1*jf$reozhs=$v9lg*)1727z)mt-kqjz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "162.105.175.7",   # 你的服务器 IP
-]
+# 获取所有网络接口的 IP 地址和域名
+def get_all_ips():
+    """获取所有网络接口的 IP 地址和允许的域名"""
+    ips = ["localhost", "127.0.0.1", "162.105.175.7", "10.1.1.4", "52.175.17.121"]
+    # 添加允许的域名
+    domains = [
+        "www.topdogindex.win",
+        "topdogindex.win",
+    ]
+    ips.extend(domains)
+    try:
+        # 获取主机名
+        hostname = socket.gethostname()
+        ips.append(hostname)
+        # 获取所有 IP 地址
+        for addr in socket.getaddrinfo(hostname, None):
+            ip = addr[4][0]
+            if ip not in ips and not ip.startswith("127."):
+                ips.append(ip)
+    except:
+        pass
+    return ips
+
+ALLOWED_HOSTS = get_all_ips()
 
 # Application definition
 
@@ -37,6 +58,11 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     "apps.accounts",
     "apps.metrics",
+    "apps.funds",
+    "apps.auth.apps.AuthConfig",  # 使用应用配置类避免标签冲突
+    "apps.trading",
+    "apps.strategies",
+    "apps.news",
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -133,4 +159,27 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# 认证相关配置
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
+# HTTPS/反向代理配置
+# 如果使用反向代理（如 Nginx）处理 HTTPS，需要配置以下设置
+# 这样 Django 可以正确识别来自代理的 HTTPS 请求
+USE_TLS = os.environ.get('USE_TLS', 'False').lower() == 'true'
+
+if USE_TLS:
+    # 信任反向代理的 HTTPS 头
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # 如果反向代理设置了 X-Forwarded-Proto: https，Django 会认为请求是 HTTPS
+    # 注意：只有在确实使用反向代理时才启用此设置
+
+# 资讯系统配置
+# Markdown 文章文件目录（相对于 BASE_DIR）
+ARTICLES_DIR = os.path.join(BASE_DIR, 'articles')
+# 如果环境变量中指定了文章目录，则使用环境变量的值
+ARTICLES_DIR = os.environ.get('ARTICLES_DIR', ARTICLES_DIR)
+# 确保是绝对路径
+if not os.path.isabs(ARTICLES_DIR):
+    ARTICLES_DIR = os.path.join(BASE_DIR, ARTICLES_DIR)

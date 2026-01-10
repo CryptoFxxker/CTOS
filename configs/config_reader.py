@@ -46,8 +46,8 @@ class ConfigReader:
         file_path = self.config_dir / filename
         
         if not file_path.exists():
-            raise FileNotFoundError(f"配置文件不存在: {file_path}")
-        
+            print(f"配置文件不存在: {file_path}")
+            return None
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
@@ -58,12 +58,14 @@ class ConfigReader:
             return config
             
         except yaml.YAMLError as e:
+            print(f"YAML解析错误 {filename}: {e}")
             self._logger.error(f"YAML解析错误 {filename}: {e}")
-            raise
+            return None
         except Exception as e:
+            print(f"读取配置文件失败 {filename}: {e}")
             self._logger.error(f"读取配置文件失败 {filename}: {e}")
-            raise
-    
+            return None
+        
     def get_account_config(self, exchange: str = None, account: str = None) -> Dict[str, Any]:
         """
         获取账户配置
@@ -108,7 +110,12 @@ class ConfigReader:
             dict: CTOS系统配置信息
         """
         if 'ctos.yaml' not in self._configs:
-            self.load_yaml('ctos.yaml')
+            x = self.load_yaml('ctos.yaml')
+            if x is None:
+                print(f"load_yaml ctos.yaml make some errors: {x}, BUT, u can still run normally, don't worry about it")
+                return None
+            else:
+                print(f"load_yaml ctos.yaml success: {x}")
         
         return self._configs['ctos.yaml']
     

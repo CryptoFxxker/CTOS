@@ -121,7 +121,7 @@ class ExecutionEngine:
         for x in position_infos:
             if float(x['quantity']) != 0:
                 all_pos_info[x['symbol']] = x
-        print('all_pos_info.keys: ', all_pos_info.keys())
+        # print('all_pos_info.keys: ', all_pos_info.keys())
         
         # 如果启用异步模式，使用并发处理
         if async_mode:
@@ -133,7 +133,7 @@ class ExecutionEngine:
             tasks = []
             for coin, usdt_amount in zip(coins, usdt_amounts):
                 tasks.append((coin, usdt_amount, soft, all_pos_info, stack_mode))
-            
+            time.sleep(0.033)
             # 使用线程池并发执行
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
@@ -146,7 +146,7 @@ class ExecutionEngine:
                     try:
                         result = future.result(timeout=60)
                         if result:
-                            print(f"✅ {result['coin'].upper()} 处理完成")
+                            print(f"\r✅ {result['coin'].upper()} 处理完成", end=' ')
                     except Exception as e:
                         print(f"❌ 任务执行异常: {e}")
             
@@ -154,8 +154,12 @@ class ExecutionEngine:
             return self.soft_orders_to_focus
         
         # 原有同步逻辑
+        times = 0
         for coin, usdt_amount in zip(coins, usdt_amounts):
+            times += 1
             try:
+                if times > 50:
+                    time.sleep(1)
                 symbol_full, _, _ = self.cex_driver._norm_symbol(coin)
                 # exchange = init_CexClient(coin)
                 if stack_mode:
@@ -368,7 +372,10 @@ class ExecutionEngine:
         if order_amount == 0:
             self.monitor.record_operation("PlaceIncrementalOrders", self.strategy_detail,
                                           {"symbol": symbol_full, "error": "订单金额过小，无法下单", "async_mode":async_mode})
-            print('订单金额过小，无法下单')
+            if async_mode:
+                print(f"\r订单金额过小，无法下单", end=' ')
+            else:
+                print('订单金额过小，无法下单')
             return None, "订单金额过小，无法下单"
         order_id = None
         if direction.lower() == 'buy':
@@ -388,7 +395,7 @@ class ExecutionEngine:
                     self.cex_driver.order_id_to_symbol[order_id] = coin
                     soft_orders_to_focus.append(order_id)
             if order_id:
-                print(f"\r{BeijingTime()} {self.cex_driver.cex.upper()}-{self.account} **BUY** order for {order_amount if order_id else 0} units of 【{coin.upper()}】 at price {price}")
+                print(f"\r{BeijingTime()} {self.cex_driver.cex.upper()}-{self.account} **BUY** order for {order_amount if order_id else 0} units of 【{coin.upper()}】 at price {price}", end=' ' if async_mode else '')
                 self.monitor.record_operation("PlaceIncrementalOrders", self.strategy_detail, {
                     "symbol": symbol_full, "action": "buy", "price": price, "sizes": order_amount, 'order_id': order_id})
             else:
@@ -414,7 +421,7 @@ class ExecutionEngine:
                 else:
                     self.cex_driver.order_id_to_symbol[order_id] = coin
             if order_id:
-                print(f"\r {BeijingTime()} {self.cex_driver.cex.upper()}-{self.account} **SELL**  order for {order_amount if order_id else 0} units of 【{coin.upper()}】 at price {price} for $ {usdt_amount}")
+                print(f"\r {BeijingTime()} {self.cex_driver.cex.upper()}-{self.account} **SELL**  order for {order_amount if order_id else 0} units of 【{coin.upper()}】 at price {price} for $ {usdt_amount}", end=' ' if async_mode else '')
                 self.monitor.record_operation("PlaceIncrementalOrders", self.strategy_detail, {
                     "symbol": symbol_full, "action": "sell", "price": price, "sizes": order_amount, 'order_id': order_id, "async_mode":async_mode})
             else:
@@ -459,9 +466,7 @@ class ExecutionEngine:
                 
                 if abs(diff) < 1:
                     return {'coin': coin, 'success': True, 'message': '差额太小，跳过'}
-                
-                print(f"📊 【{coin.upper()}】需要补齐差额: {round(diff, 2)} = 现有:{round(open_position, 2)} - Target:{round(usdt_amount)}")
-                
+                print(f"\r📊 【{coin.upper()}】需要补齐差额: {round(diff, 2)} = 现有:{round(open_position, 2)} - Target:{round(usdt_amount)}", end=' ')
                 oid, err = self.place_incremental_orders(abs(diff), coin, 'sell' if diff > 0 else 'buy', 
                                                         soft=soft if coin.lower().find('xaut') == -1 or coin.lower().find('trx') == -1 else False)
                 if oid:

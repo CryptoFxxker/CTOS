@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="fund-trends-container">
+  <div class="fund-header">
+    <h2>基金趋势</h2>
+    <p class="subtitle">实时监控基金余额和盈亏情况</p>
+    <div class="account-selector-container">
+      <label for="account-select" class="account-label">选择账户：</label>
+      <select id="account-select" class="account-select">
+        <option value="">加载中...</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 基金概览卡片 -->
+  <div class="summary-cards">
+    <div class="summary-card balance-card">
+      <div class="card-icon">💰</div>
+      <div class="card-content">
+        <div class="card-label">当前余额</div>
+        <div class="card-value" id="current-balance">加载中...</div>
+        <div class="card-update-time" id="update-time">--</div>
+      </div>
+    </div>
+    
+    <div class="summary-card pnl-card">
+      <div class="card-icon">📊</div>
+      <div class="card-content">
+        <div class="card-label" id="pnl-label">当日盈亏</div>
+        <div class="card-value" id="today-pnl">加载中...</div>
+        <div class="card-percent" id="today-pnl-percent">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 走势图区域 -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <h3>基金走势图</h3>
+      <div class="period-selector">
+        <button class="period-btn active" data-period="1d">1天</button>
+        <button class="period-btn" data-period="7d">7天</button>
+        <button class="period-btn" data-period="1m">1月</button>
+        <button class="period-btn" data-period="6m">半年</button>
+        <button class="period-btn" data-period="all">全部</button>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="trend-chart"></canvas>
+    </div>
+    
+    <div class="chart-loading" id="chart-loading">
+      <div class="loading-spinner"></div>
+      <p>正在加载数据...</p>
+    </div>
+  </div>
+</div>
+
+<!-- 引入Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+.fund-trends-container {
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.fund-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.fund-header h2 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.account-selector-container {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.account-label {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.account-select {
+  padding: 0.5rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 200px;
+}
+
+.account-select:hover {
+  border-color: #667eea;
+}
+
+.account-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.balance-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.pnl-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.card-icon {
+  font-size: 3rem;
+  opacity: 0.9;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.card-update-time {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.card-percent {
+  font-size: 1.2rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.chart-section {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.chart-header h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.period-selector {
+  display: flex;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  padding: 0.25rem;
+  border-radius: 8px;
+}
+
+.period-btn {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: #666;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.period-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.period-btn.active {
+  background: #667eea;
+  color: white;
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  margin-top: 1rem;
+}
+
+.chart-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: none;
+}
+
+.chart-loading.active {
+  display: block;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .period-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .period-btn {
+    flex: 1;
+  }
+}
+</style>
+
+<script>
+// 全局变量
+let trendChart = null;
+let currentPeriod = '1d';
+let currentAccountId = null;
+let accountsList = [];
+
+// 格式化数字
+function formatNumber(num) {
+  return new Intl.NumberFormat('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num);
+}
+
+// 格式化百分比
+function formatPercent(num) {
+  const sign = num >= 0 ? '+' : '';
+  return sign + num.toFixed(2) + '%';
+}
+
+// 加载账户列表
+async function loadAccountsList() {
+  try {
+    const response = await fetch('/funds/api/accounts/');
+    const result = await response.json();
+    
+    if (result.success && result.accounts) {
+      accountsList = result.accounts;
+      const accountSelect = document.getElementById('account-select');
+      accountSelect.innerHTML = '';
+      
+      if (accountsList.length === 0) {
+        accountSelect.innerHTML = '<option value="">无可用账户</option>';
+        return;
+      }
+      
+      accountsList.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.account_id;
+        option.textContent = account.account_name || account.account_id;
+        accountSelect.appendChild(option);
+      });
+      
+      // 设置默认选中第一个账户
+      if (accountsList.length > 0) {
+        currentAccountId = accountsList[0].account_id;
+        accountSelect.value = currentAccountId;
+      }
+      
+      // 加载选中账户的数据
+      loadFundSummary();
+      loadTrendData(currentPeriod);
+    } else {
+      console.error('加载账户列表失败:', result.error);
+      document.getElementById('account-select').innerHTML = '<option value="">加载失败</option>';
+    }
+  } catch (error) {
+    console.error('加载账户列表出错:', error);
+    document.getElementById('account-select').innerHTML = '<option value="">加载出错</option>';
+  }
+}
+
+// 加载基金概览数据（仅余额）
+async function loadFundSummary() {
+  if (!currentAccountId) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/funds/api/summary/?account_id=${currentAccountId}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      const data = result.data;
+      document.getElementById('current-balance').textContent = '$' + formatNumber(data.current_balance);
+      document.getElementById('update-time').textContent = '更新时间: ' + data.last_updated;
+    } else {
+      console.error('加载概览数据失败:', result.error);
+    }
+  } catch (error) {
+    console.error('加载概览数据出错:', error);
+  }
+}
+
+// 更新盈亏显示
+function updatePnlDisplay(periodPnl, periodPnlPercent, period) {
+  const pnlElement = document.getElementById('today-pnl');
+  const pnlPercentElement = document.getElementById('today-pnl-percent');
+  const pnlLabelElement = document.getElementById('pnl-label');
+  
+  // 根据周期设置标签
+  const periodLabels = {
+    '1d': '当日盈亏',
+    '7d': '7日盈亏',
+    '1m': '1月盈亏',
+    '6m': '半年盈亏',
+    'all': '全部盈亏'
+  };
+  pnlLabelElement.textContent = periodLabels[period] || '周期盈亏';
+  
+  // 更新盈亏数值
+      pnlElement.textContent = (periodPnl >= 0 ? '+' : '') + '$' + formatNumber(periodPnl);
+  pnlPercentElement.textContent = formatPercent(periodPnlPercent);
+  
+  // 根据盈亏设置颜色
+  if (periodPnl >= 0) {
+    pnlElement.style.color = '#10b981';
+    pnlPercentElement.style.color = '#10b981';
+  } else {
+    pnlElement.style.color = '#ef4444';
+    pnlPercentElement.style.color = '#ef4444';
+  }
+}
+
+// 加载走势数据
+async function loadTrendData(period) {
+  if (!currentAccountId) {
+    return;
+  }
+  
+  const loadingElement = document.getElementById('chart-loading');
+  loadingElement.classList.add('active');
+  
+  try {
+    const response = await fetch(`/funds/api/trend/?period=${period}&account_id=${currentAccountId}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      const data = result.data;
+      updateChart(data, period);
+      
+      // 更新盈亏显示（从API返回的周期盈亏信息）
+      if (result.period_pnl !== undefined && result.period_pnl_percent !== undefined) {
+        updatePnlDisplay(result.period_pnl, result.period_pnl_percent, period);
+      }
+    } else {
+      console.error('加载走势数据失败:', result.error);
+      alert('加载走势数据失败: ' + result.error);
+    }
+  } catch (error) {
+    console.error('加载走势数据出错:', error);
+    alert('加载走势数据出错: ' + error.message);
+  } finally {
+    loadingElement.classList.remove('active');
+  }
+}
+
+// 更新图表
+function updateChart(data, period) {
+  const ctx = document.getElementById('trend-chart').getContext('2d');
+  
+  // 准备图表数据（使用北京时间）
+  const labels = data.map(item => {
+    // 将时间字符串转换为Date对象，并转换为北京时间
+    const date = new Date(item.timestamp);
+    // 使用toLocaleString转换为北京时间（Asia/Shanghai）
+    const beijingDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
+    
+    if (period === '1d') {
+      return beijingDate.toLocaleTimeString('zh-CN', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Shanghai'
+      });
+    } else if (period === '1m') {
+      // 1月周期：显示月-日格式
+      return beijingDate.toLocaleDateString('zh-CN', { 
+        month: 'short', 
+        day: 'numeric',
+        timeZone: 'Asia/Shanghai'
+      });
+    } else if (period === '6m' || period === 'all') {
+      return beijingDate.toLocaleDateString('zh-CN', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        timeZone: 'Asia/Shanghai'
+      });
+    } else {
+      // 7天周期
+      return beijingDate.toLocaleDateString('zh-CN', { 
+        month: 'short', 
+        day: 'numeric',
+        timeZone: 'Asia/Shanghai'
+      });
+    }
+  });
+  
+  const values = data.map(item => item.value);
+  const pnlValues = data.map(item => item.pnl);
+  
+  // 如果图表已存在，尝试更新数据而不是重新创建（更平滑）
+  if (trendChart) {
+    try {
+      // 更新图表数据
+      trendChart.data.labels = labels;
+      trendChart.data.datasets[0].data = values;
+      // 平滑更新（无动画）
+      trendChart.update('none');
+      return; // 更新成功，直接返回
+    } catch (e) {
+      console.warn('更新图表失败，重新创建:', e);
+      // 如果更新失败，销毁并重新创建
+      trendChart.destroy();
+      trendChart = null;
+    }
+  }
+  
+  // 创建新图表
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '基金余额',
+        data: values,
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: '#667eea',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function(context) {
+              const index = context.dataIndex;
+              const value = context.parsed.y;
+              const pnl = pnlValues[index];
+              return [
+                '余额: $' + formatNumber(value),
+                '盈亏: ' + (pnl >= 0 ? '+' : '') + '$' + formatNumber(pnl)
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: function(value) {
+              return '$' + formatNumber(value);
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          // 如果所有值都相同，设置一个小的范围以便显示
+          afterDataLimits: function(scale) {
+            const min = scale.min;
+            const max = scale.max;
+            if (min === max) {
+              // 如果所有值都相同，设置一个小的范围（±0.1%）
+              const center = min;
+              const range = Math.max(Math.abs(center) * 0.001, 1); // 至少1的范围
+              scale.min = center - range;
+              scale.max = center + range;
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      }
+    }
+  });
+}
+
+// 周期切换事件
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // 更新按钮状态
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    
+    // 加载新数据
+    currentPeriod = this.dataset.period;
+    loadTrendData(currentPeriod);
+  });
+});
+
+// 账户选择器事件
+document.addEventListener('DOMContentLoaded', function() {
+  // 首先加载账户列表
+  loadAccountsList();
+  
+  // 账户选择器变化事件
+  const accountSelect = document.getElementById('account-select');
+  accountSelect.addEventListener('change', function() {
+    currentAccountId = this.value;
+    if (currentAccountId) {
+      // 切换账户时重新加载数据
+      loadFundSummary();
+      loadTrendData(currentPeriod);
+    }
+  });
+  
+  // 每30秒刷新余额数据和走势图
+  setInterval(function() {
+    if (currentAccountId) {
+      loadFundSummary();
+      // 静默刷新走势图（不显示loading动画）
+      refreshTrendDataSilently(currentPeriod);
+    }
+  }, 30000); // 30秒刷新一次
+});
+
+// 静默刷新走势图数据（不显示loading动画）
+async function refreshTrendDataSilently(period) {
+  if (!currentAccountId) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/funds/api/trend/?period=${period}&account_id=${currentAccountId}`);
+    const result = await response.json();
+    
+    if (result.success && result.data && result.data.length > 0) {
+      // 检查数据是否有更新（比较数据点数量和最后一个数据点的值）
+      const lastDataPoint = result.data[result.data.length - 1];
+      let shouldUpdate = false;
+      
+      // 如果当前图表存在，检查是否需要更新
+      if (trendChart && trendChart.data && trendChart.data.datasets[0].data.length > 0) {
+        const currentDataLength = trendChart.data.datasets[0].data.length;
+        const currentLastValue = trendChart.data.datasets[0].data[currentDataLength - 1];
+        
+        // 如果数据点数量增加，或者最后一个值不同，说明有更新
+        if (result.data.length > currentDataLength) {
+          shouldUpdate = true;
+          console.log(`检测到新数据点: ${result.data.length} > ${currentDataLength}`);
+        } else if (Math.abs(currentLastValue - lastDataPoint.value) > 0.01) {
+          shouldUpdate = true;
+          console.log(`检测到数据变化: ${currentLastValue} -> ${lastDataPoint.value}`);
+        }
+      } else {
+        // 如果图表不存在，直接更新
+        shouldUpdate = true;
+      }
+      
+      if (shouldUpdate) {
+        updateChart(result.data, period);
+        
+        // 更新盈亏显示
+        if (result.period_pnl !== undefined && result.period_pnl_percent !== undefined) {
+          updatePnlDisplay(result.period_pnl, result.period_pnl_percent, period);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('静默刷新走势数据出错:', error);
+    // 静默刷新失败时不显示错误提示
+  }
+}
+</script>
+{% endblock %}
+

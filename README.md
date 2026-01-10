@@ -333,6 +333,12 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
    conda activate ctos
    ```
 
+   如需要设置代理，将
+   ```bash
+   cp configs/example_ctos.yaml configs/ctos.yaml
+   ```
+   修改需要的代理IP地址及端口号即可
+
 
 3. **配置 API Key**
 
@@ -380,6 +386,16 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 
 👉 流程一目了然：**获取代码 → 安装环境 → 填 API Key → 配置 → 实盘上线**
 
+7. **模拟盘**
+
+   目前支持OKX模拟盘，模拟盘API交易需要在模拟盘上创建APIKey：
+   **登录欧易账户—>交易—>模拟交易—>个人中心—>创建模拟盘APIKey—>填 API Key->配置->模拟盘交易**
+   
+   可运行该测试脚本测试 CTOS 所提供的 API接口
+   ```bash
+   python apps/strategies/examples/api_example.py --mode simulate
+   ```
+
 ---
 
 ##  Roadmap
@@ -419,6 +435,11 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 
 * **🎉 里程碑 4（2025.10.11）**
   * ✅ 基于TOPDOGINDEX的主力策略在20251011币圈大血洗中获利全仓位30%以上！实盘验证效果上佳！
+
+
+* **🎉 里程碑 5（2025.10.29）**
+  * ✅ 基于OKX模拟盘功能的策略实时模拟功能上线，欢迎广大朋友来基于模拟盘功能开发！与实机体验没有差异，目前只需要在ctos/core/runtime/AccountManager.py中修改okx的驱动来源为simulateokx即可。TODO:后续会改进更加方便的功能，争取直接在配置文件标注即可无缝切换。
+
 
 ### 🎯 策略核心特性
 

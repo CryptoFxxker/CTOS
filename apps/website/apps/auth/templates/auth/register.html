@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-box">
+    <h2>用户注册</h2>
+    <p class="register-note">注册需要有效的邀请码，请联系管理员获取</p>
+    
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    
+    <form method="post" action="{% url 'register' %}">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="username">用户名 *</label>
+        <input type="text" id="username" name="username" required autofocus>
+        <small>用户名将用于登录，请使用字母、数字和下划线</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">邮箱 *</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">密码 *</label>
+        <input type="password" id="password" name="password" required minlength="8">
+        <small>密码长度至少为8个字符</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="password_confirm">确认密码 *</label>
+        <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+      </div>
+      
+      <div class="form-group">
+        <label for="invite_code">邀请码 *</label>
+        <input type="text" id="invite_code" name="invite_code" required placeholder="请输入邀请码" style="text-transform: uppercase;">
+        <small>注册需要有效的邀请码</small>
+      </div>
+      
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block">注册</button>
+      </div>
+    </form>
+    
+    <div class="login-footer">
+      <p>已有账户？<a href="{% url 'login' %}">立即登录</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// 自动将邀请码转换为大写
+document.getElementById('invite_code').addEventListener('input', function(e) {
+  e.target.value = e.target.value.toUpperCase();
+});
+</script>
+{% endblock %}
+
