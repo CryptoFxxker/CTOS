@@ -25,11 +25,11 @@ def _add_bpx_path():
     
     # 添加项目根目录的bpx路径（如果存在）
     project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
-    root_bpx_path = os.path.join(project_root, 'bpx')
-    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
-        sys.path.insert(0, root_bpx_path)
-    if os.path.exists(project_root) and project_root not in sys.path:
-        sys.path.insert(0, project_root)
+    #root_bpx_path = os.path.join(project_root, 'bpx')
+    #if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+     #   sys.path.insert(0, root_bpx_path)
+    #if os.path.exists(project_root) and project_root not in sys.path:
+     #   sys.path.insert(0, project_root)
     return project_root
 # 执行路径添加
 _PROJECT_ROOT = _add_bpx_path()
@@ -37,15 +37,14 @@ _PROJECT_ROOT = _add_bpx_path()
 # Import Backpack clients (robust to different execution contexts)
 try:
     # When imported as part of the package
-    from .bpx.account import Account  # type: ignore
-    from .bpx.public import Public    # type: ignore
-    from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places   # type: ignore
+    from ctos.drivers.backpack.bpx.account import Account  # type: ignore
+    from ctos.drivers.backpack.bpx.public import Public    # type: ignore
+    from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places    # type: ignore
 except Exception:
     try:
         # When the full package is available in sys.path
-        from ctos.drivers.backpack.bpx.account import Account  # type: ignore
-        from ctos.drivers.backpack.bpx.public import Public    # type: ignore
-        from ctos.drivers.backpack.util import _reduce_significant_digits, align_decimal_places    # type: ignore
+        pass
+
     except Exception as e:
         # As a last resort, add the local folder so `bpx` can be found when running this file directly
         backpack_dir = os.path.dirname(__file__)

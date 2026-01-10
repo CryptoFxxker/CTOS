@@ -15,6 +15,5 @@ accounts:
     arb_bot:
       public_key: "bot_public_key"
       secret_key: "bot_secret_key"
-
-# 如果要使用此文件，请删除本行提示，并根据实际情况到对应交易所申请API后填写到本文件，然后将文件名中的 example_ 去掉即可。
-# To use this file, please delete this line, fill in your API credentials from the corresponding exchange, and then remove 'example_' from the filename.
+    accounts:
+ 

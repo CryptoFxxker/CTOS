@@ -329,6 +329,8 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 * Windows环境下：
    ```bash
    conda env create -f environment-win.yml --name ctos
+
+   conda activate ctos
    ```
 
 
