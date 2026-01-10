@@ -143,14 +143,6 @@ def init_okx_clients(mode: str = "swap", api_key: Optional[str] = None, api_secr
     except Exception as e:
         print(f"从配置文件读取代理配置失败: {e}")
     
-    # 如果无法从文件读取代理，使用本地1080端口作为默认代理
-    if not proxies:
-        proxies = {
-            "https": "socks5h://127.0.0.1:1080",
-            "http": "socks5h://127.0.0.1:1080"
-        }
-        print(f"使用默认代理配置: {proxies}")
-    
     # 3. 构建ccxt配置（参考test_ccxt_driver.py的写法）
     config = {
         "apiKey": k,
@@ -825,21 +817,40 @@ class OkxDriver(TradingSyscalls):
         :param order_ids: 若提供，则仅撤销这些订单号（若底层支持）
         :return: (result, error)
         """
+        if not self.okx:
+            return None, Exception("Account client not available")
+
+        # 1. 如果提供了 order_ids，优先处理
+        if order_ids:
+            results = []
+            for oid in order_ids:
+                res, err = self.revoke_order(oid, symbol=symbol)
+                results.append(res if err is None else err)
+            return results, None
+
+        # 2. 尝试使用 ccxt 原生的 cancel_all_orders
         if hasattr(self.okx, "cancel_all_orders"):
             try:
-                if symbol:
-                    try:
-                        full, _, _ = self._norm_symbol(symbol)
-                    except Exception as e:
-                        full = symbol
-                else:
-                    full = symbol
+                full = self._norm_symbol(symbol)[0] if symbol else None
                 resp = self.okx.cancel_all_orders(symbol=full)
                 return resp, None
             except Exception as e:
-                return None, e
-        else:
-            return None, Exception("Account client not available")
+                # 如果 ccxt 提示不支持，则进入手动撤单逻辑
+                if "not supported" not in str(e).lower():
+                    return None, e
+
+        # 3. 手动撤单逻辑：获取所有挂单并逐个撤销
+        open_orders, err = self.get_open_orders(symbol=symbol, instType=instType, onlyOrderId=False, keep_origin=False)
+        if err:
+            return None, err
+        
+        results = []
+        for od in open_orders:
+            oid = od.get('orderId')
+            osym = od.get('symbol')
+            res, err = self.revoke_order(oid, symbol=osym)
+            results.append(res if err is None else err)
+        return results, None
 
     # -------------- account --------------
     def fetch_balance(self, currency='USDT'):
