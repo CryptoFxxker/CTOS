@@ -155,7 +155,7 @@ def save_focus_coins(cex_name, account_id, coins_config):
 
 def update_focus_coins(cex_name, account_id, new_good_group=None, new_bad_coins=None):
     """更新关注币种配置"""
-    coins_config = self.load_focus_coins(cex_name, account_id)
+    coins_config = load_focus_coins(cex_name, account_id)
     
     if new_good_group is not None:
         coins_config["good_group"] = new_good_group
@@ -234,9 +234,9 @@ class SniperTakeoffHedge:
             coin_names : list[str]
                 需要监控和判断是否“飞升”的币种名称列表（如 ['btc', 'eth', 'sol']）。
             sanction_line : float
-                超越BTC涨幅的阈值（如 0.05 表示超5%即触发制裁）。
+                币种/BTC比值增长的阈值（如 0.01 表示比值增长1%即触发制裁）。
             coinPrices_for_openPosition : dict, optional
-                各币种的参考开仓价格字典，格式如 {'btc': 30000, 'eth': 2000, ...}。
+                各币种相对于BTC的参考比值字典，格式如 {'eth/btc': 0.05, 'sol/btc': 0.001, 'btc/btc': 1.0}。
                 若为 None，则自动从本地 coinPrices_for_openPosition.json 文件加载。
 
         返回:
@@ -278,8 +278,25 @@ class SniperTakeoffHedge:
             except Exception as e:
                 print(f"[{cex_name}-{engine.account}] error: {e}")
                 open_position_price = {}
-            print(f"✓ 没有找到 {file_path} 文件，重新获取开仓价格", open_position_price, coin_names)
-            coinPrices_for_openPosition = {k.lower(): open_position_price.get(engine.cex_driver._norm_symbol(k.lower())[0], None) for k in coin_names}
+            # 获取BTC价格用于计算比值
+            btc_ref_price = engine.cex_driver.get_price_now('btc')
+            print(f"✓ 没有找到 {file_path} 文件，重新获取开仓价格并计算比值", open_position_price, coin_names)
+            # 存储币种/BTC比值，格式如 {'eth/btc': 0.05, 'sol/btc': 0.001, 'btc/btc': 1.0}
+            coinPrices_for_openPosition = {}
+            # 确保有btc/btc = 1.0作为基准
+            coinPrices_for_openPosition['btc/btc'] = 1.0
+            if btc_ref_price and btc_ref_price > 0:
+                for k in coin_names:
+                    coin_lower = k.lower()
+                    # BTC的比值始终为1.0
+                    if coin_lower == 'btc':
+                        coinPrices_for_openPosition['btc/btc'] = 1.0
+                        continue
+                    symbol_full = engine.cex_driver._norm_symbol(coin_lower)[0]
+                    coin_price = open_position_price.get(symbol_full, None)
+                    if coin_price is not None:
+                        ratio_key = f"{coin_lower}/btc"
+                        coinPrices_for_openPosition[ratio_key] = coin_price / btc_ref_price
             save_para(coinPrices_for_openPosition, file_path)
         current_time = BeijingTime(format='%H:%M:%S')
         print(f"\r🕐 当前时间为 {current_time}，需要测试下是不是有的币要加关税了...", end='')
@@ -317,21 +334,43 @@ class SniperTakeoffHedge:
 
                 min_buy = min_order_size * contract_value * price
                 min_money_to_buy_amounts[coin_name] = min_buy
-                if coin_name.lower() not in coinPrices_for_openPosition:
-                    coinPrices_for_openPosition[coin_name.lower()] = price
-                last_time_price = coinPrices_for_openPosition[coin_name.lower()]
-                # print(f"[{idx}] price: {price}, last_time_price: {last_time_price}, btc_now_price: {btc_now_price}, coinPrices_for_openPosition['btc']: {coinPrices_for_openPosition['btc']}")
-                exceed = (price / last_time_price) - (btc_now_price / coinPrices_for_openPosition['btc'])
+                
+                # 使用币种/BTC比值进行计算
+                coin_lower = coin_name.lower()
+                ratio_key = f"{coin_lower}/btc"
+                
+                # BTC的比值始终为1.0
+                if coin_lower == 'btc':
+                    current_ratio = 1.0
+                    last_ratio = coinPrices_for_openPosition.get('btc/btc', 1.0)
+                else:
+                    current_ratio = price / btc_now_price if btc_now_price > 0 else 0
+                    # 如果历史比值不存在，初始化当前比值
+                    if ratio_key not in coinPrices_for_openPosition:
+                        coinPrices_for_openPosition[ratio_key] = current_ratio
+                    last_ratio = coinPrices_for_openPosition[ratio_key]
+                
+                # 计算比值变化率：当前比值相对于历史比值的增长幅度
+                # exceed = (current_ratio / last_ratio) - 1 表示比值增长了多少倍
+                if last_ratio > 0:
+                    exceed = (current_ratio / last_ratio) - 1
+                else:
+                    exceed = 0
 
                 coin_exceed_btc_increase_rates[coin_name] = exceed
 
-                prepared = exceed / 0.01 * sanction_money  # 每涨 1 个点，准备 3 USDT
-                consle_show = f'🕐\r 当前时间为 {current_time}，{symbol_full}要加关税了啊! 超了btc {exceed:.4f}这么多个点！(当前价:{price:.4f}, 参考价:{coinPrices_for_openPosition[coin_name.lower()]:.4f})'
+                # 优化：根据超出比例计算准备金额，使用更平滑的计算方式
+                # 超出比例越大，准备金额越多，但使用平方根平滑，避免极端值
+                exceed_ratio = max(0, exceed)  # 只考虑正向超出
+                prepared = (exceed_ratio / sanction_line) * sanction_money * (1 + exceed_ratio)  # 超出越多，准备金额按比例增加
+                
+                # 显示当前比值和历史比值
+                consle_show = f'🕐\r 当前时间为 {current_time}，{symbol_full}要加关税了啊! 比值超了 {exceed*100:.2f}%！(当前比值:{current_ratio:.6f}, 历史比值:{last_ratio:.6f})'
                 if len(consle_show) <120:  
                     consle_show = consle_show + ' ' * (120 - len(consle_show))
                 print(f"\r{consle_show}", end='')
                 if exceed > sanction_line and prepared > min_buy * 1.01:
-                    print(f"\r✅✅✅ 当前时间为 {current_time}，{coin_name}真的要加关税了啊!! 超了btc {exceed:.4f}这么多个点！", end='\t\t')
+                    print(f"\r✅✅✅ 当前时间为 {current_time}，{coin_name}真的要加关税了啊!! 比值超了 {exceed*100:.2f}%！", end='\t\t')
                     time.sleep(2)
                     selected[coin_name] = {
                         'price': price,
@@ -339,16 +378,17 @@ class SniperTakeoffHedge:
                         'min_buy': min_buy,
                         'exceed': exceed
                     }
-
+    
             except Exception as e:
                 print(f"[{idx}- {coin_name}] error: {e}")
                 continue
         # -------------- 选出 good 币（含 BTC）并按资金可行性轮换 -----------------
+        # 优化：优先选择比值相对稳定或下降的币种（exceed值较小），这样更安全
         good_candidates = {c: v for c, v in coin_exceed_btc_increase_rates.items() if c.lower() in target_pool}
         sell_list = []
         if good_candidates:
             time.sleep(2)
-            # ① 把候选按照 exceed 从小到大排序
+            # ① 把候选按照 exceed 从小到大排序（exceed越小，说明相对BTC更稳定或更弱，更适合作为对冲目标）
             ordered = sorted(good_candidates.items(), key=lambda kv: kv[1])  # [(coin, info), …]
 
             for good_coin, _ in ordered:
@@ -381,12 +421,28 @@ class SniperTakeoffHedge:
                 if buy_amt < good_min:  # 仍不够一笔，换下一个候选
                     continue
 
-                # ---------- 更新参考价 & 文件 ----------
-                # coinPrices_for_openPosition[good_coin] = now_price_for_all_coins[good_coin]
+                # ---------- 更新参考比值 & 文件 ----------
+                # 更新卖出币种的比值（这些币种飞升了，需要更新其比值）
                 for coin, _, price in sell_list:
-                    coinPrices_for_openPosition[coin] = price
-                if coinPrices_for_openPosition['btc'] > btc_now_price:
-                    coinPrices_for_openPosition['btc'] = btc_now_price
+                    coin_lower = coin.lower()
+                    if coin_lower == 'btc':
+                        coinPrices_for_openPosition['btc/btc'] = 1.0
+                    else:
+                        ratio_key = f"{coin_lower}/btc"
+                        current_ratio = price / btc_now_price if btc_now_price > 0 else 0
+                        coinPrices_for_openPosition[ratio_key] = current_ratio
+                
+                # 更新good_coin的比值（买入的币种）
+                good_coin_lower = good_coin.lower()
+                if good_coin_lower == 'btc':
+                    coinPrices_for_openPosition['btc/btc'] = 1.0
+                else:
+                    good_ratio_key = f"{good_coin_lower}/btc"
+                    good_current_ratio = now_price_for_all_coins[good_coin] / btc_now_price if btc_now_price > 0 else 0
+                    coinPrices_for_openPosition[good_ratio_key] = good_current_ratio
+                
+                # 确保btc/btc基准比值始终为1.0
+                coinPrices_for_openPosition['btc/btc'] = 1.0
                 save_para(coinPrices_for_openPosition, file_path)
 
                 # ---------- 真正执行：卖 → 买 ----------
