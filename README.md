@@ -317,7 +317,7 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
    ```
 
 2. **搭建环境**
-   建议使用[conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)配置，不影响原生环境的情况下，也方便适配，后续会上全平台的配置教程。当前支持Linux和windows
+   建议使用[conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)配置，不影响原生环境的情况下，也方便适配。目前支持 Linux、Windows 和 macOS (Intel/Apple Silicon)。
 
 * Linux 环境下：
    ```bash
@@ -326,6 +326,19 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
    pip install -U pip
    pip install -r requirements.txt
    ```
+
+* macOS 环境下 (Intel/Apple Silicon)：
+   > 💡 如果遇到 `CondaToSNonInteractiveError`，请先执行以下命令接受 Anaconda 条款：
+   > `conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main`
+   > `conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r`
+
+   ```bash
+   # 建议使用专为 Mac 优化的配置文件
+   conda env create -f environment-mac.yml
+   conda activate ctos
+   ```
+   *注意：Apple Silicon 用户建议先安装 Xcode 命令行工具：`xcode-select --install`*
+
 * Windows环境下：
    ```bash
    conda env create -f environment-win.yml --name ctos
@@ -462,4 +475,5 @@ engine = ExecutionEngine(account=2, exchange_type='okx')
 
 * **免责声明**：加密货币交易风险极高。CTOS 仅作为研究与工具框架，请自行评估风险并承担责任。
 * **License**：可自行选择（MIT / Apache-2.0 / GPL-3.0），在 `LICENSE` 文件中明确。
-
+* conda activate ctos
+* python tests
