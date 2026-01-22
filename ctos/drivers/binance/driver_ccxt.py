@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# ctos/drivers/binance/driver.py
+# ctos/drivers/binance/driver_ccxt.py
 # Binance driver using ccxt library
 # pip install ccxt
 
@@ -10,6 +10,23 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
+import sys
+
+def _add_bpx_path():
+    """添加bpx包路径到sys.path，支持多种运行方式"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 添加项目根目录的bpx路径（如果存在）
+    project_root = os.path.abspath(os.path.join(current_dir, '../../..'))
+    root_bpx_path = os.path.join(project_root, 'bpx')
+    if os.path.exists(root_bpx_path) and root_bpx_path not in sys.path:
+        sys.path.insert(0, root_bpx_path)
+    if os.path.exists(project_root) and project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    return project_root
+# 执行路径添加
+_PROJECT_ROOT = _add_bpx_path()
+print('PROJECT_ROOT: ', _PROJECT_ROOT, 'CURRENT_DIR: ', os.path.dirname(os.path.abspath(__file__)))
+
 
 # syscall base（与你的项目保持一致）
 try:
@@ -22,72 +39,167 @@ except ImportError:
 
 # ccxt connector
 try:
-    import ccxt
+    from ccxt import binance as ccxt_binance
 except ImportError:
     raise RuntimeError("请先安装ccxt: pip install ccxt")
 
-def init_binance_clients(mode: str = "usdm", api_key: Optional[str] = None, api_secret: Optional[str] = None, account_id: int = 0):
-    """
-    初始化ccxt客户端：
-      mode = 'spot' 使用 binance spot
-      mode = 'usdm' 使用 binance futures
-    优先读取环境变量 BINANCE_API_KEY / BINANCE_API_SECRET
-    """
-    k = api_key or os.getenv("BINANCE_API_KEY") or ""
-    s = api_secret or os.getenv("BINANCE_API_SECRET") or ""
+# Import account reader
+try:
+    from configs.account_reader import get_credentials_for_driver, list_accounts
+except ImportError:
+    # 如果无法导入，使用备用方案
+    def get_credentials_for_driver(exchange, account='main'):
+        return {
+            'public_key': os.getenv("BINANCE_PUBLIC_KEY", os.getenv("BINANCE_API_KEY", "")),
+            'secret_key': os.getenv("BINANCE_SECRET_KEY", os.getenv("BINANCE_API_SECRET", "")),
+        }
     
+    def list_accounts(exchange='binance'):
+        return ['main', 'sub1', 'sub2']  # 默认账户列表
+
+# Import account config reader
+try:
+    from configs.config_reader import get_ctos_config
+except ImportError:
+    def get_ctos_config():
+        return None
+
+def get_account_name_by_id(account_id=0, exchange='binance'):
+    """
+    根据账户ID获取账户名称
+    
+    Args:
+        account_id: 账户ID
+        exchange: 交易所名称
+        
+    Returns:
+        str: 账户名称
+    """
+    try:
+        accounts = list_accounts(exchange)
+        
+        if account_id < len(accounts):
+            return accounts[account_id]
+        else:
+            print(f"警告: 账户ID {account_id} 超出范围，可用账户: {accounts}")
+            return accounts[0] if accounts else 'main'
+            
+    except Exception as e:
+        print(f"获取账户名称失败: {e}，使用默认映射")
+        # 回退到默认映射
+        default_mapping = {0: 'main', 1: 'sub1', 2: 'sub2'}
+        return default_mapping.get(account_id, 'main')
+
+def init_binance_clients(mode: str = "usdm", public_key: Optional[str] = None, secret_key: Optional[str] = None, account_id: int = 0):
+    """
+    初始化ccxt Binance客户端：
+      mode = 'spot' 使用 okx spot
+      mode = 'usdm' 使用 binance usdm futures (ccxt swap)
+    优先使用传入的参数，其次从配置文件读取（根据account_id），最后从环境变量读取
+    """
+    # 1. 获取API凭证
+    k = public_key or ""
+    s = secret_key or ""
+    
+    # 如果参数未完全提供，尝试从配置文件读取（根据account_id）
+    if not (k and s):
+        try:
+            account_name = get_account_name_by_id(account_id, 'binance')
+            credentials = get_credentials_for_driver('binance', account_name)
+            k = k or credentials.get('public_key', '') or credentials.get('api_key', '') or credentials.get('apiKey', '')
+            s = s or credentials.get('secret_key', '') or credentials.get('api_secret', '') or credentials.get('secret', '')
+            
+            if k and s:
+                print(f"从配置文件读取Binance账户: {account_name} (ID: {account_id})")
+        except Exception as e:
+            print(f"从配置文件读取账户信息失败: {e}，尝试使用环境变量")
+    
+    # 如果配置文件没有，尝试环境变量
+    if not (k and s):
+        k = k or os.getenv("BINANCE_PUBLIC_KEY") or os.getenv("BINANCE_API_KEY") or ""
+        s = s or os.getenv("BINANCE_SECRET_KEY") or os.getenv("BINANCE_API_SECRET") or ""
+    
+    # 关键：strip 一下，避免末尾换行/空格导致 ccxt 认为是空
+    k = (k or "").strip()
+    s = (s or "").strip()
+    
+    # 检查是否所有凭证都已设置
+    if not (k and s):
+        raise ValueError(f"Binance API凭证未设置！请检查配置文件或环境变量。账户ID: {account_id}")
+    
+    # 2. 获取代理配置
+    proxies = None
+    try:
+        configs = get_ctos_config()
+        if configs is not None and 'proxies' in configs:
+            proxies = configs.get('proxies')
+            if proxies:
+                print(f"从配置文件读取代理配置: {proxies}")
+    except Exception as e:
+        print(f"从配置文件读取代理配置失败: {e}")
+    
+    # 3. 构建ccxt配置（参考test_ccxt_driver.py的写法）
     config = {
-        'apiKey': k,
-        'secret': s,
-        'sandbox': False,  # 生产环境
-        'enableRateLimit': True,
-        'proxies': {'https': 'socks5h://127.0.0.1:1080',}
+        "apiKey": k,
+        "secret": s,
+        "enableRateLimit": True,
+        "proxies": proxies,
+        "options": {
+            "adjustForTimeDifference": True,
+            "defaultType": 'spot' if mode.lower() == "spot" else "swap",
+            "warnOnFetchOpenOrdersWithoutSymbol": False
+        }
     }
     
+    # 4. 创建exchange实例
     if mode.lower() == "spot":
-        exchange = ccxt.binance(config)
-        return {"spot": exchange, "um": None}
+        exchange = ccxt_binance(config)
+        return {"spot": exchange, "usdm": None}
     else:
-        exchange = ccxt.binance(config)
-        return {"spot": None, "um": exchange}
+        exchange = ccxt_binance(config)
+        return {"spot": None, "usdm": exchange}
 
 
 class BinanceDriver(TradingSyscalls):
     """
     CTOS Binance driver (ccxt connector).
     Mode-aware symbol normalization for Binance style symbols:
-      - spot:  "BASEUSDT"           e.g. "SOLUSDT"
-      - usdm:  "BASEUSDT"           e.g. "ETHUSDT"
-    Accepts inputs like 'eth-usdt', 'ETH/USDT', 'ETH-USDT-SWAP', 'eth', etc.
+      - spot:  "BASE/QUOTE"           e.g. "BTC/USDT"
+      - usdm:  "BASE/QUOTE"           e.g. "ETH/USDT"
+    Accepts inputs like 'eth-usdt', 'ETH/USDT', 'ETHUSDT', 'eth', etc.
     """
 
-    def __init__(self, account_client=None, public_client=None, mode="usdm", default_quote="USDT", account_id=0):
-        self.cex = 'Binance'
+    def __init__(self, binance_client=None, mode="usdm", default_quote="USDT",
+                 price_scale=1e-8, size_scale=1e-8, account_id=0):
+        self.cex = 'binance'
         self.quote_ccy = 'USDT'
         self.account_id = account_id
         """
-        :param account_client: Optional. An initialized ccxt exchange client.
-        :param public_client: Optional. An initialized ccxt exchange client.
-        :param mode: "usdm" or "spot". If "usdm", we use futures markets.
-        :param default_quote: default quote when user passes 'ETH' without '_USDT'
+        :param binance_client: Optional. An initialized ccxt exchange client.
+        :param mode: "usdm" or "spot".
+        :param default_quote: default quote when user passes 'ETH' without '/USDT'
         :param account_id: 账户ID，根据配置文件中的账户顺序映射 (0=第一个账户, 1=第二个账户, ...)
         """
-        if account_client is None or public_client is None:
-            cli = init_binance_clients(mode=mode, account_id=account_id)
-            self.account = account_client or cli["um"] or cli["spot"]
-            self.public = public_client or cli["um"] or cli["spot"]
-            if cli["um"] or cli["spot"]:
-                print(f"✓ Binance Driver初始化成功 (账户ID: {account_id}, 模式: {mode})")
-            else:
-                print(f"✗ Binance Driver初始化失败 (账户ID: {account_id})")
+        if binance_client is None:
+            try:
+                cli = init_binance_clients(mode=mode, account_id=account_id)
+                self.binance = cli["usdm"] or cli["spot"]
+                if self.binance:
+                    print(f"✓ Binance Driver初始化成功 (账户ID: {account_id}, 模式: {mode})")
+                else:
+                    print(f"✗ Binance Driver初始化失败 (账户ID: {account_id})")
+                    self.binance = None
+            except Exception as e:
+                print(f"✗ Binance Driver初始化失败 (账户ID: {account_id}): {e}")
+                self.binance = None
         else:
-            self.account = account_client
-            self.public = public_client
+            self.binance = binance_client
             print(f"✓ Binance Driver使用外部客户端 (账户ID: {account_id})")
         
         self.mode = (mode or "usdm").lower()
         self.default_quote = default_quote or "USDT"
-        self.symbol = 'ETHUSDT'
+        self.price_scale = price_scale
+        self.size_scale = size_scale
         self.load_exchange_trade_info()
         self.order_id_to_symbol = {}
 
@@ -105,35 +217,36 @@ class BinanceDriver(TradingSyscalls):
     # -------------- helpers --------------
     def _norm_symbol(self, symbol):
         """
-        Normalize symbols to Binance format.
+        Normalize symbols to Binance CCXT format.
         Returns (full_symbol, base_lower, quote_upper)
         Examples:
-          _norm_symbol('eth') -> ('ETHUSDT', 'eth', 'USDT')
-          _norm_symbol('ETH-USDT-SWAP') -> ('ETHUSDT', 'eth', 'USDT')
-          _norm_symbol('SOL/USDT') -> ('SOLUSDT', 'sol', 'USDT')
-          _norm_symbol('BTCUSDT') -> ('BTCUSDT', 'btc', 'USDT')
+          _norm_symbol('eth') -> ('ETH/USDT', 'eth', 'USDT')
+          _norm_symbol('ETHUSDT') -> ('ETH/USDT', 'eth', 'USDT')
+          _norm_symbol('SOL/USDT') -> ('SOL/USDT', 'sol', 'USDT')
         """
         s = str(symbol or "").strip()
         if not s:
             return None, None, None
 
-        # unify separators and uppercase
-        su = s.replace("-", "").replace("/", "").replace("_", "").upper()
+        # unify separators to CCXT standard /
+        su = s.replace("-", "/").replace("_", "/").upper()
 
-        # Already a full Binance symbol
-        if su.endswith("USDT") or su.endswith("BUSD") or su.endswith("FDUSD"):
-            if su.endswith("USDT"):
-                base, quote = su[:-4], "USDT"
-            elif su.endswith("BUSD"):
-                base, quote = su[:-4], "BUSD"
-            elif su.endswith("FDUSD"):
-                base, quote = su[:-5], "FDUSD"
-            full = su
+        if "/" in su:
+            parts = su.split("/")
+            base = parts[0]
+            quote = parts[1] if len(parts) > 1 else self.default_quote
+        elif su.endswith("USDT"):
+            base, quote = su[:-4], "USDT"
+        elif su.endswith("BUSD"):
+            base, quote = su[:-4], "BUSD"
         else:
             # Only base provided
             base = su
             quote = self.default_quote
-            full = f"{base}{quote}"
+
+        full = f"{base}/{quote}"
+        if self.mode == "usdm":
+            full += f":{quote}"
 
         return full, base.lower(), quote.upper()
 
@@ -157,33 +270,34 @@ class BinanceDriver(TradingSyscalls):
     # -------------- ref-data / meta --------------
     def symbols(self, instType='USDM'):
         """
-        返回 (symbols, error)
-        - 成功: (list[str], None)
-        - 失败: (None, Exception)
-        根据 self.mode 过滤：usdm 仅返回期货，spot 仅返回现货。
+        返回指定类型的交易对列表。
+        :param instType: 'USDM' | 'SPOT' 等，默认 'USDM'
+        :return: list[str]，如 ['BTC/USDT', 'ETH/USDT', ...]
         """
-        if not hasattr(self, "public") or self.public is None:
-            return None, NotImplementedError("Public client not initialized")
+        if self.binance is None:
+            # 兜底：无法从底层获取时，返回少量默认
+            return ["BTC/USDT", "ETH/USDT"] if str(instType).upper() == 'USDM' else ["BTC/USDT", "ETH/USDT"]
+
         try:
-            markets = self.public.load_markets()
+            markets = self.binance.load_markets()
             if self.mode == "spot":
                 # 现货市场
                 syms = [symbol for symbol, market in markets.items() 
                        if market.get('type') == 'spot' and market.get('active', True)]
             else:
-                # 期货市场
+                # 期货市场 (Binance USDM in CCXT is 'swap')
                 syms = [symbol for symbol, market in markets.items() 
-                       if market.get('type') == 'future' and market.get('active', True)]
+                       if market.get('type') == 'swap' and market.get('active', True)]
             return syms, None
         except Exception as e:
-            return None, e
+            return [], e
 
-    def exchange_limits(self, symbol=None, instType='USDM'):
+    def exchange_limits(self, symbol=None, instType='SWAP'):
         """
         获取交易所限制信息，包括价格精度、数量精度、最小下单数量等
         
-        :param symbol: 交易对符号，如 'ETHUSDT'，如果为None则返回全类型数据
-        :param instType: 产品类型，默认为 'USDM'
+        :param symbol: 交易对符号，如 'BTC-USDT-SWAP'，如果为None则返回全类型数据
+        :param instType: 产品类型，默认为 'SWAP'
         :return: dict 包含限制信息的字典
         """
         if symbol:
@@ -191,7 +305,7 @@ class BinanceDriver(TradingSyscalls):
             if symbol in self.exchange_trade_info:
                 return self.exchange_trade_info[symbol], None
         try:
-            markets = self.public.load_markets()
+            markets = self.binance.load_markets()
             
             # 如果指定了symbol，获取单个交易对信息
             if symbol:
@@ -210,8 +324,8 @@ class BinanceDriver(TradingSyscalls):
             for symbol_name, market in markets.items():
                 if self.mode == "spot" and market.get('type') != 'spot':
                     continue
-                if self.mode == "usdm" and market.get('type') != 'future':
-                    continue
+                if self.mode == "usdm" and market.get('type') != 'swap':
+                    continue # Binance USDM is 'swap' in CCXT
                     
                 limits = self._extract_limits_from_market(market)
                 if limits and 'error' not in limits:
@@ -253,14 +367,14 @@ class BinanceDriver(TradingSyscalls):
         except Exception as e:
             return {"error": f"解析market信息时发生异常: {str(e)}"}
 
-    def fees(self, symbol='ETHUSDT', instType='USDM', keep_origin=False, limit=3, offset=0):
+    def fees(self, symbol='ETH-USDT-SWAP', instType='SWAP', keep_origin=False):
         """
         获取资金费率信息。
-        - 对于 Binance，使用 fetch_funding_rate() 方法
+        - 对于 OKX，使用 fetch_funding_rate() 方法
         - 返回 (result, error)
         - 统一返回结构到"每小时资金费率"。
         """
-        if not hasattr(self.public, 'fetch_funding_rate'):
+        if not hasattr(self.binance, 'fetch_funding_rate'):
             return None, NotImplementedError('Public.fetch_funding_rate unavailable')
 
         full, _, _ = self._norm_symbol(symbol)
@@ -268,14 +382,14 @@ class BinanceDriver(TradingSyscalls):
             return {"symbol": full, "instType": "SPOT", "fundingRate_hourly": None, "raw": None}, None
         
         try:
-            raw = self.public.fetch_funding_rate(symbol=full)
+            raw = self.binance.fetch_funding_rate(symbol=full)
             if keep_origin:
                 return raw, None
             
-            # ccxt返回格式: {'symbol': 'ETHUSDT', 'fundingRate': 0.0001, 'timestamp': 1692345600000, 'datetime': '2023-08-17T00:00:00.000Z'}
+            # ccxt返回格式: {'symbol': 'BTC-USDT-SWAP', 'fundingRate': 0.0001, 'timestamp': 1692345600000, 'datetime': '2023-08-17T00:00:00.000Z'}
             fr_period = raw.get('fundingRate')
             ts_ms = raw.get('timestamp')
-            period_hours = 8.0  # Binance默认8小时周期
+            period_hours = 8.0  # OKX默认8小时周期
 
             hourly = None
             if fr_period is not None:
@@ -296,54 +410,44 @@ class BinanceDriver(TradingSyscalls):
             return None, e
 
     # -------------- market data --------------
-    def get_price_now(self, symbol='ETHUSDT'):
+    def get_price_now(self, symbol='ETH/USDT'):
         full, base, _ = self._norm_symbol(symbol)
-        if hasattr(self.public, "fetch_ticker"):
+        if hasattr(self.binance, "fetch_ticker"):
             try:
-                data = self.public.fetch_ticker(symbol=full)
-                # ccxt返回格式: {'symbol': 'ETHUSDT', 'last': 2000.0, 'bid': 1999.0, 'ask': 2001.0, ...}
+                data = self.binance.fetch_ticker(symbol=full)
+                # ccxt返回格式: {'symbol': 'BTC-USDT-SWAP', 'last': 2000.0, 'bid': 1999.0, 'ask': 2001.0, ...}
                 if isinstance(data, dict):
                     price = data.get('last') or data.get('close')
                     if price is not None:
-                        return float(price), None
+                        return float(price)
             except Exception as e:
-                return None, e
-        return None, NotImplementedError("Public.fetch_ticker unavailable or response lacks price")
+                raise e
+        raise NotImplementedError("Public.fetch_ticker unavailable or response lacks price")
 
-    def get_orderbook(self, symbol='ETHUSDT', level=50):
+    def get_orderbook(self, symbol='ETH/USDT', level=50):
         full, _, _ = self._norm_symbol(symbol)
-        if hasattr(self.public, "fetch_order_book"):
+        if hasattr(self.binance, "fetch_order_book"):
             try:
-                raw = self.public.fetch_order_book(symbol=full, limit=int(level))
+                raw = self.binance.fetch_order_book(symbol=full, limit=int(level))
                 bids = raw.get("bids", []) if isinstance(raw, dict) else []
                 asks = raw.get("asks", []) if isinstance(raw, dict) else []
-                return {"symbol": full, "bids": bids, "asks": asks}, None
+                return {"symbol": full, "bids": bids, "asks": asks}
             except Exception as e:
-                return None, e
-        return None, NotImplementedError("Public.fetch_order_book unavailable")
+                raise e
+        raise NotImplementedError("Public.fetch_order_book unavailable")
 
-    def get_klines(self, symbol='ETHUSDT', timeframe='1m', limit=200, start_time=None, end_time=None):
+    def get_klines(self, symbol='ETH/USDT', timeframe='1h', limit=200):
+        """
+        Normalize to list of dicts:
+        [{'ts': ts_ms, 'open': o, 'high': h, 'low': l, 'close': c, 'volume': v}, ...]
+        """
         full, _, _ = self._norm_symbol(symbol)
-        if not hasattr(self.public, "fetch_ohlcv"):
-            return None, NotImplementedError("Public.fetch_ohlcv unavailable")
+        if not hasattr(self.binance, "fetch_ohlcv"):
+            raise NotImplementedError("Public.fetch_ohlcv unavailable")
 
-        # 计算缺省时间范围：对齐到周期边界，起点=对齐后的边界-(limit-1)*tf，终点=当前时间
         try:
-            tf_seconds = self._timeframe_to_seconds(timeframe)
-        except Exception as e:
-            return None, e
-
-        now_sec = int(time.time())
-        if end_time is None:
-            end_time = now_sec
-        if start_time is None:
-            aligned_end_boundary = end_time - (end_time % tf_seconds)
-            start_time = aligned_end_boundary - (int(limit) - 1) * tf_seconds
-
-        # 拉取原始数据
-        try:
-            since = int(start_time * 1000) if start_time else None
-            raw = self.public.fetch_ohlcv(symbol=full, timeframe=timeframe, since=since, limit=int(limit))
+            # 拉取原始数据
+            raw = self.binance.fetch_ohlcv(symbol=full, timeframe=timeframe, limit=int(limit))
         except Exception as e:
             return None, e
 
@@ -386,7 +490,7 @@ class BinanceDriver(TradingSyscalls):
         if limit and len(records) > int(limit):
             records = records[-int(limit):]
 
-        # 优先返回 pandas.DataFrame
+        # 优先返回 pandas.DataFrame（与driver.py保持一致）
         try:
             df = pd.DataFrame.from_records(records, columns=['trade_date', 'open', 'high', 'low', 'close', 'vol1', 'vol'])
             return df, None
@@ -395,131 +499,42 @@ class BinanceDriver(TradingSyscalls):
             return records, None
 
     # -------------- trading --------------
-    def place_order(self, symbol, side, order_type, size, price=None, client_id=None, max_retries=4, **kwargs):
+    def place_order(self, symbol, side, order_type, size, price=None, client_id=None, **kwargs):
         """
-        下单函数，带错误处理和重试机制
-        
-        自动处理以下错误类型：
-        - Price precision error: 自动调整价格精度
-        - Quantity precision error: 自动调整数量精度  
-        - Quantity below minimum: 自动增加数量到最小允许值
-        - Invalid symbol: 自动调整符号格式
-        
-        使用示例：
-        >>> driver = BinanceDriver()
-        >>> # 正常下单
-        >>> order_id, error = driver.place_order('ETHUSDT', 'buy', 'limit', 0.01, 2000.0)
-        >>> # 带重试的下单
-        >>> order_id, error = driver.place_order('ETHUSDT', 'buy', 'limit', 0.01, 2000.0, max_retries=5)
-        
-        :param symbol: 交易对
-        :param side: 买卖方向 ('buy'/'sell')
-        :param order_type: 订单类型 ('limit'/'market')
-        :param size: 数量
-        :param price: 价格（限价单需要）
-        :param client_id: 客户端订单ID
-        :param max_retries: 最大重试次数
-        :param kwargs: 其他参数
-        :return: (order_id, error)
+        Normalize inputs to your okex client.
         """
         full, _, _ = self._norm_symbol(symbol)
-        if not hasattr(self.account, "create_order"):
-            return None, NotImplementedError("Account.create_order unavailable")
+        if not hasattr(self.binance, "create_order"):
+            raise NotImplementedError("binance client lacks create_order(...)")
 
-        original_size = size
-        original_price = price
-        
-        for attempt in range(max_retries + 1):
-            try:
-                # Map CTOS -> ccxt format
-                ccxt_side = "buy" if str(side).lower() in ("buy", "bid", "long") else "sell"
-                ccxt_type = "limit" if str(order_type).lower() in ("limit",) else "market"
-                
-                params = {
-                    "symbol": full,
-                    "side": ccxt_side,
-                    "type": ccxt_type,
-                    "amount": float(size),
-                }
-                if price is not None:
-                    params["price"] = float(price)
-                if client_id:
-                    params["clientOrderId"] = client_id
-                # passthrough extras like post_only
-                params.update(kwargs)
+        try:
+            # Map CTOS -> ccxt format
+            ccxt_side = "buy" if str(side).lower() in ("buy", "bid", "long") else "sell"
+            ccxt_type = "limit" if str(order_type).lower() in ("limit",) else "market"
+            
+            params = {
+                "symbol": full,
+                "side": ccxt_side,
+                "type": ccxt_type,
+                "amount": float(size),
+            }
+            if price is not None:
+                params["price"] = float(price)
+            if client_id:
+                params["clientOrderId"] = client_id
+            # passthrough extras like post_only
+            params.update(kwargs)
 
-                order = self.account.create_order(**params)
-                
-                # 检查下单结果
-                if isinstance(order, dict) and ('id' in order or 'orderId' in order):
-                    # 下单成功
-                    order_id = order.get('id') or order.get('orderId')
-                    if attempt > 0:
-                        print(f"✓ 下单成功 (重试第{attempt}次): {symbol} {side} {size}@{price}")
-                    return str(order_id), None
-                else:
-                    # 下单失败，检查是否有重试机会
-                    if attempt < max_retries:
-                        error_msg = str(order) if order else "Unknown error"
-                        print(f"⚠ 下单失败 (第{attempt + 1}次): {error_msg}")
-                        
-                        # 根据错误类型进行相应的调整
-                        error_lower = error_msg.lower()
-                        
-                        # 记录调整前的参数
-                        original_price = price
-                        original_size = size
-                        
-                        # 判断错误类型并调整参数
-                        if 'precision' in error_lower and 'price' in error_lower:
-                            # 价格精度问题，调整价格精度
-                            if order_type.lower() == 'limit' and price is not None:
-                                price = round(float(price), 4)
-                                print(f"🔧 调整价格精度: {original_price} -> {price}")
-                                
-                        elif 'precision' in error_lower and 'quantity' in error_lower:
-                            # 数量精度问题，调整数量精度
-                            size = round(float(size), 4)
-                            print(f"🔧 调整数量精度: {original_size} -> {size}")
-                            
-                        elif 'min notional' in error_lower or 'below minimum' in error_lower:
-                            # 数量过小，增加数量
-                            size = max(size * 1.1, 0.001)
-                            print(f"🔧 增加数量: {original_size} -> {size}")
-                            
-                        elif 'invalid symbol' in error_lower:
-                            # 符号无效，尝试重新规范化
-                            full, _, _ = self._norm_symbol(symbol)
-                            print(f"🔧 重新规范化符号: {symbol} -> {full}")
-                            
-                        else:
-                            # 未知错误类型，尝试通用调整策略
-                            print(f"⚠ 未知错误类型，尝试通用调整: {error_msg}")
-                            if order_type.lower() == 'limit' and price is not None:
-                                # 尝试减少价格精度
-                                price = round(float(price), 4)
-                                print(f"🔧 通用调整价格精度: {original_price} -> {price}")
-                            
-                            # 尝试减少数量精度
-                            size = round(float(size), 4)
-                            print(f"🔧 通用调整数量精度: {original_size} -> {size}")
-                        
-                        # 等待一段时间后重试
-                        time.sleep(0.5)
-                    else:
-                        # 最后一次尝试失败，返回错误
-                        print(f"✗ 下单最终失败: {symbol} {side} {size}@{price}")
-                        return None, order
-                        
-            except Exception as e:
-                if attempt < max_retries:
-                    print(f"⚠ 下单异常 (第{attempt + 1}次): {str(e)}")
-                    time.sleep(0.5)
-                else:
-                    print(f"✗ 下单异常最终失败: {str(e)}")
-                    return None, str(e)
-        
-        return None, "Max retries exceeded"
+            order = self.binance.create_order(**params)
+            
+            # 检查下单结果
+            if isinstance(order, dict) and ('id' in order or 'orderId' in order):
+                order_id = order.get('id') or order.get('orderId')
+                return str(order_id), None
+            else:
+                return None, order
+        except Exception as e:
+            return None, e
 
     def amend_order(self, order_id, symbol, price=None, size=None, side=None, order_type=None,
                     time_in_force=None, post_only=None, **kwargs):
@@ -591,35 +606,50 @@ class BinanceDriver(TradingSyscalls):
         )
 
     def revoke_order(self, order_id, symbol=None):
-        if hasattr(self.account, "cancel_order"):
+        if hasattr(self.binance, "cancel_order"):
             if not symbol:
                 return False, ValueError("symbol is required for cancel_order on Binance")
             full, _, _ = self._norm_symbol(symbol)
             try:
-                resp = self.account.cancel_order(symbol=full, id=order_id)
+                resp = self.binance.cancel_order(symbol=full, id=order_id)
                 return True, None if resp is not None else (False, resp)
             except Exception as e:
                 return False, e
         return False, NotImplementedError("Account.cancel_order unavailable")
 
-    def get_order_status(self, order_id=None, symbol='ETHUSDT', market_type=None, window=None, keep_origin=False):
-        full, _, _ = self._norm_symbol(symbol)
-        if not hasattr(self.account, "fetch_order"):
-            return None, NotImplementedError("Account.fetch_order unavailable")
+    def get_order_status(self, order_id, symbol=None, keep_origin=False):
+        if not hasattr(self.binance, "fetch_order"):
+            raise NotImplementedError("Account.fetch_order unavailable")
+        
+        if not symbol:
+            symbol = self.order_id_to_symbol.get(order_id, None)
+        
+        full = None
+        if symbol:
+            full, _, _ = self._norm_symbol(symbol)
+        
         try:
-            resp = self.account.fetch_order(id=order_id, symbol=full)
+            resp = self.binance.fetch_order(id=order_id, symbol=full)
             if keep_origin:
                 if order_id is None:
                     return resp, None
-                # 过滤指定 order_id
+                # 过滤指定 order_id - 支持多种ID字段
+                def _match_order_id(od, target_id):
+                    """检查订单是否匹配目标ID"""
+                    if not isinstance(od, dict):
+                        return False
+                    # 尝试多种ID字段
+                    od_id = od.get('id') or od.get('orderId') or od.get('ordId')
+                    return str(od_id) == str(target_id) if od_id is not None else False
+                
                 if isinstance(resp, dict):
-                    if str(resp.get('orderId')) == str(order_id):
+                    if _match_order_id(resp, order_id):
                         return resp, None
                     return None, None
                 if isinstance(resp, list):
                     for od in resp:
                         try:
-                            if str(od.get('orderId')) == str(order_id):
+                            if _match_order_id(od, order_id):
                                 return od, None
                         except Exception:
                             continue
@@ -633,7 +663,9 @@ class BinanceDriver(TradingSyscalls):
             elif isinstance(resp, list):
                 for item in resp:
                     try:
-                        if str(item.get('orderId')) == str(order_id):
+                        # 支持多种ID字段匹配
+                        item_id = item.get('id') or item.get('orderId') or item.get('ordId')
+                        if item_id and str(item_id) == str(order_id):
                             od = item
                             break
                     except Exception:
@@ -648,20 +680,20 @@ class BinanceDriver(TradingSyscalls):
                     return None
 
             normalized = {
-                'orderId': od.get('orderId') or od.get('ordId'),
+                'orderId': od.get('id') or od.get('orderId') or od.get('ordId'),
                 'symbol': od.get('symbol') or od.get('market') or od.get('instId'),
                 'side': (od.get('side') or '').lower() if od.get('side') else None,
-                'orderType': (od.get('type') or '').lower() if (od.get('type')) else None,
-                'price': _f(od.get('price')),
-                'quantity': _f(od.get('origQty')),
-                'filledQuantity': _f(od.get('executedQty')),
-                'status': od.get('status'),
+                'orderType': (od.get('type') or od.get('ordType') or '').lower() if (od.get('type') or od.get('ordType')) else None,
+                'price': _f(od.get('price') or od.get('px')),
+                'quantity': _f(od.get('amount') or od.get('origQty') or od.get('quantity') or od.get('size') or od.get('sz')),
+                'filledQuantity': _f(od.get('filled') or od.get('executedQty') or od.get('filledSize') or od.get('accFillSz')),
+                'status': od.get('status') or od.get('state'),
                 'timeInForce': od.get('timeInForce') or od.get('time_in_force'),
                 'postOnly': od.get('postOnly') or od.get('post_only'),
                 'reduceOnly': od.get('reduceOnly') or od.get('reduce_only'),
-                'clientId': od.get('clientOrderId') or od.get('client_id'),
-                'createdAt': _f(od.get('time'), int),
-                'updatedAt': _f(od.get('updateTime'), int),
+                'clientId': od.get('clientOrderId') or od.get('client_id') or od.get('clOrdId'),
+                'createdAt': _f(od.get('timestamp') or od.get('time') or od.get('cTime'), int),
+                'updatedAt': _f(od.get('lastUpdateTimestamp') or od.get('updateTime') or od.get('uTime'), int),
                 'raw': od,
             }
             return normalized, None
@@ -676,7 +708,7 @@ class BinanceDriver(TradingSyscalls):
         :param onlyOrderId: True 则仅返回订单号列表；False 返回完整订单对象列表
         :return: (result, error)
         """
-        if hasattr(self.account, "fetch_open_orders"):
+        if hasattr(self.binance, "fetch_open_orders"):
             try:
                 if symbol:
                     try:
@@ -685,7 +717,7 @@ class BinanceDriver(TradingSyscalls):
                         full = symbol
                 else:
                     full = symbol
-                resp = self.account.fetch_open_orders(symbol=full)
+                resp = self.binance.fetch_open_orders(symbol=full)
 
                 if onlyOrderId:
                     order_ids = []
@@ -693,9 +725,11 @@ class BinanceDriver(TradingSyscalls):
                     if isinstance(resp, list):
                         for od in resp:
                             try:
-                                oid = od.get('orderId') if isinstance(od, dict) else None
-                                if oid is not None:
-                                    order_ids.append(str(oid))
+                                if isinstance(od, dict):
+                                    # ccxt返回的订单ID可能在'id'或'orderId'字段
+                                    oid = od.get('id') or od.get('orderId') or od.get('ordId')
+                                    if oid is not None:
+                                        order_ids.append(str(oid))
                             except Exception:
                                 continue
                     elif isinstance(resp, dict):
@@ -703,14 +737,15 @@ class BinanceDriver(TradingSyscalls):
                         if isinstance(data, list):
                             for od in data:
                                 try:
-                                    oid = od.get('orderId') if isinstance(od, dict) else None
-                                    if oid is not None:
-                                        order_ids.append(str(oid))
+                                    if isinstance(od, dict):
+                                        oid = od.get('id') or od.get('orderId') or od.get('ordId')
+                                        if oid is not None:
+                                            order_ids.append(str(oid))
                                 except Exception:
                                     continue
                         else:
                             # 单个订单或以键为订单号等情况
-                            oid = resp.get('orderId')
+                            oid = resp.get('id') or resp.get('orderId') or resp.get('ordId')
                             if oid is not None:
                                 order_ids.append(str(oid))
                     return order_ids, None
@@ -728,20 +763,20 @@ class BinanceDriver(TradingSyscalls):
                         except Exception:
                             return None
                     return {
-                        'orderId': od.get('orderId') or od.get('ordId'),
+                        'orderId': od.get('id') or od.get('orderId') or od.get('ordId'),
                         'symbol': od.get('symbol') or od.get('market') or od.get('instId'),
                         'side': (od.get('side') or '').lower() if od.get('side') else None,
-                        'orderType': (od.get('type') or '').lower() if (od.get('type')) else None,
-                        'price': _f(od.get('price')),  # str -> float
-                        'quantity': _f(od.get('origQty')),  # str -> float
-                        'filledQuantity': _f(od.get('executedQty')),  # str -> float
-                        'status': od.get('status'),
+                        'orderType': (od.get('type') or od.get('ordType') or '').lower() if (od.get('type') or od.get('ordType')) else None,
+                        'price': _f(od.get('price') or od.get('px')),  # str -> float
+                        'quantity': _f(od.get('amount') or od.get('origQty') or od.get('quantity') or od.get('size') or od.get('sz')),  # str -> float
+                        'filledQuantity': _f(od.get('filled') or od.get('executedQty') or od.get('filledSize') or od.get('accFillSz')),  # str -> float
+                        'status': od.get('status') or od.get('state'),
                         'timeInForce': od.get('timeInForce') or od.get('time_in_force'),
                         'postOnly': od.get('postOnly') or od.get('post_only'),
                         'reduceOnly': od.get('reduceOnly') or od.get('reduce_only'),
-                        'clientId': od.get('clientOrderId') or od.get('client_id'),
-                        'createdAt': _f(od.get('time'), int),
-                        'updatedAt': _f(od.get('updateTime'), int),
+                        'clientId': od.get('clientOrderId') or od.get('client_id') or od.get('clOrdId'),
+                        'createdAt': _f(od.get('timestamp') or od.get('time') or od.get('cTime'), int),
+                        'updatedAt': _f(od.get('lastUpdateTimestamp') or od.get('updateTime') or od.get('uTime'), int),
                         'raw': od,
                     }
 
@@ -776,45 +811,68 @@ class BinanceDriver(TradingSyscalls):
         :param order_ids: 若提供，则仅撤销这些订单号（若底层支持）
         :return: (result, error)
         """
-        if hasattr(self.account, "cancel_all_orders"):
+        if not self.binance:
+            return None, Exception("Account client not available")
+
+        # 1. 如果提供了 order_ids，优先处理
+        if order_ids:
+            results = []
+            for oid in order_ids:
+                res, err = self.revoke_order(oid, symbol=symbol)
+                results.append(res if err is None else err)
+            return results, None
+
+        # 2. 尝试使用 ccxt 原生的 cancel_all_orders
+        if symbol and hasattr(self.binance, "cancel_all_orders"):
             try:
-                if symbol:
-                    try:
-                        full, _, _ = self._norm_symbol(symbol)
-                    except Exception as e:
-                        full = symbol
-                else:
-                    full = symbol
-                resp = self.account.cancel_all_orders(symbol=full)
+                full = self._norm_symbol(symbol)[0]
+                resp = self.binance.cancel_all_orders(symbol=full)
                 return resp, None
             except Exception as e:
-                return None, e
-        else:
-            return None, Exception("Account client not available")
+                # 如果 ccxt 提示不支持，则进入手动撤单逻辑
+                if "not supported" not in str(e).lower():
+                    return None, e
+
+        # 3. 手动撤单逻辑：获取所有挂单并逐个撤销
+        open_orders, err = self.get_open_orders(symbol=symbol, instType=instType, onlyOrderId=False, keep_origin=False)
+        if err:
+            return None, err
+        
+        results = []
+        for od in open_orders:
+            oid = od.get('orderId')
+            osym = od.get('symbol')
+            res, err = self.revoke_order(oid, symbol=osym)
+            results.append(res if err is None else err)
+        return results, None
 
     # -------------- account --------------
-    def fetch_balance(self, currency='USDT', instType='USDM'):
+    def fetch_balance(self, currency='USDT'):
         """
-        获取账户余额。
-        :param currency: 币种，默认 'USDT'
-        :param instType: 市场类型，默认 'USDM'
-        :return: (balance, error)
+        Return a simple flat dict. If only jiaoyi/zijin are available,
+        expose USDT buckets and a best-effort total in USD.
         """
-        if hasattr(self.account, "fetch_balance"):
+        if hasattr(self.binance, "fetch_balance"):
             try:
-                cur = (currency or "").upper()
-                balance = self.account.fetch_balance()
-                
-                if cur in balance:
-                    # 返回可用余额
-                    return float(balance[cur].get('free', 0)), None
-                return 0.0, None
+                # ccxt的fetch_balance返回所有币种余额
+                raw = self.binance.fetch_balance()
+                if isinstance(raw, dict):
+                    # 如果指定了currency，返回该币种的总计余额
+                    cur = (currency or "USDT").upper()
+                    if cur in raw:
+                        balance_info = raw[cur]
+                        if isinstance(balance_info, dict):
+                            # 返回总计余额
+                            total = balance_info.get('total', 0)
+                            return float(total) if total is not None else 0.0
+                    # 如果没有找到指定币种，返回整个字典
+                    return raw
+                return raw
             except Exception as e:
-                return None, e
-        else:
-            return None, Exception("Account client not available")
+                return e
+        raise NotImplementedError("Account.fetch_balance unavailable")
 
-    def get_position(self, symbol=None, instType='USDM', keep_origin=True):
+    def get_position(self, symbol=None, keep_origin=False, instType='USDM'):
         """
         获取持仓信息。
         :param symbol: 交易对；为空则返回全部
@@ -826,8 +884,8 @@ class BinanceDriver(TradingSyscalls):
             return [], None
 
         try:
-            if hasattr(self.account, "fetch_positions"):
-                positions = self.account.fetch_positions(symbols=[symbol] if symbol else None)
+            if hasattr(self.binance, "fetch_positions"):
+                positions = self.binance.fetch_positions(symbols=[symbol] if symbol else None)
             else:
                 return [], None
                 
@@ -877,8 +935,8 @@ class BinanceDriver(TradingSyscalls):
         if self.mode == "spot":
             return {"ok": True, "message": "现货无持仓"}, None
         try:
-            if hasattr(self.account, "fetch_positions"):
-                positions = self.account.fetch_positions(symbols=[symbol] if symbol else None)
+            if hasattr(self.binance, "fetch_positions"):
+                positions = self.binance.fetch_positions(symbols=[symbol] if symbol else None)
             else:
                 return {"ok": False, "error": "fetch_positions not available"}, None
                 
@@ -888,7 +946,7 @@ class BinanceDriver(TradingSyscalls):
                     # 平仓
                     side = "sell" if qty > 0 else "buy"
                     try:
-                        self.account.create_order(
+                        self.binance.create_order(
                             symbol=pos.get("symbol"),
                             side=side,
                             type="market",
@@ -903,4 +961,4 @@ class BinanceDriver(TradingSyscalls):
 
 if __name__ == "__main__":
     driver = BinanceDriver(account_id=0)
-    print(driver.get_price_now(symbol='ETHUSDT'))
+    print(driver.get_price_now(symbol='ETH/USDT'))

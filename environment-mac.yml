@@ -1,0 +1,27 @@
+name: ctos
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pandas
+  - numpy
+  - matplotlib
+  - requests
+  - pyyaml
+  - pydantic
+  - mysql-connector-python
+  - scikit-learn
+  - scipy
+  - seaborn
+  - tqdm
+  - mplfinance
+  - psutil
+  - pyfiglet
+  - rich
+  - pip
+  - pip:
+      - bpx
+      - ccxt
+      - pytest
+      - exceptiongroup
