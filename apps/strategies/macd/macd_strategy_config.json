@@ -1,0 +1,36 @@
+{
+  "check_interval": 60,
+  "kline_limit": 200,
+  "dry_run": true,
+  "description": "MACD策略：基于经典金叉（DIF上穿DEA）买入、死叉（DIF下穿DEA）卖出，支持多交易所、多币种、多周期",
+  "rules": [
+    {
+      "id": "okx_btc_1h",
+      "exchange": "okx",
+      "account_id": 0,
+      "symbol": "btc",
+      "timeframe": "1h",
+      "fast": 12,
+      "slow": 26,
+      "signal": 9,
+      "golden_cross_buy": true,
+      "death_cross_sell": true,
+      "order_amount": 100.0,
+      "enabled": true
+    },
+    {
+      "id": "okx_eth_4h",
+      "exchange": "okx",
+      "account_id": 0,
+      "symbol": "eth",
+      "timeframe": "4h",
+      "fast": 12,
+      "slow": 26,
+      "signal": 9,
+      "golden_cross_buy": true,
+      "death_cross_sell": true,
+      "order_amount": 100.0,
+      "enabled": true
+    }
+  ]
+}
