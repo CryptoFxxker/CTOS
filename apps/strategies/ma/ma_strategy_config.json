@@ -1,0 +1,32 @@
+{
+  "check_interval": 60,
+  "kline_limit": 200,
+  "dry_run": true,
+  "description": "均线策略：基于不同交易所、币种、周期的均线突破与击穿产生买卖信号",
+  "rules": [
+    {
+      "id": "okx_btc_1h_ma20",
+      "exchange": "okx",
+      "account_id": 0,
+      "symbol": "btc",
+      "timeframe": "1h",
+      "ma_period": 20,
+      "breakthrough_buy": true,
+      "breakdown_sell": true,
+      "order_amount": 100.0,
+      "enabled": true
+    },
+    {
+      "id": "okx_eth_4h_ma60",
+      "exchange": "okx",
+      "account_id": 0,
+      "symbol": "eth",
+      "timeframe": "4h",
+      "ma_period": 60,
+      "breakthrough_buy": true,
+      "breakdown_sell": true,
+      "order_amount": 100.0,
+      "enabled": true
+    }
+  ]
+}
