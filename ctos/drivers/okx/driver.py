@@ -573,6 +573,9 @@ class OkxDriver(TradingSyscalls):
         raise NotImplementedError("okex.py client lacks cancel_order(order_id=...)")
 
     def get_open_orders(self, symbol='ETH-USDT-SWAP', instType='SWAP', onlyOrderId=True, keep_origin=True):
+        # 简短 symbol（如 xau）需转为 OKX instId（如 XAU-USDT-SWAP），否则 OKX 报 Parameter instId error
+        if symbol and isinstance(symbol, str) and symbol.find('-') == -1:
+            symbol = f'{symbol.upper()}-USDT-SWAP'
         if hasattr(self.okx, "get_open_orders"):
             success, error = self.okx.get_open_orders(instType=instType, symbol=symbol, onlyOrderId=onlyOrderId)
             if onlyOrderId or keep_origin:
@@ -730,11 +733,11 @@ class OkxDriver(TradingSyscalls):
                         try:
                             fee = float(d.get('fundingFee') or d.get('fundingFee') or 0)
                         except Exception:
-                            ts = None
+                            fee = 0.0
                         try:
                             quantityUSD = float(d.get('notionalUsd') or 0)
                         except Exception:
-                            ts = None
+                            quantityUSD = 0.0
                         unified.append({
                             'symbol': d.get('instId'),
                             'positionId': d.get('posId'),

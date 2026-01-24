@@ -502,6 +502,7 @@ def fuzzy_exchange_input(user_input: str) -> str:
     模糊输入处理函数，支持多种输入方式
     支持: okx, ok, o, ox, okex, okx交易所
     支持: bp, backpack, b, back
+    如果无法匹配到已知模式，则直接返回输入内容（转换为小写）
     """
     if not user_input:
         return 'okx'
@@ -520,5 +521,5 @@ def fuzzy_exchange_input(user_input: str) -> str:
         if pattern in user_input:
             return 'backpack'
     
-    # 默认返回okx
-    return 'okx'
+    # 如果无法匹配到已知模式，直接返回输入内容（转换为小写）
+    return user_input
